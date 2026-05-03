@@ -1,8 +1,13 @@
-import { MessageSquarePlus, Trash2 } from "lucide-react";
+import { MessageSquarePlus, PanelLeftClose, PanelLeftOpen, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConversations } from "@/store/conversations";
 
-export function ConversationList() {
+interface ConversationListProps {
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
+}
+
+export function ConversationList({ sidebarOpen = true, onToggleSidebar }: ConversationListProps = {}) {
   const conversations = useConversations((s) => s.conversations);
   const activeId = useConversations((s) => s.activeId);
   const setActive = useConversations((s) => s.setActive);
@@ -12,17 +17,40 @@ export function ConversationList() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="titlebar-drag flex items-center justify-between border-b border-sidebar-border px-3 py-3" style={{ paddingTop: "calc(env(titlebar-area-height, 32px) + 8px)" }}>
-        <span className="titlebar-no-drag text-sm font-semibold text-sidebar-foreground">对话</span>
-        <button
-          onClick={() => create()}
-          className="titlebar-no-drag rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          title="新建对话"
-        >
-          <MessageSquarePlus className="h-4 w-4" />
-        </button>
+      <div className="titlebar-drag border-b border-sidebar-border px-3 py-3" style={{ paddingTop: "calc(env(titlebar-area-height, 32px) + 8px)" }}>
+        <div className="relative flex h-9 items-center justify-center">
+          {sidebarOpen && <span className="titlebar-no-drag text-sm font-semibold text-sidebar-foreground">工作台</span>}
+          {onToggleSidebar && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              className={cn(
+                "titlebar-no-drag rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                sidebarOpen ? "absolute right-0" : "mx-auto",
+              )}
+              title={sidebarOpen ? "收起对话区" : "展开对话区"}
+              aria-label={sidebarOpen ? "收起对话区" : "展开对话区"}
+            >
+              {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+            </button>
+          )}
+        </div>
+        {sidebarOpen && (
+          <div className="titlebar-no-drag mt-2 flex items-center justify-between">
+            <span className="text-sm font-semibold text-sidebar-foreground">对话</span>
+            <button
+              type="button"
+              onClick={() => create()}
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              title="新建对话"
+              aria-label="新建对话"
+            >
+              <MessageSquarePlus className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
-      <div className="sidebar-scrollbar flex-1 overflow-y-auto">
+      {sidebarOpen && <div className="sidebar-scrollbar flex-1 overflow-y-auto">
         {!loaded ? (
           <div className="px-3 py-6 text-center text-sm text-muted-foreground">
             加载中...
@@ -60,7 +88,7 @@ export function ConversationList() {
             );
           })
         )}
-      </div>
+      </div>}
     </div>
   );
 }

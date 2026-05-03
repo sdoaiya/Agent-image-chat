@@ -1,6 +1,7 @@
-﻿package api
+package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,14 +13,14 @@ import (
 )
 
 type ImageHandler struct {
-	cfg          *config.Config
-	openaiClient *OpenAIClient
+	cfg *config.Config
 }
+
+const maxUpstreamImageBatchSize = 2
 
 func NewImageHandler(cfg *config.Config) *ImageHandler {
 	return &ImageHandler{
-		cfg:          cfg,
-		openaiClient: NewOpenAIClient(cfg),
+		cfg: cfg,
 	}
 }
 
@@ -66,7 +67,7 @@ func (h *ImageHandler) HandleImageGenerations(w http.ResponseWriter, r *http.Req
 	}
 
 	log.Printf("[image-generations] request_id=%s model=%s size=%s response_format=%s n=%d reference_count=%d", requestID, model, req.Size, req.ResponseFormat, req.N, len(referenceImages))
-	result, err := h.openaiClient.GenerateImages(r.Context(), req.Prompt, model, req.N, req.Size, req.Quality, req.Background, req.ResponseFormat, referenceImages)
+	result, err := generateImagesInBatches(r.Context(), NewOpenAIClient(h.cfg), req.Prompt, model, req.N, req.Size, req.Quality, req.Background, req.ResponseFormat, referenceImages)
 	if err != nil {
 		log.Printf("[image-generations] request_id=%s model=%s size=%s response_format=%s error=%v", requestID, model, req.Size, req.ResponseFormat, err)
 		writeUpstreamError(w, err, requestID, "image generation")
@@ -74,6 +75,44 @@ func (h *ImageHandler) HandleImageGenerations(w http.ResponseWriter, r *http.Req
 	}
 
 	writeJSON(w, http.StatusOK, result)
+}
+
+func generateImagesInBatches(ctx context.Context, client *OpenAIClient, prompt, model string, n int, size, quality, background, responseFormat string, referenceImages [][]byte) (*ImageGenerationResponse, error) {
+	if n <= maxUpstreamImageBatchSize {
+		return client.GenerateImages(ctx, prompt, model, n, size, quality, background, responseFormat, referenceImages)
+	}
+
+	remaining := n
+	result := &ImageGenerationResponse{
+		Data: make([]ImageData, 0, n),
+	}
+	capabilityNotes := make([]string, 0)
+
+	for remaining > 0 {
+		batchSize := maxUpstreamImageBatchSize
+		if remaining < batchSize {
+			batchSize = remaining
+		}
+
+		batchResult, err := client.GenerateImages(ctx, prompt, model, batchSize, size, quality, background, responseFormat, referenceImages)
+		if err != nil {
+			return nil, err
+		}
+		if result.Created == 0 {
+			result.Created = batchResult.Created
+		}
+		result.Data = append(result.Data, batchResult.Data...)
+		if batchResult.CapabilityNote != "" {
+			capabilityNotes = append(capabilityNotes, batchResult.CapabilityNote)
+		}
+
+		remaining -= batchSize
+	}
+
+	if len(capabilityNotes) > 0 {
+		result.CapabilityNote = strings.Join(capabilityNotes, "\n")
+	}
+	return result, nil
 }
 
 func (h *ImageHandler) HandleChatCompletions(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +147,7 @@ func (h *ImageHandler) HandleChatCompletions(w http.ResponseWriter, r *http.Requ
 		model = h.cfg.GetModel()
 	}
 
-	result, err := h.openaiClient.GenerateImages(r.Context(), prompt, model, 1, "", "", "", "b64_json", nil)
+	result, err := NewOpenAIClient(h.cfg).GenerateImages(r.Context(), prompt, model, 1, "", "", "", "b64_json", nil)
 	if err != nil {
 		log.Printf("[chat-completions] request_id=%s model=%s error=%v", requestID, model, err)
 		writeUpstreamError(w, err, requestID, "chat completions")
@@ -169,7 +208,7 @@ func (h *ImageHandler) HandleResponses(w http.ResponseWriter, r *http.Request) {
 		model = h.cfg.GetModel()
 	}
 
-	result, err := h.openaiClient.GenerateImages(r.Context(), prompt, model, 1, "", "", "", "b64_json", nil)
+	result, err := NewOpenAIClient(h.cfg).GenerateImages(r.Context(), prompt, model, 1, "", "", "", "b64_json", nil)
 	if err != nil {
 		log.Printf("[responses] request_id=%s model=%s error=%v", requestID, model, err)
 		writeUpstreamError(w, err, requestID, "responses")

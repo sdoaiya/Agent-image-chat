@@ -156,7 +156,7 @@ async function main() {
       };
     });
 
-    await runStep("推荐/专题切换 + 专题展开 + 来源点击", async () => {
+    await runStep("推荐/专题切换 + 专题展开 + 来源移除", async () => {
       await page.getByRole("button", { name: "全部专题" }).click();
       await page.getByRole("heading", { name: "全部专题" }).waitFor();
       await page.getByRole("button", { name: "返回示例" }).waitFor();
@@ -167,25 +167,50 @@ async function main() {
       await topicButton.click();
       await page.getByRole("button", { name: "返回专题" }).waitFor();
       await page.getByRole("region", { name: "专题详情" }).waitFor();
-      await page.getByRole("link", { name: /查看专题来源：/ }).first().waitFor();
-
-      const topicSource = page.getByRole("link", { name: /查看专题来源：/ }).first();
-      const [popup] = await Promise.all([
-        page.waitForEvent("popup"),
-        topicSource.click(),
-      ]);
-      const popupUrl = popup.url();
-      await popup.close();
+      const sourceLinks = await page.getByRole("link", { name: /查看专题来源：/ }).count();
+      if (sourceLinks !== 0) {
+        throw new Error(`专题详情仍存在来源链接：${sourceLinks}`);
+      }
+      const sourceCopy = await page.getByText("原始来源").count();
+      if (sourceCopy !== 0) {
+        throw new Error("专题详情仍存在“原始来源”文案");
+      }
+      await page.locator(".example-gallery-grid--topic-stream .examples-card").first().waitFor();
 
       const shot = screenshotPath("02-topics-expanded.png");
       await page.screenshot({ path: shot, fullPage: true });
       return {
-        popupUrl,
         evidence: [relativeOutput(shot)],
         observed: [
           "已从顶栏入口切换到全部专题列表",
           "已切换 UI 分类并进入专题详情",
-          "专题来源链接点击后打开新窗口",
+          "专题详情来源入口已移除",
+        ],
+      };
+    });
+
+    await runStep("图片详情页 + 三态引用入口", async () => {
+      await page.locator("button.example-media-open-button").first().click();
+      await page.locator(".example-detail-view").waitFor();
+      await page.getByRole("button", { name: "关闭图片详情" }).waitFor();
+      await page.getByText("图片提示词").waitFor();
+      const actionCount = await page.locator(".example-detail-actions button.example-card-button").count();
+      if (actionCount !== 3) {
+        throw new Error(`图片详情引用入口数量异常：${actionCount}`);
+      }
+      const sourceLinks = await page.locator(".example-detail-view a").count();
+      if (sourceLinks !== 0) {
+        throw new Error(`图片详情仍存在来源链接：${sourceLinks}`);
+      }
+
+      const shot = screenshotPath("03-image-detail.png");
+      await page.screenshot({ path: shot, fullPage: true });
+      await page.getByRole("button", { name: "关闭图片详情" }).click();
+      return {
+        evidence: [relativeOutput(shot)],
+        observed: [
+          "点击图片进入独立图片详情",
+          "详情页展示图片提示词与三种引用状态",
         ],
       };
     });

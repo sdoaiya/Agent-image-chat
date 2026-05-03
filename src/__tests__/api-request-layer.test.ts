@@ -83,5 +83,19 @@ describe("api request layer", () => {
     expect(mockGet).toHaveBeenNthCalledWith(2, "/api/config");
     expect(mockPut).toHaveBeenCalledWith("/api/config", { app: { apiMode: "openai" } });
   });
-});
+  it("generateImages 应把停止信号传给请求层", async () => {
+    const response = { created: 1, data: [{ b64_json: "abc" }] };
+    const controller = new AbortController();
+    mockPost.mockResolvedValue({ data: response });
 
+    const { generateImages } = await import("@/lib/api");
+    const payload = {
+      model: "gpt-image-2",
+      prompt: "A cancellable image request",
+      n: 1,
+    };
+
+    await expect(generateImages(payload as any, { signal: controller.signal })).resolves.toEqual(response);
+    expect(mockPost).toHaveBeenCalledWith("/v1/images/generations", payload, { signal: controller.signal });
+  });
+});

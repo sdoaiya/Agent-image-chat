@@ -1,4 +1,4 @@
-﻿package api
+package api
 
 import (
 	"encoding/json"
@@ -147,7 +147,7 @@ func (s *Server) buildConfigPayload() map[string]any {
 		"chatgpt": map[string]any{
 			"model":           s.cfg.GetModel(),
 			"sseTimeout":      s.cfg.ChatGPT.SSETimeout,
-			"requestTimeout":  s.cfg.ChatGPT.RequestTimeout,
+			"requestTimeout":  s.cfg.GetRequestTimeout(),
 			"availableModels": s.cfg.GetAvailableModels(),
 		},
 		"proxy": map[string]any{

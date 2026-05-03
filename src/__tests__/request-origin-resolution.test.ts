@@ -83,7 +83,7 @@ describe("request runtime origin resolution", () => {
     await expect(resolveElectronBaseURL()).resolves.toBe("http://127.0.0.1:18080");
   });
 
-  it("非 Electron 下应跳过 dev server origin，优先用户配置的 baseUrl", async () => {
+  it("does not use the image API baseUrl as the local backend origin", async () => {
     vi.stubGlobal("window", {
       electronAPI: undefined,
       location: {
@@ -94,13 +94,13 @@ describe("request runtime origin resolution", () => {
 
     localStorage.setItem("gimg-settings", JSON.stringify({
       state: {
-        baseUrl: "http://127.0.0.1:28080/",
+        baseUrl: "https://image.codesonline.dev/",
       },
     }));
-    healthResponses.set("http://127.0.0.1:28080", true);
+    healthResponses.set("http://127.0.0.1:8080", true);
 
     const { resolveFallbackBaseURL, getBaseURL } = await import("@/lib/request");
-    await expect(resolveFallbackBaseURL()).resolves.toBe("http://127.0.0.1:28080");
-    await expect(getBaseURL()).resolves.toBe("http://127.0.0.1:28080");
+    await expect(resolveFallbackBaseURL()).resolves.toBe("http://127.0.0.1:8080");
+    await expect(getBaseURL()).resolves.toBe("http://127.0.0.1:8080");
   });
 });

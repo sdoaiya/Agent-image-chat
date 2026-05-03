@@ -1,13 +1,12 @@
-import { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, FileText, FolderOpen, ImageOff, ImagePlus, Images, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowUp, FileText, FolderOpen, ImageOff, ImagePlus, Images, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { examplePromptDatasetSummary, examplePromptLibrary, type ExamplePromptItem } from "@/data/example-prompts";
 import { galleryTopicLibrary, galleryTopicSeeds, type GalleryTopicItem } from "@/data/gallery-topics";
 import { useExampleImport } from "@/store/example-import";
 import type { AttachedPromptFile } from "@/app/canvas/prompt-bar";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 type ExampleCategoryFilter = ExamplePromptItem["category"] | "all";
 type ExampleGalleryView = "featured" | "topics";
@@ -42,7 +41,7 @@ const EXAMPLE_IMAGE_MAX_HEIGHT = 600;
 const EXAMPLE_IMAGE_MIN_HEIGHT = 220;
 const GALLERY_SEED_IDS = new Set(galleryTopicSeeds.flatMap((topic) => topic.entries.map((entry) => entry.id)));
 const GALLERY_COLUMN_COUNT = 4;
-const TOPIC_WATERFALL_COLUMN_COUNT = 6;
+const TOPIC_WATERFALL_COLUMN_COUNT = GALLERY_COLUMN_COUNT;
 const DESKTOP_GALLERY_MIN_WIDTH = 960;
 
 type GalleryImageState = "idle" | "loading" | "loaded" | "failed";
@@ -290,18 +289,6 @@ function ExampleActions({
         <Images className="h-3.5 w-3.5" />
         {!compact && <span>仅参照图</span>}
       </button>
-      <a
-        href={item.sourceUrl}
-        target="_blank"
-        rel="noreferrer"
-        className={actionClassName}
-        title="查看来源"
-        aria-label="查看来源"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <ExternalLink className="h-3.5 w-3.5" />
-        {!compact && <span>来源</span>}
-      </a>
     </>
   );
 }
@@ -323,7 +310,7 @@ function TopicCard({
     height: topic.coverHeight,
   });
   const mediaShellClassName = getCategoryFrameClass(topic.category, "gallery");
-  const mediaImageClassName = getCategoryImageClass(topic.category, topic.coverWidth, topic.coverHeight);
+  const mediaImageClassName = "example-media-image example-media-image--cover";
   const cardToneClassName = getCategoryCardClass(topic.category);
   const imageAvailable = imageState !== "failed";
   const isImageLoading = imageState === "idle" || imageState === "loading";
@@ -374,6 +361,7 @@ function GalleryExampleCard({
   onImportExample,
   onImportPromptOnly,
   onImportImageOnly,
+  onOpenDetail,
 }: {
   item: ExamplePromptItem;
   mode: "workspace" | "gallery";
@@ -384,6 +372,7 @@ function GalleryExampleCard({
   onImportExample: (example: ExamplePromptItem) => void | Promise<void>;
   onImportPromptOnly: (example: ExamplePromptItem) => void | Promise<void>;
   onImportImageOnly: (example: ExamplePromptItem) => void | Promise<void>;
+  onOpenDetail: (example: ExamplePromptItem) => void;
 }) {
   const isGallery = mode === "gallery";
   const imageFrameStyle = layout === "compact" ? getCompactImageFrameStyle(item) : getImageFrameStyle(item);
@@ -418,20 +407,27 @@ function GalleryExampleCard({
           <div className="example-media-backdrop" aria-hidden="true" />
           <div className="example-media-gloss" aria-hidden="true" />
           <div className="example-media-vignette" aria-hidden="true" />
-          {imageAvailable ? (
-            <img
-              src={item.imageUrl}
-              alt={item.imageAlt || item.title}
-              className={mediaImageClassName}
-              loading="lazy"
-              decoding="async"
-              fetchPriority={index < 4 ? "high" : "low"}
-              onLoad={() => onImageStateChange(item.id, "loaded")}
-              onError={() => onImageStateChange(item.id, "failed")}
-            />
-          ) : null}
-          {isImageLoading || !imageAvailable ? <ExampleImageFallback item={item} isLoading={isImageLoading} /> : null}
-          <div className="example-media-actions absolute right-3 top-3 flex gap-1.5 opacity-100 transition-opacity md:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
+          <button
+            type="button"
+            className="example-media-open-button"
+            onClick={() => onOpenDetail(item)}
+            aria-label={`查看图片详情：${item.title}`}
+          >
+            {imageAvailable ? (
+              <img
+                src={item.imageUrl}
+                alt={item.imageAlt || item.title}
+                className={mediaImageClassName}
+                loading="lazy"
+                decoding="async"
+                fetchPriority={index < 4 ? "high" : "low"}
+                onLoad={() => onImageStateChange(item.id, "loaded")}
+                onError={() => onImageStateChange(item.id, "failed")}
+              />
+            ) : null}
+            {isImageLoading || !imageAvailable ? <ExampleImageFallback item={item} isLoading={isImageLoading} /> : null}
+          </button>
+          <div className="example-media-actions absolute flex gap-1.5 opacity-100 transition-opacity md:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
             <ExampleActions
               item={item}
               compact
@@ -452,29 +448,6 @@ function GalleryExampleCard({
             >
               <p className="example-masonry-title line-clamp-2">{item.title}</p>
               {!compactOverlay && <p className="example-masonry-summary line-clamp-2">{item.summary}</p>}
-              <div className="example-masonry-bottom">
-                <button
-                  type="button"
-                  onClick={() => void onImportExample(item)}
-                  className="example-masonry-cta"
-                  title={disableImageActions ? "图片不可用，点击后将退化为仅提示词" : "一键引用：提示词 + 参照图"}
-                  aria-label={disableImageActions ? "图片不可用，点击后将退化为仅提示词" : "一键引用：提示词 + 参照图"}
-                >
-                  一键引用
-                </button>
-                <a
-                  href={item.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="example-masonry-source"
-                  title="查看来源"
-                  aria-label="查看来源"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  来源
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              </div>
             </div>
           ) : null}
         </div>
@@ -507,6 +480,63 @@ function GalleryExampleCard({
 const MemoTopicCard = memo(TopicCard);
 const MemoGalleryExampleCard = memo(GalleryExampleCard);
 
+function ExampleDetailView({
+  item,
+  imageState,
+  onBack,
+  onImageStateChange,
+  onImportExample,
+  onImportPromptOnly,
+  onImportImageOnly,
+}: {
+  item: ExamplePromptItem;
+  imageState: GalleryImageState;
+  onBack: () => void;
+  onImageStateChange: (key: string, state: GalleryImageState) => void;
+  onImportExample: (example: ExamplePromptItem) => void | Promise<void>;
+  onImportPromptOnly: (example: ExamplePromptItem) => void | Promise<void>;
+  onImportImageOnly: (example: ExamplePromptItem) => void | Promise<void>;
+}) {
+  const imageAvailable = imageState !== "failed";
+  const isImageLoading = imageState === "idle" || imageState === "loading";
+
+  return (
+    <section className="example-detail-view" aria-label="图片详情">
+      <button type="button" className="example-detail-close" onClick={onBack} aria-label="关闭图片详情">
+        <X className="h-5 w-5" aria-hidden="true" />
+      </button>
+      <div className="example-detail-image-panel">
+        {imageAvailable ? (
+          <img
+            src={item.imageUrl}
+            alt={item.imageAlt || item.title}
+            className="example-detail-image"
+            loading="eager"
+            decoding="async"
+            onLoad={() => onImageStateChange(item.id, "loaded")}
+            onError={() => onImageStateChange(item.id, "failed")}
+          />
+        ) : null}
+        {isImageLoading || !imageAvailable ? <ExampleImageFallback item={item} isLoading={isImageLoading} /> : null}
+      </div>
+      <aside className="example-detail-copy">
+        <p className="example-topic-section-kicker">图片提示词</p>
+        <h3 className="example-detail-title">{item.title}</h3>
+        <p className="example-detail-prompt">{item.prompt}</p>
+        <div className="example-detail-actions">
+          <ExampleActions
+            item={item}
+            disableImageActions={!imageAvailable}
+            onUseExample={onImportExample}
+            onUsePromptOnly={onImportPromptOnly}
+            onUseImageOnly={onImportImageOnly}
+          />
+        </div>
+      </aside>
+    </section>
+  );
+}
+
 export function ExampleGallery({
   mode = "workspace",
   category: controlledCategory,
@@ -526,7 +556,10 @@ export function ExampleGallery({
   const [page, setPage] = useState(1);
   const [localGalleryView, setLocalGalleryView] = useState<ExampleGalleryView>("featured");
   const [localActiveTopicId, setLocalActiveTopicId] = useState<string | null>(null);
+  const [selectedExample, setSelectedExample] = useState<ExamplePromptItem | null>(null);
   const [imageStates, setImageStates] = useState<Record<string, GalleryImageState>>({});
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+  const infiniteLoadRef = useRef<HTMLDivElement | null>(null);
   const isGallery = mode === "gallery";
   const pageSize = isGallery ? PAGE_SIZE_GALLERY : PAGE_SIZE_WORKSPACE;
   const category = controlledCategory ?? localCategory;
@@ -556,7 +589,8 @@ export function ExampleGallery({
 
   useEffect(() => {
     setPage(1);
-  }, [category, galleryView]);
+    setSelectedExample(null);
+  }, [category, galleryView, activeTopicId]);
 
   const filteredExamples = useMemo(() => {
     const base = examplePromptLibrary.filter((item) => category === "all" || item.category === category);
@@ -589,8 +623,15 @@ export function ExampleGallery({
     [activeTopicId, filteredTopics],
   );
 
+  const activeTopicPagedEntries = useMemo(
+    () => (activeTopic ? activeTopic.entries.slice(0, page * PAGE_SIZE_GALLERY) : []),
+    [activeTopic, page],
+  );
+
   const visibleExampleCount = isGallery ? featuredExamples.length : filteredExamples.length;
-  const hasMoreExamples = pagedExamples.length < visibleExampleCount;
+  const visibleStreamCount = activeTopic ? activeTopic.entries.length : visibleExampleCount;
+  const renderedStreamCount = activeTopic ? activeTopicPagedEntries.length : pagedExamples.length;
+  const hasMoreExamples = renderedStreamCount < visibleStreamCount;
   const categoryCaseCount = category === "all" ? examplePromptDatasetSummary.structuredCaseCount : filteredExamples.length;
   const shouldUseFourColumnGallery = isGallery && galleryView !== "topics";
 
@@ -674,6 +715,35 @@ export function ExampleGallery({
     setActiveTopicId(null);
   }, [setActiveTopicId]);
 
+  const scrollResultsToTop = useCallback(() => {
+    const resultsElement = resultsRef.current;
+    if (!resultsElement) return;
+
+    if (typeof resultsElement.scrollTo === "function") {
+      resultsElement.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    resultsElement.scrollTop = 0;
+  }, []);
+
+  const openExampleDetail = useCallback((example: ExamplePromptItem) => {
+    setSelectedExample(example);
+    scrollResultsToTop();
+  }, [scrollResultsToTop]);
+
+  const closeExampleDetail = useCallback(() => {
+    setSelectedExample(null);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    scrollResultsToTop();
+  }, [scrollResultsToTop]);
+
+  const loadNextPage = useCallback(() => {
+    setPage((current) => current + 1);
+  }, []);
+
   const handleImportFull = useCallback((example: ExamplePromptItem) => {
     void importExample(example, "full");
   }, [importExample]);
@@ -700,6 +770,28 @@ export function ExampleGallery({
 
   const showingTopicList = isGallery && galleryView === "topics" && !activeTopic;
   const showingTopicDetail = isGallery && galleryView === "topics" && !!activeTopic;
+  const showingExampleDetail = isGallery && !!selectedExample;
+
+  useEffect(() => {
+    const root = resultsRef.current;
+    const sentinel = infiniteLoadRef.current;
+
+    if (!sentinel || !hasMoreExamples || showingTopicList || showingExampleDetail || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          loadNextPage();
+        }
+      },
+      { root, rootMargin: "640px 0px 640px 0px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMoreExamples, loadNextPage, showingExampleDetail, showingTopicList, renderedStreamCount]);
 
   return (
     <section
@@ -732,18 +824,32 @@ export function ExampleGallery({
           </div>
           <div className="example-filter-side">
             {isGallery ? (
-              <button
-                type="button"
-                onClick={openTopics}
-                className={cn("example-view-pill", galleryView === "topics" && "example-view-pill--active")}
-                aria-controls={galleryResultsId}
-                aria-pressed={galleryView === "topics"}
-                id="example-view-tab-topics"
-                title="全部专题"
-              >
-                <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="example-view-pill-label">全部专题</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={returnToFeatured}
+                  className={cn("example-view-pill", galleryView !== "topics" && "example-view-pill--active")}
+                  aria-controls={galleryResultsId}
+                  aria-pressed={galleryView !== "topics"}
+                  id="example-view-tab-featured"
+                  title="全部示例"
+                >
+                  <Images className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="example-view-pill-label">全部示例</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={openTopics}
+                  className={cn("example-view-pill", galleryView === "topics" && "example-view-pill--active")}
+                  aria-controls={galleryResultsId}
+                  aria-pressed={galleryView === "topics"}
+                  id="example-view-tab-topics"
+                  title="全部专题"
+                >
+                  <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="example-view-pill-label">全部专题</span>
+                </button>
+              </>
             ) : (
               <span className="example-filter-count">{categoryCaseCount} 个案例</span>
             )}
@@ -768,12 +874,23 @@ export function ExampleGallery({
 
       <div
         id={galleryResultsId}
+        ref={resultsRef}
         className={cn("example-gallery-results min-h-0 flex-1 overflow-y-auto sidebar-scrollbar", isGallery ? "pr-2" : "pr-1")}
         role="region"
         aria-live="polite"
-        aria-label={showingTopicDetail ? "专题详情" : showingTopicList ? "专题列表" : "案例结果列表"}
+        aria-label={showingExampleDetail ? "图片详情" : showingTopicDetail ? "专题详情" : showingTopicList ? "专题列表" : "案例结果列表"}
       >
-        {showingTopicList ? (
+        {showingExampleDetail && selectedExample ? (
+          <ExampleDetailView
+            item={selectedExample}
+            imageState={imageStates[selectedExample.id] ?? "idle"}
+            onBack={closeExampleDetail}
+            onImageStateChange={setImageState}
+            onImportExample={handleImportFull}
+            onImportPromptOnly={handleImportPromptOnly}
+            onImportImageOnly={handleImportImageOnly}
+          />
+        ) : showingTopicList ? (
           <section className="example-topic-directory">
             <div className="example-topic-section-head example-topic-directory-head">
               <div>
@@ -823,27 +940,23 @@ export function ExampleGallery({
                   <p className="example-topic-section-summary">{activeTopic.summary}</p>
                 </div>
               </div>
-              <a href={activeTopic.sourceUrl} target="_blank" rel="noreferrer" className="example-topic-source" aria-label={`查看专题来源：${activeTopic.title}`}>
-                原始来源
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-              </a>
             </div>
             <div
               className="example-gallery-grid example-gallery-grid--gallery example-gallery-grid--topic-stream example-gallery-grid--horizontal-waterfall"
               style={topicGalleryGridStyle}
             >
-              {activeTopic.entries.map((item, index) => (
+              {activeTopicPagedEntries.map((item, index) => (
                 <MemoGalleryExampleCard
                   key={`${activeTopic.id}-${item.id}`}
                   item={item}
                   mode="gallery"
-                  layout="compact"
                   index={index}
                   imageState={imageStates[item.id] ?? "idle"}
                   onImageStateChange={setImageState}
                   onImportExample={handleImportFull}
                   onImportPromptOnly={handleImportPromptOnly}
                   onImportImageOnly={handleImportImageOnly}
+                  onOpenDetail={openExampleDetail}
                 />
               ))}
             </div>
@@ -868,6 +981,7 @@ export function ExampleGallery({
                   onImportExample={handleImportFull}
                   onImportPromptOnly={handleImportPromptOnly}
                   onImportImageOnly={handleImportImageOnly}
+                  onOpenDetail={openExampleDetail}
                 />
               ))
             ) : (
@@ -878,16 +992,22 @@ export function ExampleGallery({
             )}
           </div>
         )}
+
+        {hasMoreExamples && !showingTopicList && !showingExampleDetail ? (
+          <div ref={infiniteLoadRef} className="example-infinite-sentinel" role="status" aria-live="polite">
+            <button type="button" className="example-infinite-button" onClick={loadNextPage}>
+              <Loader2 className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>继续加载</span>
+            </button>
+          </div>
+        ) : null}
       </div>
 
-      {((isGallery && galleryView !== "topics" && hasMoreExamples) || (!isGallery && hasMoreExamples)) && (
-        <div className="flex justify-center pt-2">
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} className="gap-2">
-            <Loader2 className="h-3.5 w-3.5" />
-            加载更多（{pagedExamples.length}/{visibleExampleCount}）
-          </Button>
-        </div>
-      )}
+      {isGallery ? (
+        <button type="button" className="example-back-to-top" onClick={scrollToTop} aria-label="回到顶部">
+          <ArrowUp className="h-4 w-4" aria-hidden="true" />
+        </button>
+      ) : null}
     </section>
   );
 }

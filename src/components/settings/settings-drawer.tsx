@@ -45,6 +45,8 @@ const themeIcons: Record<string, React.ReactNode> = {
   system: <Monitor className="h-4 w-4" />,
 };
 
+const BACKEND_REQUEST_TIMEOUT_SECONDS = 180;
+
 interface BackendSettingsPayload {
   app: {
     apiKey: string;
@@ -74,6 +76,11 @@ function stringValue(value: unknown, fallback: string): string {
 
 function numberValue(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeBackendRequestTimeout(value: unknown): number {
+  const parsed = numberValue(value, BACKEND_REQUEST_TIMEOUT_SECONDS);
+  return parsed >= BACKEND_REQUEST_TIMEOUT_SECONDS ? parsed : BACKEND_REQUEST_TIMEOUT_SECONDS;
 }
 
 function objectValue(value: unknown): Record<string, unknown> {
@@ -444,7 +451,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
       chatgpt: {
         model: selectedModel,
         sseTimeout: 300,
-        requestTimeout: 30,
+        requestTimeout: BACKEND_REQUEST_TIMEOUT_SECONDS,
         availableModels: normalized.availableModels,
       },
       proxy: {
@@ -464,7 +471,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
       payload.server.host = stringValue(currentServer.host, "0.0.0.0");
       payload.server.port = numberValue(currentServer.port, 8080);
       payload.chatgpt.sseTimeout = numberValue(currentChatgpt.sseTimeout, 300);
-      payload.chatgpt.requestTimeout = numberValue(currentChatgpt.requestTimeout, 30);
+      payload.chatgpt.requestTimeout = normalizeBackendRequestTimeout(currentChatgpt.requestTimeout);
 
       const next = await withTimeout(updateBackendSettings(payload), 8000);
       setBackendConfig(next);

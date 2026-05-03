@@ -79,22 +79,6 @@ async function resolveFallbackBaseURL(): Promise<string> {
     }
   }
 
-  const storedSettings = typeof window !== "undefined" ? localStorage.getItem("gimg-settings") : null;
-  if (storedSettings) {
-    try {
-      const parsed = JSON.parse(storedSettings) as { state?: { baseUrl?: string; apiMode?: string } };
-      const userBaseURL = parsed?.state?.baseUrl?.trim();
-      if (userBaseURL && isHttpUrl(userBaseURL)) {
-        const normalized = normalizeBaseURL(userBaseURL);
-        if (normalized !== "https://api.openai.com") {
-          return normalized;
-        }
-      }
-    } catch {
-      // ignore malformed settings
-    }
-  }
-
   for (const candidate of BACKEND_URL_CANDIDATES) {
     if (isHttpUrl(candidate)) {
       const normalizedCandidate = normalizeBaseURL(candidate);
@@ -188,6 +172,12 @@ function humanizeMessage(message: string): string {
   if (lower.includes("invalid api key") || lower.includes("401") || lower.includes("unauthorized")) {
     return "鉴权失败，请检查 API Key 或本地鉴权 Key";
   }
+  if (lower.includes("context deadline exceeded") || lower.includes("client.timeout exceeded") || lower.includes("awaiting headers")) {
+    return "生成请求等待超时，请稍后重试；如果多次出现，请检查上游服务或代理。";
+  }
+  if (lower.includes("unexpected eof")) {
+    return "上游生图连接中断，请稍后重试；如果连续出现，请降低张数或检查网络代理。";
+  }
   if (lower.includes("native upscale is not supported") || lower.includes("unSUPPORTED_upscale".toLowerCase())) {
     return "当前模型或模式不支持放大，请切换支持放大的服务后再试";
   }
@@ -236,6 +226,10 @@ client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
 client.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    if (error.code === "ERR_CANCELED" || error.message?.toLowerCase() === "canceled") {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401) {
       error.message = getRequestErrorMessage(error);
       return Promise.reject(error);

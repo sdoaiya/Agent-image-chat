@@ -173,6 +173,7 @@ describe("settings drawer save chain regression", () => {
       }),
       chatgpt: expect.objectContaining({
         model: "gpt-image-2",
+        requestTimeout: 180,
         availableModels: expect.arrayContaining(["gpt-image-2"]),
       }),
       proxy: expect.objectContaining({

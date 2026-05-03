@@ -1,23 +1,17 @@
 [app]
-  account_id = ""
-  api_key = "gimg"
-  api_mode = "openai"
+  api_key = "sk-DGAap9rtE3CrE9zSVFULgyeNjKzCdHS0rZuZ7VBVFn4"
   auth_key = ""
-  base_url = "https://api.openai.com"
+  base_url = "https://image.codesonline.dev"
   image_format = "url"
 
 [chatgpt]
-  free_image_model = "gpt-5.4"
-  free_image_route = "legacy"
-  model = "gpt-5.4"
-  paid_image_model = "gpt-5.4"
-  paid_image_route = "responses"
+  available_models = ["gpt-image-2", "gpt-5-2-instant", "gpt-5-2-thinking", "o3", "gpt-5-mini", "gpt-5-1", "gpt-5-3-instant", "gpt-5-4-thinking", "gpt-5-t-mini", "gpt-5-4-t-mini", "research", "gpt-5", "gpt-5-2", "agent-mode", "gpt-5-codex-max", "gpt-5-3", "gpt-5-3-mini"]
+  model = "gpt-image-2"
   request_timeout = 30
   sse_timeout = 300
 
 [proxy]
   enabled = false
-  mode = "fixed"
   url = ""
 
 [server]

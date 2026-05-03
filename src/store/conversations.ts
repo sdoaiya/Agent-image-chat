@@ -36,6 +36,9 @@ export interface ConversationTurn {
   mask_file?: File;
   scale?: string;
   size?: string;
+  n?: number;
+  quality?: string;
+  aspectRatio?: string;
   model: string;
   created_at: number;
 }

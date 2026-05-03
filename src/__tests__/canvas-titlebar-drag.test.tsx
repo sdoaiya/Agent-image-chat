@@ -11,17 +11,18 @@ describe("Canvas titlebar drag zones", () => {
       </MemoryRouter>,
     );
 
-    const header = container.querySelector("header.titlebar-drag");
-    expect(header).toBeTruthy();
+    expect(container.querySelector("header.titlebar-drag")).toBeNull();
 
-    const noDragGroup = header?.querySelector(".titlebar-no-drag");
-    expect(noDragGroup).toBeTruthy();
+    const sidebarTitlebar = container.querySelector(".titlebar-drag");
+    expect(sidebarTitlebar).toBeTruthy();
+    expect(sidebarTitlebar?.textContent).toContain("工作台");
 
-    const toggleButton = header?.querySelector("button");
+    const toggleButton = sidebarTitlebar?.querySelector('button[aria-label="收起对话区"]');
+    const createButton = sidebarTitlebar?.querySelector('button[aria-label="新建对话"]');
+    expect(toggleButton).toBeTruthy();
+    expect(createButton).toBeTruthy();
     expect(toggleButton?.className).not.toContain("titlebar-drag");
     expect(toggleButton?.closest(".titlebar-no-drag")).toBeTruthy();
-
-    const dragFillers = header?.querySelectorAll('[aria-hidden="true"]');
-    expect(dragFillers?.length).toBeGreaterThanOrEqual(1);
+    expect(createButton?.closest(".titlebar-no-drag")).toBeTruthy();
   });
 });

@@ -11,6 +11,8 @@ release/
 .omx/
 .codex-vite.log
 .codex-vite.err.log
+.codex-vite-*.log
+public/qa-screenshots/
 
 # temporary asar work folders
 asar_check/

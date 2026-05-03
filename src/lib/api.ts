@@ -12,6 +12,10 @@ export interface ImageGenerationRequest {
   reference_images?: string[];
 }
 
+export interface RequestOptions {
+  signal?: AbortSignal;
+}
+
 export interface ImageData {
   url?: string;
   b64_json?: string;
@@ -117,8 +121,10 @@ export function normalizeModelState(args: {
   };
 }
 
-export async function generateImages(req: ImageGenerationRequest): Promise<ImageResult> {
-  const { data } = await client.post<ImageResult>("/v1/images/generations", req);
+export async function generateImages(req: ImageGenerationRequest, options?: RequestOptions): Promise<ImageResult> {
+  const { data } = options?.signal
+    ? await client.post<ImageResult>("/v1/images/generations", req, { signal: options.signal })
+    : await client.post<ImageResult>("/v1/images/generations", req);
   return data;
 }
 

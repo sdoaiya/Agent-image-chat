@@ -19,8 +19,10 @@ describe("ExampleGallery", () => {
       </MemoryRouter>,
     );
 
-    expect(container.querySelectorAll("button.example-card-button").length).toBeGreaterThan(0);
-    expect(container.querySelectorAll("a.example-card-button").length).toBeGreaterThan(0);
+    const actionButtons = container.querySelectorAll("button.example-card-button");
+    expect(actionButtons.length).toBeGreaterThan(0);
+    expect(actionButtons.length % 3).toBe(0);
+    expect(container.querySelectorAll("a.example-card-button")).toHaveLength(0);
   });
 
   it("falls back to prompt-only action labels when image is unavailable", () => {
@@ -53,6 +55,58 @@ describe("ExampleGallery", () => {
     expect(container.querySelector(".example-gallery-grid--gallery .example-category-badge")).toBeNull();
     expect(container.querySelector(".example-gallery-grid--gallery .example-masonry-author")).toBeNull();
     expect(container.querySelector(".example-gallery-grid--gallery .example-masonry-tags")).toBeNull();
+    expect(container.querySelector(".example-masonry-cta")).toBeNull();
+    expect(container.querySelector(".example-masonry-source")).toBeNull();
+    expect(container.querySelectorAll("a.example-media-icon-button")).toHaveLength(0);
+    expect(screen.queryByRole("button", { name: "加载更多" })).toBeNull();
+    expect(container.querySelector(".example-infinite-sentinel")?.textContent).toContain("继续加载");
+    expect(screen.getByRole("button", { name: "回到顶部" })).toBeTruthy();
+  });
+
+  it("continues loading the gallery stream without leaving a passive spinner", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    const initialCount = container.querySelectorAll(".example-masonry-card").length;
+    fireEvent.click(screen.getByRole("button", { name: "继续加载" }));
+
+    expect(container.querySelectorAll(".example-masonry-card").length).toBeGreaterThan(initialCount);
+  });
+
+  it("opens a standalone image detail view from the image and keeps three reference actions", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: /查看图片详情：/ })[0]!);
+
+    expect(screen.getAllByRole("region", { name: "图片详情" }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "关闭图片详情" })).toBeTruthy();
+    expect(screen.getByText("图片提示词")).toBeTruthy();
+    expect(container.querySelector(".example-detail-image")).toBeTruthy();
+    expect(container.querySelectorAll(".example-detail-actions button.example-card-button")).toHaveLength(3);
+    expect(screen.getByRole("button", { name: "一键引用：提示词 + 参照图" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "只引用提示词" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "只引用参照图" })).toBeTruthy();
+  });
+
+  it("offers an all examples view switch next to the topics switch", () => {
+    render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "全部专题" }));
+    expect(screen.getByRole("heading", { name: "全部专题" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "全部示例" }));
+    expect(screen.queryByRole("heading", { name: "全部专题" })).toBeNull();
   });
 
   it("opens the topic list from the top entry, drills into detail, and supports back navigation", () => {
@@ -70,11 +124,20 @@ describe("ExampleGallery", () => {
     const topicButtons = screen.getAllByRole("button", { name: /打开专题：/ });
     expect(topicButtons.length).toBeGreaterThan(2);
 
-    fireEvent.click(topicButtons[0]!);
+    const topicWithMoreThanOnePage = topicButtons.find((button) => {
+      const countText = button.getAttribute("aria-label")?.match(/共 (\d+) 个案例/)?.[1];
+      return countText ? Number(countText) > 24 : false;
+    });
+
+    fireEvent.click(topicWithMoreThanOnePage ?? topicButtons[0]!);
 
     expect(screen.getByRole("button", { name: "返回专题" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "专题详情" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: /查看专题来源：/ })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /查看专题来源：/ })).toBeNull();
+    expect(screen.queryByText("原始来源")).toBeNull();
+    if (topicWithMoreThanOnePage) {
+      expect(document.querySelector(".example-infinite-sentinel")?.textContent).toContain("继续加载");
+    }
 
     fireEvent.click(screen.getByRole("button", { name: "返回专题" }));
 
@@ -84,6 +147,26 @@ describe("ExampleGallery", () => {
     fireEvent.click(screen.getByRole("button", { name: "返回示例" }));
 
     expect(screen.queryByRole("heading", { name: "全部专题" })).toBeNull();
+  });
+
+  it("uses full-cover topic cards and keeps topic detail cards at gallery size", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "全部专题" }));
+
+    const topicCoverImages = Array.from(container.querySelectorAll<HTMLImageElement>(".example-topic-card img"));
+    expect(topicCoverImages.length).toBeGreaterThan(0);
+    expect(topicCoverImages.some((image) => image.className.includes("contain"))).toBe(false);
+
+    fireEvent.click(screen.getAllByRole("button", { name: /打开专题：/ })[0]!);
+
+    const firstTopicImageFrame = container.querySelector<HTMLElement>(".example-gallery-grid--topic-stream .example-media-shell");
+    expect(firstTopicImageFrame).toBeTruthy();
+    expect(Number.parseInt(firstTopicImageFrame?.style.minHeight ?? "0", 10)).toBeGreaterThanOrEqual(200);
   });
 
   it("filters the topic list by the current category", () => {

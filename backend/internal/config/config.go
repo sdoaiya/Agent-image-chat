@@ -16,9 +16,10 @@ const (
 	userConfigFile = "config.toml"
 	dataDirName    = "data"
 
-	DefaultBaseURL    = "https://image.codesonline.dev"
-	DefaultImageModel = "gpt-image-2"
-	LegacyMiniModel   = "gpt-5.4-mini"
+	DefaultBaseURL        = "https://image.codesonline.dev"
+	DefaultImageModel     = "gpt-image-2"
+	DefaultRequestTimeout = 180
+	LegacyMiniModel       = "gpt-5.4-mini"
 )
 
 type Capabilities struct {
@@ -160,6 +161,7 @@ func (c *Config) normalizeInPlace() {
 	c.App.ImageFormat = normalizeImageFormat(c.App.ImageFormat)
 	c.ChatGPT.Model = normalizePrimaryModel(c.ChatGPT.Model, c.ChatGPT.AvailableModels)
 	c.ChatGPT.AvailableModels = normalizeAvailableModels(c.ChatGPT.AvailableModels, c.ChatGPT.Model)
+	c.ChatGPT.RequestTimeout = normalizeRequestTimeout(c.ChatGPT.RequestTimeout)
 }
 
 func normalizeBaseURL(value string) string {
@@ -175,6 +177,13 @@ func normalizeImageFormat(value string) string {
 		return "b64_json"
 	}
 	return "url"
+}
+
+func normalizeRequestTimeout(value int) int {
+	if value >= DefaultRequestTimeout {
+		return value
+	}
+	return DefaultRequestTimeout
 }
 
 func normalizeAvailableModels(models []string, primary string) []string {
@@ -249,10 +258,10 @@ func (c *Config) GetSSETimeout() int {
 func (c *Config) GetRequestTimeout() int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	if c.ChatGPT.RequestTimeout > 0 {
+	if c.ChatGPT.RequestTimeout >= DefaultRequestTimeout {
 		return c.ChatGPT.RequestTimeout
 	}
-	return 30
+	return DefaultRequestTimeout
 }
 
 func (c *Config) GetModel() string {
@@ -271,7 +280,7 @@ func (c *Config) GetAvailableModels() []string {
 func (c *Config) GetCapabilities() Capabilities {
 	return Capabilities{
 		SupportsGenerate:       true,
-		SupportsEdit:           false,
+		SupportsEdit:           true,
 		SupportsUpscale:        false,
 		Resolutions:            []string{"1024x1024", "1024x1536", "1536x1024"},
 		UpscaleFactors:         []string{},

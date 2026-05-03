@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Aperture, FolderOpen } from "lucide-react";
+import { Aperture, FolderOpen, Images } from "lucide-react";
 import { type ExamplePromptItem } from "@/data/example-prompts";
 import { ExampleGallery } from "@/components/examples/example-gallery";
 
@@ -43,6 +43,18 @@ export function ExamplesPage() {
         <button
           type="button"
           className="titlebar-no-drag examples-page-status-pill ml-auto inline-flex items-center gap-2"
+          onClick={() => {
+            setGalleryView("featured");
+            setActiveTopicId(null);
+          }}
+          aria-label="全部示例"
+        >
+          <Images className="h-3.5 w-3.5" aria-hidden="true" />
+          全部示例
+        </button>
+        <button
+          type="button"
+          className="titlebar-no-drag examples-page-status-pill inline-flex items-center gap-2"
           onClick={() => {
             setGalleryView("topics");
             setActiveTopicId(null);

@@ -23,6 +23,7 @@ describe("ExamplesPage", () => {
     expect(screen.queryByText("引用提示词与参照图，快速开始")).toBeNull();
     expect(screen.queryByText(/348 个案例/)).toBeNull();
     expect(screen.getByRole("tab", { name: "全部" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("button", { name: "全部示例" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "全部专题" })).toBeTruthy();
   });
 
@@ -37,5 +38,19 @@ describe("ExamplesPage", () => {
 
     expect(await screen.findByRole("heading", { name: "全部专题" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "返回示例" })).toBeTruthy();
+  });
+
+  it("switches back to all examples from the page header entry", async () => {
+    render(
+      <MemoryRouter>
+        <ExamplesPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "全部专题" }));
+    expect(await screen.findByRole("heading", { name: "全部专题" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "全部示例" }));
+    expect(screen.queryByRole("heading", { name: "全部专题" })).toBeNull();
   });
 });
