@@ -1,0 +1,20 @@
+{
+  "capturedAt": "2026-04-29T09:46:45.561Z",
+  "exePath": "release/win-unpacked/GIMG.exe",
+  "screenshots": [
+    "public/qa-screenshots/packaged-smoke/packaged-workbench-entry.png",
+    "public/qa-screenshots/packaged-smoke/packaged-workbench-home.png",
+    "public/qa-screenshots/packaged-smoke/packaged-workbench-import.png",
+    "public/qa-screenshots/packaged-smoke/packaged-settings-open.png"
+  ],
+  "checks": {
+    "examplesLoaded": false,
+    "topicsExpanded": false,
+    "workbenchLoaded": true,
+    "localImportPreviewVisible": true,
+    "settingsOpened": true,
+    "packagedStartedOnWorkbench": true
+  },
+  "bodyPreview": "对话\n暂无对话\n工作台\n开始创作\n\n输入提示词，或引用下方示例快速开始\n\n全部\n人像\n海报\nUI\n角色\n图鉴\n社区\n12 项\n人像\n\nCCD 相机感韩系偶像快照\n\n老 CCD、直闪、轻微运动模糊与亲密抓拍感，非常适合做人像风格模板。\n\n一键引用\n仅提示词\n仅参照图\n来源\n人像\n\n轻空气感 35mm 日系人像\n\n柔和窗光、低对比、轻过曝、颗粒感，非常适合作为日常写真示例。\n\n一键引用\n仅提示词\n仅参照图\n来源\n人像\n\n3x3 韩系偶像九宫格写真\n\n同一人物一致性、多帧叙事与 photobook 感，非常适合做角色一致性示例。\n\n一键引用\n仅提示词\n仅参照图\n来源\n图鉴\n\n高密度科普百科竖版图\n\n图鉴感、百科感、模块化信息分区，适合做复杂信息图与教程页。\n\n一键引用\n仅提示词\n仅参照图\n来源\n海报\n\n暗黑史诗概念海报\n\n适合海报、电影感信息图、仪式感视觉场景的长提示词模板。\n\n一键引用\n仅提示",
+  "targetUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg/release/win-unpacked/resources/app.asar/dist/index.html"
+}

@@ -1,0 +1,86 @@
+{
+  "message": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('设置已保存') to be visible\u001b[22m\n",
+  "stack": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('设置已保存') to be visible\u001b[22m\n\n    at main (E:\\codex项目\\img2\\gimg\\.async\\evidence_ui_qa.mjs:79:33)",
+  "shots": [
+    "public/qa-screenshots/evidence-collector/01-home-three-modes.png",
+    "public/qa-screenshots/evidence-collector/02-settings-fixed-model-before-save.png",
+    "public/qa-screenshots/evidence-collector/03-settings-save-loading-or-pending.png"
+  ],
+  "logs": [
+    {
+      "type": "console",
+      "level": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "console",
+      "level": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "console",
+      "level": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "console",
+      "level": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "console",
+      "level": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "console",
+      "level": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "screenshot",
+      "name": "01-home-three-modes",
+      "file": "public/qa-screenshots/evidence-collector/01-home-three-modes.png"
+    },
+    {
+      "type": "screenshot",
+      "name": "02-settings-fixed-model-before-save",
+      "file": "public/qa-screenshots/evidence-collector/02-settings-fixed-model-before-save.png"
+    },
+    {
+      "type": "console",
+      "level": "verbose",
+      "text": "[DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq)"
+    },
+    {
+      "type": "console",
+      "level": "verbose",
+      "text": "[DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "screenshot",
+      "name": "03-settings-save-loading-or-pending",
+      "file": "public/qa-screenshots/evidence-collector/03-settings-save-loading-or-pending.png"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console",
+      "level": "error",
+      "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+    }
+  ]
+}

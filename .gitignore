@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+dist-electron/
+release/
+
+# local automation/runtime artifacts
+.async/
+.omx/
+.codex-vite.log
+.codex-vite.err.log
+
+# temporary asar work folders
+asar_check/
+asar_final/
+asar_temp/

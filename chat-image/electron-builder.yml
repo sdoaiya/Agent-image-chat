@@ -1,0 +1,11 @@
+appId: com.gimg.app
+productName: GIMG
+directories:
+  output: release
+files:
+  - dist/**/*
+  - dist-electron/**/*
+extraResources:
+  - from: resources/
+    to: resources/
+asar: true

@@ -1,0 +1,21 @@
+# GIMG Backend Configuration
+
+[app]
+api_key = ""
+base_url = "https://image.codesonline.dev"
+image_format = "url"
+auth_key = ""
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[chatgpt]
+model = "gpt-image-2"
+sse_timeout = 300
+request_timeout = 30
+available_models = ["gpt-image-2"]
+
+[proxy]
+enabled = false
+url = "socks5h://127.0.0.1:10808"

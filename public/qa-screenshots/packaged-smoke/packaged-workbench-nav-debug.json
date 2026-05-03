@@ -1,0 +1,16 @@
+{
+  "currentUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg/dist/win-unpacked/resources/app.asar/dist/index.html",
+  "currentHash": "",
+  "examplesUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg/dist/win-unpacked/resources/app.asar/dist/index.html#/examples",
+  "examplesHash": "#/examples",
+  "hash": "#/",
+  "title": "GIMG",
+  "selectors": {
+    "promptTextarea": true,
+    "uploadButton": true,
+    "fileInput": true,
+    "settingsButton": true
+  },
+  "bodyPreview": "工作\n示例\n设置\n对话\nmobile phone photo\n工作台\n· mobile phone photo\n生成\nmobile phone photo, old CCD camera aesthetic, harsh flash, grainy, dim messy indoor lighting, candid snapshot feeling, slight motion blur, young Korean female idol, soft innocent look\n38分钟前\n\n鉴权失败，请检查 API Key、Access Token 或本地鉴权 Key\n\n重试\n删除\n生成\n编辑\n放大\n分辨率\n1024 × 1024\n1024 × 1536\n1536 × 1024\n质量\nstandard\nhd\n支持提示词、参考图与分辨率设置。",
+  "screenshot": "public/qa-screenshots/packaged-smoke/packaged-workbench-nav-debug.png"
+}

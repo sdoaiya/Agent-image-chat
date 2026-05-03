@@ -1,0 +1,25 @@
+[app]
+  account_id = ""
+  api_key = "gimg"
+  api_mode = "openai"
+  auth_key = ""
+  base_url = "https://api.openai.com"
+  image_format = "url"
+
+[chatgpt]
+  free_image_model = "gpt-5.4"
+  free_image_route = "legacy"
+  model = "gpt-5.4"
+  paid_image_model = "gpt-5.4"
+  paid_image_route = "responses"
+  request_timeout = 30
+  sse_timeout = 300
+
+[proxy]
+  enabled = false
+  mode = "fixed"
+  url = ""
+
+[server]
+  host = "0.0.0.0"
+  port = 8080
