@@ -1212,6 +1212,272 @@ a:focus-visible {
   overflow: hidden;
 }
 
+.canvas-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(248px, 17vw, 282px);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas:
+    "stage settings";
+  min-width: 0;
+  flex: 1 1 0;
+  height: 100%;
+}
+
+.canvas-stage {
+  grid-area: stage;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: calc(env(titlebar-area-height, 32px) + 0.78rem) 1.55rem 1.55rem;
+  -webkit-app-region: no-drag;
+  user-select: auto;
+}
+
+.canvas-stage-content {
+  padding: 0;
+}
+
+.canvas-control-panel {
+  grid-area: settings;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--color-border);
+  background: color-mix(in oklab, var(--color-background) 88%, var(--color-card));
+  padding-top: calc(env(titlebar-area-height, 32px) + 0.78rem);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.canvas-control-panel-scroll {
+  display: flex;
+  min-height: 0;
+  height: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.62rem;
+  overflow-y: auto;
+  padding-bottom: 1cm;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.prompt-bar-shell--workspace-settings {
+  display: flex;
+  flex: 0 0 auto;
+  border-top: 0;
+  margin: 0 0.7rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
+  padding: 0.68rem;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.04);
+}
+
+.prompt-bar-shell--workspace-composer {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin: auto 0.7rem 0.55rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
+  padding: 0.58rem;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.04);
+}
+
+.prompt-bar-shell--workspace-composer [data-testid="prompt-attachments-panel"] {
+  margin-bottom: 0.46rem;
+  border-radius: 0.78rem;
+  padding: 0.46rem;
+}
+
+.prompt-bar-shell--workspace-composer [data-testid="prompt-attachment-preview"] {
+  width: 3rem;
+  height: 3rem;
+}
+
+.prompt-bar-shell--workspace-settings .prompt-parameter-panel {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  margin-bottom: 0;
+  gap: 0.42rem;
+}
+
+.canvas-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.canvas-image-grid > * {
+  min-width: 0;
+  width: 100%;
+}
+
+.prompt-bar-shell--side .prompt-aspect-grid,
+.prompt-bar-shell--workspace-settings .prompt-aspect-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.36rem;
+}
+
+.prompt-bar-shell--side .prompt-aspect-button,
+.prompt-bar-shell--workspace-settings .prompt-aspect-button {
+  min-height: 3.04rem;
+  grid-template-rows: 1.12rem auto auto;
+  border-radius: 0.64rem;
+  padding: 0.28rem 0.3rem;
+}
+
+.prompt-bar-shell--side .prompt-aspect-preview--square,
+.prompt-bar-shell--workspace-settings .prompt-aspect-preview--square {
+  width: 1.12rem;
+  height: 1.12rem;
+}
+
+.prompt-bar-shell--side .prompt-aspect-preview--landscape,
+.prompt-bar-shell--workspace-settings .prompt-aspect-preview--landscape {
+  width: 1.42rem;
+  height: 0.88rem;
+}
+
+.prompt-bar-shell--side .prompt-aspect-preview--ultrawide,
+.prompt-bar-shell--workspace-settings .prompt-aspect-preview--ultrawide {
+  width: 1.5rem;
+  height: 0.54rem;
+}
+
+.prompt-bar-shell--side .prompt-aspect-preview--portrait,
+.prompt-bar-shell--workspace-settings .prompt-aspect-preview--portrait {
+  width: 0.78rem;
+  height: 1.24rem;
+}
+
+.prompt-bar-shell--side .prompt-aspect-title,
+.prompt-bar-shell--workspace-settings .prompt-aspect-title {
+  font-size: 0.72rem;
+}
+
+.prompt-bar-shell--side .prompt-aspect-value,
+.prompt-bar-shell--workspace-settings .prompt-aspect-value {
+  font-size: 0.64rem;
+}
+
+.prompt-bar-shell--side .prompt-input-row,
+.prompt-bar-shell--workspace-composer .prompt-input-row {
+  align-items: stretch;
+}
+
+.prompt-bar-shell--workspace-composer .prompt-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.46rem;
+}
+
+.prompt-bar-shell--side textarea,
+.prompt-bar-shell--workspace-composer textarea {
+  min-width: 0;
+}
+
+.prompt-bar-shell--workspace-composer textarea {
+  width: 100%;
+  min-height: 3.8rem;
+  max-height: 6.4rem;
+  padding: 0.64rem 0.74rem;
+  border-radius: 0.78rem;
+}
+
+.prompt-field-stack {
+  display: grid;
+  gap: 0.32rem;
+}
+
+.prompt-field-label {
+  color: var(--color-foreground);
+  font-size: 0.74rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.prompt-textarea {
+  resize: vertical;
+  border: 1px solid var(--color-input);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  outline: none;
+}
+
+.prompt-textarea::placeholder {
+  color: var(--color-muted-foreground);
+}
+
+.prompt-textarea:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-ring);
+}
+
+.prompt-textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.prompt-textarea--negative {
+  min-height: 4rem;
+}
+
+.prompt-textarea--positive {
+  min-height: 4.8rem;
+}
+
+.prompt-attach-button {
+  display: inline-flex;
+  min-height: 2.15rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px dashed color-mix(in oklab, var(--color-border) 86%, transparent);
+  background: color-mix(in oklab, var(--color-background) 86%, white 14%);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.prompt-generate-button {
+  min-height: 2.55rem;
+  width: 100%;
+  border-radius: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+@media (max-width: 1023px) {
+  .canvas-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "stage"
+      "settings";
+  }
+
+  .canvas-control-panel {
+    max-height: 48vh;
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .prompt-bar-shell--side {
+    min-height: 0;
+    border-top: 0;
+  }
+
+  .prompt-bar-shell--workspace-settings {
+    min-height: 0;
+  }
+}
+
 @media (max-width: 639px) {
   .example-filter-bar {
     flex-wrap: wrap;

@@ -632,9 +632,16 @@ export function ExampleGallery({
       if (onUseImageOnly) {
         await onUseImageOnly(item);
       } else {
-        setExampleImportPending({ mode: "generate", prompt: "", files: [] });
-        navigate("/");
-        toast.info("示例页暂不直接挂载工作台上传对象，请在工作台继续补充参照图。已为你打开工作台。", { duration: 2600 });
+        try {
+          const attachedFile = await toAttachedPromptFile(item);
+          setExampleImportPending({ mode: "generate", prompt: "", files: [attachedFile] });
+          navigate("/");
+          toast.success("已引用参照图，工作台已打开");
+        } catch {
+          setExampleImportPending({ mode: "generate", prompt: item.prompt, files: [] });
+          navigate("/");
+          toast.info("示例图片加载失败，已退化为仅引用提示词");
+        }
       }
       return;
     }

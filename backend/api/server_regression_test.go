@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/BurntSushi/toml"
+
 	"gimg/internal/config"
 )
 
@@ -49,8 +51,51 @@ func TestBuildConfigPayloadUsesSingleModelSchema(t *testing.T) {
 	if got := chatgpt["model"]; got != config.DefaultImageModel {
 		t.Fatalf("model = %v, want %s", got, config.DefaultImageModel)
 	}
-	if got := chatgpt["requestTimeout"]; got != 180 {
-		t.Fatalf("requestTimeout = %v, want %d", got, 180)
+	if got := chatgpt["requestTimeout"]; got != 300 {
+		t.Fatalf("requestTimeout = %v, want %d", got, 300)
+	}
+}
+
+func TestRequireAuthUsesRuntimeAuthKey(t *testing.T) {
+	t.Setenv("GIMG_AUTH_KEY", "runtime-auth")
+	cfg := config.New()
+	cfg.App.AuthKey = ""
+	server := NewServer(cfg)
+	protected := server.RequireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	}))
+
+	unauthorizedReq := httptest.NewRequest(http.MethodGet, "/api/config", nil)
+	unauthorizedRec := httptest.NewRecorder()
+	protected.ServeHTTP(unauthorizedRec, unauthorizedReq)
+	if unauthorizedRec.Code != http.StatusUnauthorized {
+		t.Fatalf("unauthorized status = %d, want %d", unauthorizedRec.Code, http.StatusUnauthorized)
+	}
+
+	authorizedReq := httptest.NewRequest(http.MethodGet, "/api/config", nil)
+	authorizedReq.Header.Set("Authorization", "Bearer runtime-auth")
+	authorizedRec := httptest.NewRecorder()
+	protected.ServeHTTP(authorizedRec, authorizedReq)
+	if authorizedRec.Code != http.StatusOK {
+		t.Fatalf("authorized status = %d, want %d", authorizedRec.Code, http.StatusOK)
+	}
+}
+
+func TestRequireAuthIgnoresPersistedLocalAuthKeyWithoutRuntimeAuth(t *testing.T) {
+	t.Setenv("GIMG_AUTH_KEY", "")
+	cfg := config.New()
+	cfg.App.AuthKey = "legacy-local-auth"
+	server := NewServer(cfg)
+	protected := server.RequireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/api/config", nil)
+	rec := httptest.NewRecorder()
+	protected.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
 }
 
@@ -128,10 +173,102 @@ func TestHandleUpdateConfigAcceptsLegacyInputButRespondsWithNewSchema(t *testing
 	if got := chatgpt["model"]; got != config.DefaultImageModel {
 		t.Fatalf("model = %v, want %s", got, config.DefaultImageModel)
 	}
-	if got := chatgpt["requestTimeout"]; got != float64(180) {
-		t.Fatalf("requestTimeout = %v, want %d", got, 180)
+	if got := chatgpt["requestTimeout"]; got != float64(300) {
+		t.Fatalf("requestTimeout = %v, want %d", got, 300)
 	}
 	assertConfigSchemaOmitsLegacyFields(t, app, chatgpt, proxy)
+}
+
+func TestHandleUpdateConfigPersistsNormalizedConfig(t *testing.T) {
+	cfg := config.New()
+	configPath := filepath.Join(t.TempDir(), "config.toml")
+	cfg.SetConfigFilePath(configPath)
+	cfg.App.BaseURL = config.DefaultBaseURL
+	cfg.App.ImageFormat = "url"
+	cfg.Server.Host = "0.0.0.0"
+	cfg.Server.Port = 8080
+	cfg.ChatGPT.Model = config.DefaultImageModel
+	cfg.ChatGPT.SSETimeout = 300
+	cfg.ChatGPT.RequestTimeout = 30
+
+	server := NewServer(cfg)
+	body := map[string]any{
+		"app": map[string]any{
+			"apiMode":     "openai",
+			"apiKey":      "sk-persisted",
+			"baseUrl":     "https://api.openai.com",
+			"accountId":   "legacy-account",
+			"imageFormat": "url",
+			"authKey":     "auth-persisted",
+		},
+		"server": map[string]any{
+			"host": "0.0.0.0",
+			"port": 8080,
+		},
+		"chatgpt": map[string]any{
+			"model":          "gpt-5.4-mini",
+			"sseTimeout":     300,
+			"requestTimeout": 30,
+			"freeImageRoute": "/v1/images/generations",
+			"paidImageRoute": "/v1/images/generations",
+			"freeImageModel": "gpt-5.4-mini",
+			"paidImageModel": "gpt-5.4-mini",
+		},
+		"proxy": map[string]any{
+			"enabled": false,
+			"url":     "",
+			"mode":    "fixed",
+		},
+	}
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		t.Fatalf("marshal request: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPut, "/api/config", bytes.NewReader(encoded))
+	rec := httptest.NewRecorder()
+	server.HandleUpdateConfig(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s", rec.Code, rec.Body.String())
+	}
+
+	var raw map[string]any
+	if _, err := toml.DecodeFile(configPath, &raw); err != nil {
+		t.Fatalf("decode persisted config: %v", err)
+	}
+	app := raw["app"].(map[string]any)
+	chatgpt := raw["chatgpt"].(map[string]any)
+	proxy := raw["proxy"].(map[string]any)
+
+	if got := app["api_key"]; got != "sk-persisted" {
+		t.Fatalf("persisted api_key = %v, want sk-persisted", got)
+	}
+	if got := app["base_url"]; got != config.DefaultBaseURL {
+		t.Fatalf("persisted base_url = %v, want %s", got, config.DefaultBaseURL)
+	}
+	if got := app["auth_key"]; got != "" {
+		t.Fatalf("persisted auth_key = %v, want empty local auth key", got)
+	}
+	if got := chatgpt["model"]; got != config.DefaultImageModel {
+		t.Fatalf("persisted model = %v, want %s", got, config.DefaultImageModel)
+	}
+	if got := chatgpt["request_timeout"]; got != int64(config.DefaultRequestTimeout) {
+		t.Fatalf("persisted request_timeout = %v, want %d", got, config.DefaultRequestTimeout)
+	}
+	if _, exists := app["api_mode"]; exists {
+		t.Fatalf("persisted config should omit app.api_mode")
+	}
+	if _, exists := app["account_id"]; exists {
+		t.Fatalf("persisted config should omit app.account_id")
+	}
+	for _, key := range []string{"free_image_route", "paid_image_route", "free_image_model", "paid_image_model"} {
+		if _, exists := chatgpt[key]; exists {
+			t.Fatalf("persisted config should omit chatgpt.%s", key)
+		}
+	}
+	if _, exists := proxy["mode"]; exists {
+		t.Fatalf("persisted config should omit proxy.mode")
+	}
 }
 
 func TestImageGenerationUsesUpdatedAPIKeyAfterConfigSave(t *testing.T) {

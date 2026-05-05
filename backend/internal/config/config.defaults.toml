@@ -13,7 +13,7 @@ port = 8080
 [chatgpt]
 model = "gpt-image-2"
 sse_timeout = 300
-request_timeout = 180
+request_timeout = 300
 available_models = ["gpt-image-2"]
 
 [proxy]

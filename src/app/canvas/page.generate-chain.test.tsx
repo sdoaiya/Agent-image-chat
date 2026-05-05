@@ -95,8 +95,12 @@ vi.mock("./image-card", () => ({
 vi.mock("./prompt-bar", () => ({
   PromptBar: ({ onSubmit, onCancel, layout }: { onSubmit: (prompt: string, files?: File[], options?: Record<string, unknown>) => void; onCancel?: () => void; layout?: string }) => (
     <>
-      {layout === "workspace" && <aside className="canvas-control-panel" aria-label="图片生成设置" />}
-      {layout === "workspace" && <div className="canvas-composer-panel" aria-label="图片生成输入" />}
+      {layout === "workspace" && (
+        <aside className="canvas-control-panel" aria-label="图片生成设置">
+          <div className="prompt-bar-shell--workspace-settings" />
+          <div className="prompt-bar-shell--workspace-composer" />
+        </aside>
+      )}
       <button
         type="button"
         onClick={() => onSubmit("hello world", undefined, { size: "1024x1024", quality: "high", n: 2, aspectRatio: "1:1" })}
@@ -193,7 +197,7 @@ describe("canvas generate request chain", () => {
     expect(screen.queryByText("示例区加载中…")).toBeNull();
     expect(container.querySelector(".canvas-stage")).toBeTruthy();
     expect(container.querySelector('aside.canvas-control-panel[aria-label="图片生成设置"]')).toBeTruthy();
-    expect(container.querySelector('.canvas-composer-panel[aria-label="图片生成输入"]')).toBeTruthy();
+    expect(container.querySelector(".prompt-bar-shell--workspace-composer")).toBeTruthy();
   });
 
   it("生成记录提示词默认折叠，点击可展开，重试应重新计算开始时间", async () => {

@@ -1,13 +1,13 @@
 [app]
-  api_key = "sk-DGAap9rtE3CrE9zSVFULgyeNjKzCdHS0rZuZ7VBVFn4"
+  api_key = ""
   auth_key = ""
   base_url = "https://image.codesonline.dev"
   image_format = "url"
 
 [chatgpt]
-  available_models = ["gpt-image-2", "gpt-5-2-instant", "gpt-5-2-thinking", "o3", "gpt-5-mini", "gpt-5-1", "gpt-5-3-instant", "gpt-5-4-thinking", "gpt-5-t-mini", "gpt-5-4-t-mini", "research", "gpt-5", "gpt-5-2", "agent-mode", "gpt-5-codex-max", "gpt-5-3", "gpt-5-3-mini"]
+  available_models = ["gpt-image-2"]
   model = "gpt-image-2"
-  request_timeout = 30
+  request_timeout = 300
   sse_timeout = 300
 
 [proxy]

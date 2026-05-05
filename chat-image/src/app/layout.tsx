@@ -15,7 +15,7 @@ function ThemeAndToaster() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <HashRouter>
-      <div className="flex h-screen flex-col bg-background text-foreground">
+      <div className="app-window-drag flex h-screen flex-col bg-background text-foreground">
         {children}
       </div>
       <ThemeAndToaster />

@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import { Download, ExternalLink, Maximize2, RefreshCw, Sparkles, Trash2 } from "lucide-react";
+import { Download, ExternalLink, Maximize2, Pencil, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import type { ImageData, ImageMeta } from "@/store/conversations";
 import {
   Dialog,
@@ -12,8 +12,10 @@ import {
 interface ImageCardProps {
   image: ImageData;
   fileName?: string;
-  onReferenceGenerate?: () => void;
+  onEdit?: () => void;
+  onUpscale?: () => void;
   onReference?: () => void;
+  onContinueEdit?: () => void;
   onRetry?: () => void;
   onDelete?: () => void;
   meta?: ImageMeta;
@@ -107,7 +109,7 @@ async function fileFromImage(image: ImageData, fallbackName = "reference.png"): 
 
 export { fileFromImage, imageSrc };
 
-export function ImageCard({ image, fileName = "generated-image.png", onReferenceGenerate, onReference, onRetry, onDelete, meta }: ImageCardProps) {
+export function ImageCard({ image, fileName = "generated-image.png", onEdit, onUpscale, onReference, onContinueEdit, onRetry, onDelete, meta }: ImageCardProps) {
   const [loaded, setLoaded] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const src = imageSrc(image);
@@ -129,7 +131,7 @@ export function ImageCard({ image, fileName = "generated-image.png", onReference
   if (!src) return null;
 
   const bytes = estimateBytes(image, src);
-  const modeLabel = meta?.mode === "reference" ? "参考图生成" : "生成";
+  const modeLabel = meta?.mode === "edit" ? "编辑" : meta?.mode === "upscale" ? "放大" : "生成";
   const resolutionLabel = dimension
     ? `${dimension.width} × ${dimension.height}`
     : (image.width && image.height ? `${image.width} × ${image.height}` : (meta?.size ?? "分辨率读取中"));
@@ -156,18 +158,28 @@ export function ImageCard({ image, fileName = "generated-image.png", onReference
               onLoad={() => setLoaded(true)}
             />
           </button>
-          <div className="pointer-events-none absolute inset-0 flex flex-wrap items-start justify-end gap-1.5 rounded-2xl bg-black/40 p-3 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100">
+          <div className="pointer-events-none absolute inset-0 flex flex-wrap items-start justify-end gap-1.5 p-3 rounded-2xl bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100">
             <button onClick={stopAction(() => setPreviewOpen(true))} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="放大预览">
               <Maximize2 className="h-4 w-4" />
             </button>
-            {onReferenceGenerate && (
-              <button onClick={stopAction(onReferenceGenerate)} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="参考此图继续生成">
-                <Sparkles className="h-4 w-4" />
+            {onEdit && (
+              <button onClick={stopAction(onEdit)} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="遮罩编辑">
+                <Pencil className="h-4 w-4" />
               </button>
             )}
             {onReference && (
-              <button onClick={stopAction(onReference)} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="作为参考图">
+              <button onClick={stopAction(onReference)} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="作为引用图">
                 <ExternalLink className="h-4 w-4" />
+              </button>
+            )}
+            {onContinueEdit && (
+              <button onClick={stopAction(onContinueEdit)} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="继续编辑">
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
+            {onUpscale && (
+              <button onClick={stopAction(onUpscale)} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="放大图片">
+                <Sparkles className="h-4 w-4" />
               </button>
             )}
             <button onClick={stopAction(() => void downloadImage(image, fileName))} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="导出 PNG">
@@ -206,7 +218,8 @@ export function ImageCard({ image, fileName = "generated-image.png", onReference
           </DialogHeader>
           <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
             {onReference && <button onClick={onReference} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">引用</button>}
-            {onReferenceGenerate && <button onClick={onReferenceGenerate} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">参考此图继续生成</button>}
+            {onContinueEdit && <button onClick={onContinueEdit} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">继续编辑</button>}
+            {onUpscale && <button onClick={onUpscale} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">放大</button>}
             <button onClick={() => void downloadImage(image, fileName)} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">导出</button>
           </div>
           <img src={src} alt={image.revised_prompt ?? "Generated image preview"} className="max-h-[84vh] max-w-full rounded-lg object-contain" />

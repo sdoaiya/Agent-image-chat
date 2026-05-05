@@ -118,9 +118,20 @@ function selectAuthToken(state?: { authKey?: string; apiKey?: string }): string 
   if (!state) return undefined;
   const apiKey = state.apiKey?.trim();
   if (apiKey) return apiKey;
-  const authKey = state.authKey?.trim();
-  if (authKey) return authKey;
   return undefined;
+}
+
+async function resolveRequestAuthToken(state?: { authKey?: string; apiKey?: string }): Promise<string | undefined> {
+  try {
+    const electronToken = await window.electronAPI?.getBackendAuthToken?.();
+    if (electronToken?.trim()) {
+      return electronToken.trim();
+    }
+  } catch {
+    // fall back to user-provided tokens below
+  }
+
+  return selectAuthToken(state);
 }
 
 function responseErrorText(data: unknown): string | null {
@@ -170,7 +181,7 @@ function humanizeMessage(message: string): string {
       : "网络连接失败，请确认 backend 已启动或服务地址可访问";
   }
   if (lower.includes("invalid api key") || lower.includes("401") || lower.includes("unauthorized")) {
-    return "鉴权失败，请检查 API Key 或本地鉴权 Key";
+    return "鉴权失败，请检查 API Key";
   }
   if (lower.includes("context deadline exceeded") || lower.includes("client.timeout exceeded") || lower.includes("awaiting headers")) {
     return "生成请求等待超时，请稍后重试；如果多次出现，请检查上游服务或代理。";
@@ -212,12 +223,17 @@ client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
       const settings = JSON.parse(raw) as {
         state?: { authKey?: string; apiKey?: string };
       };
-      const token = selectAuthToken(settings?.state);
+      const token = await resolveRequestAuthToken(settings?.state);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch {
       // ignore malformed settings
+    }
+  } else {
+    const token = await resolveRequestAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
   }
   return config;

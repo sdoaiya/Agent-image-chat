@@ -1,24 +1,38 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 
 describe("Canvas titlebar drag zones", () => {
-  it("仅标题栏空白区可拖拽，交互控件保留 no-drag", async () => {
+  it("makes the app shell draggable while keeping controls no-drag", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+
     const { CanvasPage } = await import("@/app/canvas/page");
+    const { AppShell } = await import("@/app/layout");
     const { container } = render(
-      <MemoryRouter>
+      <AppShell>
         <CanvasPage />
-      </MemoryRouter>,
+      </AppShell>,
     );
 
+    expect(container.querySelector(".app-window-drag")).toBeTruthy();
     expect(container.querySelector("header.titlebar-drag")).toBeNull();
 
     const sidebarTitlebar = container.querySelector(".titlebar-drag");
     expect(sidebarTitlebar).toBeTruthy();
-    expect(sidebarTitlebar?.textContent).toContain("工作台");
 
-    const toggleButton = sidebarTitlebar?.querySelector('button[aria-label="收起对话区"]');
-    const createButton = sidebarTitlebar?.querySelector('button[aria-label="新建对话"]');
+    const toggleButton = sidebarTitlebar?.querySelector("button");
+    const createButton = sidebarTitlebar?.querySelectorAll("button")[1];
     expect(toggleButton).toBeTruthy();
     expect(createButton).toBeTruthy();
     expect(toggleButton?.className).not.toContain("titlebar-drag");

@@ -44,6 +44,9 @@ func TestBuildConfigPayloadUsesSingleModelSchema(t *testing.T) {
 	if _, exists := app["accountId"]; exists {
 		t.Fatalf("accountId should not be exposed in new schema")
 	}
+	if got := app["authKey"]; got != "" {
+		t.Fatalf("authKey = %v, want empty public config payload", got)
+	}
 	if got := chatgpt["model"]; got != config.DefaultImageModel {
 		t.Fatalf("model = %v, want %s", got, config.DefaultImageModel)
 	}
@@ -137,6 +140,12 @@ func TestHandleUpdateConfigAcceptsLegacyInputButRespondsWithNewSchema(t *testing
 	if _, exists := app["accountId"]; exists {
 		t.Fatalf("accountId should not be returned")
 	}
+	if got := app["authKey"]; got != "" {
+		t.Fatalf("authKey = %v, want empty response value", got)
+	}
+	if got := cfg.App.AuthKey; got != "" {
+		t.Fatalf("persisted auth key = %q, want empty", got)
+	}
 	if got := chatgpt["model"]; got != config.DefaultImageModel {
 		t.Fatalf("model = %v, want %s", got, config.DefaultImageModel)
 	}
@@ -151,5 +160,20 @@ func TestHandleUpdateConfigAcceptsLegacyInputButRespondsWithNewSchema(t *testing
 	}
 	if _, exists := chatgpt["paidImageModel"]; exists {
 		t.Fatalf("paidImageModel should not be returned")
+	}
+}
+
+func TestRuntimeAuthKeyOnlyComesFromEnvironment(t *testing.T) {
+	t.Setenv("GIMG_AUTH_KEY", "runtime-auth")
+	cfg := config.New()
+	cfg.App.AuthKey = "persisted-auth"
+
+	if got := cfg.GetAuthKey(); got != "runtime-auth" {
+		t.Fatalf("runtime auth key = %q, want runtime-auth", got)
+	}
+
+	t.Setenv("GIMG_AUTH_KEY", "")
+	if got := cfg.GetAuthKey(); got != "" {
+		t.Fatalf("auth key without environment = %q, want empty", got)
 	}
 }

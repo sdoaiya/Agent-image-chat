@@ -22,7 +22,7 @@ describe("gallery-image runtime helpers", () => {
 
   it("应解析已存在图片并给出正确 content-type", () => {
     const jpgPath = resolveGalleryImageFilePath("case1.jpg", galleryImagesDir);
-    const pngPath = resolveGalleryImageFilePath("公众号.png", galleryImagesDir);
+    const pngPath = resolveGalleryImageFilePath("case129.png", galleryImagesDir);
     const svgPath = resolveGalleryImageFilePath("banner.svg", galleryImagesDir);
 
     expect(jpgPath).toContain(path.join("data", "images", "case1.jpg"));

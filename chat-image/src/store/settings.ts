@@ -1,11 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ApiMode = "codesonline";
-
 export const BUILTIN_IMAGE_MODELS = ["gpt-image-2"] as const;
 export const DEFAULT_IMAGE_MODEL = BUILTIN_IMAGE_MODELS[0];
-export const CODESONLINE_BASE_URL = "https://image.codesonline.dev/v1";
+export const CODESONLINE_BASE_URL = "https://image.codesonline.dev";
 
 function normalizeModelValue(model: unknown): string {
   return typeof model === "string" ? model.trim() : "";
@@ -38,24 +36,20 @@ function mergeModelPools(...pools: unknown[][]): string[] {
 
 export type ImageQuality = "auto" | "low" | "medium" | "high" | "standard" | "hd";
 
-export function getQualityOptionsByApiMode(apiMode: ApiMode): ImageQuality[] {
-  void apiMode;
+export function getQualityOptionsByApiMode(_apiMode?: unknown): ImageQuality[] {
   return ["auto", "low", "medium", "high"];
 }
 
-export function normalizeQualityForApiMode(apiMode: ApiMode, quality: unknown): ImageQuality {
-  void apiMode;
-  const options = getQualityOptionsByApiMode("codesonline");
+export function normalizeQualityForApiMode(_apiMode: unknown, quality: unknown): ImageQuality {
+  const options = getQualityOptionsByApiMode();
   const normalized = typeof quality === "string" ? quality : "";
-  return (options.find((item) => item === normalized) ?? options[0] ?? "auto") as ImageQuality;
+  return (options.find((item) => item === normalized) ?? options[0] ?? "standard") as ImageQuality;
 }
 
 export interface Settings {
-  apiMode: ApiMode;
   apiKey: string;
   authKey: string;
   baseUrl: string;
-  accessToken: string;
   proxyEnabled: boolean;
   proxyUrl: string;
   defaultModel: string;
@@ -79,11 +73,9 @@ interface SettingsActions {
 }
 
 const defaults: Settings = {
-  apiMode: "codesonline",
   apiKey: "",
   authKey: "",
   baseUrl: CODESONLINE_BASE_URL,
-  accessToken: "",
   proxyEnabled: false,
   proxyUrl: "",
   defaultModel: DEFAULT_IMAGE_MODEL,
@@ -118,10 +110,10 @@ export const useSettings = create<Settings & SettingsActions>()(
     (set) => ({
       ...defaults,
       updateSettings: (partial) => set((state) => {
-        const next = { ...state, ...partial };
+        const next = { ...state, ...partial, authKey: "", importedModels: [] };
         return {
           ...next,
-          defaultQuality: normalizeQualityForApiMode(next.apiMode, next.defaultQuality),
+          defaultQuality: normalizeQualityForApiMode("codesonline", next.defaultQuality),
           ...deriveModelState(next),
         };
       }),
@@ -158,17 +150,15 @@ export const useSettings = create<Settings & SettingsActions>()(
     {
       name: "gimg-settings",
       partialize: (state) => ({
-        apiMode: state.apiMode,
         apiKey: state.apiKey,
-        authKey: state.authKey,
+        authKey: "",
         baseUrl: state.baseUrl,
-        accessToken: state.accessToken,
         proxyEnabled: state.proxyEnabled,
         proxyUrl: state.proxyUrl,
         defaultModel: state.defaultModel,
         builtinModels: state.builtinModels,
         remoteModels: state.remoteModels,
-        importedModels: state.importedModels,
+        importedModels: [],
         availableModels: state.availableModels,
         lastModelRefreshAt: state.lastModelRefreshAt,
         defaultN: state.defaultN,
@@ -176,10 +166,10 @@ export const useSettings = create<Settings & SettingsActions>()(
         theme: state.theme,
       }),
       merge: (persistedState, currentState) => {
-        const merged = { ...currentState, ...(persistedState as Partial<Settings>) };
+        const merged = { ...currentState, ...(persistedState as Partial<Settings>), authKey: "", importedModels: [] };
         return {
           ...merged,
-          defaultQuality: normalizeQualityForApiMode(merged.apiMode, merged.defaultQuality),
+          defaultQuality: normalizeQualityForApiMode("codesonline", merged.defaultQuality),
           ...deriveModelState(merged),
         };
       },

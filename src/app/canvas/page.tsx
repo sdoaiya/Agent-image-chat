@@ -54,15 +54,14 @@ const maxFrontendImageBatchSize = 2;
 
 function hasGenerationCredentials(args: {
   apiKey: string;
-  authKey: string;
   baseUrl: string;
 }): { ok: boolean; reason?: string } {
   const normalizedBaseUrl = args.baseUrl?.trim?.() ?? "";
   if (!normalizedBaseUrl) {
     return { ok: false, reason: "请先在设置中填写 Base URL" };
   }
-  if (!(args.apiKey?.trim?.()) && !(args.authKey?.trim?.())) {
-    return { ok: false, reason: "请先在设置中填写 API Key 或本地鉴权 Key" };
+  if (!args.apiKey?.trim?.()) {
+    return { ok: false, reason: "请先在设置中填写 API Key" };
   }
   return { ok: true };
 }
@@ -143,7 +142,6 @@ export function CanvasPage() {
   const defaultN = useSettings((s) => s.defaultN);
   const defaultQuality = useSettings((s) => s.defaultQuality);
   const apiKey = useSettings((s) => s.apiKey);
-  const authKey = useSettings((s) => s.authKey);
   const baseUrl = useSettings((s) => s.baseUrl);
   const consumeImportedExample = useExampleImport((s) => s.consumePending);
 
@@ -243,7 +241,7 @@ export function CanvasPage() {
     }
     if (!convId) return;
 
-    const credentialCheck = hasGenerationCredentials({ apiKey, authKey, baseUrl });
+    const credentialCheck = hasGenerationCredentials({ apiKey, baseUrl });
     if (!credentialCheck.ok) {
       const turnId = generateId();
       addTurn(convId, {
@@ -394,7 +392,7 @@ export function CanvasPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-4 p-5">
+            <div className="canvas-stage-content space-y-4">
               {activeConv.turns.map((turn) => (
                 <div key={turn.id} className="space-y-1.5">
                   <div className="canvas-turn-head">
@@ -430,7 +428,7 @@ export function CanvasPage() {
                     </div>
                   )}
                   {turn.status === "done" && turn.images.length > 0 && (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="canvas-image-grid">
                       {turn.images.map((img, idx) => (
                         <ImageCard
                           key={idx}

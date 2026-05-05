@@ -5,7 +5,6 @@ api_mode = "codesonline"
 api_key = ""
 base_url = "https://image.codesonline.dev/v1"
 image_format = "url"
-auth_key = ""
 
 [server]
 host = "0.0.0.0"

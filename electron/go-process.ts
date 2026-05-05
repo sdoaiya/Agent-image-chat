@@ -19,6 +19,10 @@ export function getBackendHost(): string {
   return backendHost;
 }
 
+export function isManagedBackend(): boolean {
+  return backendProcess !== null;
+}
+
 function isWindows(): boolean {
   return process.platform === "win32";
 }

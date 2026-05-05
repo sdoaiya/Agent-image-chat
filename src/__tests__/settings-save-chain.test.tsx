@@ -147,6 +147,17 @@ describe("settings drawer save chain regression", () => {
     });
   });
 
+  it("设置页不再展示本地鉴权、导入模型、默认张数和默认质量入口", async () => {
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    expect(screen.queryByText("本地鉴权 Key")).toBeNull();
+    expect(screen.queryByText("导入模型")).toBeNull();
+    expect(screen.queryByText("默认生成张数")).toBeNull();
+    expect(screen.queryByText("质量")).toBeNull();
+  });
+
   it("保存时应先写入本地 store，再将统一 generations 所需关键字段透传到后端 payload", async () => {
     render(<SettingsDrawer open onOpenChange={() => {}} />);
 
@@ -159,21 +170,25 @@ describe("settings drawer save chain regression", () => {
     expect(mockHealthCheck).toHaveBeenCalled();
     expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
       apiKey: "new-api-key",
+      authKey: "",
       baseUrl: "https://example.gateway.dev",
       defaultModel: "gpt-image-2",
-      defaultQuality: "auto",
+      importedModels: [],
     }));
+    const storePayload = updateStoreMock.mock.calls[0]?.[0];
+    expect(storePayload).not.toHaveProperty("defaultN");
+    expect(storePayload).not.toHaveProperty("defaultQuality");
 
     const backendPayload = mockUpdateBackendSettings.mock.calls[0]?.[0];
     expect(backendPayload).toEqual(expect.objectContaining({
       app: expect.objectContaining({
         apiKey: "new-api-key",
         baseUrl: "https://example.gateway.dev",
-        authKey: "store-auth-key",
+        authKey: "",
       }),
       chatgpt: expect.objectContaining({
         model: "gpt-image-2",
-        requestTimeout: 180,
+        requestTimeout: 300,
         availableModels: expect.arrayContaining(["gpt-image-2"]),
       }),
       proxy: expect.objectContaining({
@@ -197,9 +212,9 @@ describe("settings drawer save chain regression", () => {
   it("打开设置时若本地已选自定义模型，不应被后端返回的其他模型覆盖", async () => {
     Object.assign(mockSettingsState, {
       defaultModel: "custom-model",
-      remoteModels: ["server-model"],
+      remoteModels: ["server-model", "custom-model"],
       availableModels: ["gpt-image-2", "server-model", "custom-model"],
-      importedModels: ["custom-model"],
+      importedModels: [],
     });
 
     render(<SettingsDrawer open onOpenChange={() => {}} />);

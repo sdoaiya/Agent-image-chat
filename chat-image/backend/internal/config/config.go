@@ -191,9 +191,7 @@ func (c *Config) GetBaseURL() string {
 }
 
 func (c *Config) GetAuthKey() string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return strings.TrimSpace(c.App.AuthKey)
+	return strings.TrimSpace(os.Getenv("GIMG_AUTH_KEY"))
 }
 
 func (c *Config) GetSSETimeout() int {
@@ -404,7 +402,7 @@ func indirectValue(value reflect.Value) reflect.Value {
 }
 
 func scrubLegacyOverrideKeys(raw map[string]any) {
-	deleteNestedKeys(raw, "app", "account_id")
+	deleteNestedKeys(raw, "app", "account_id", "auth_key")
 	deleteNestedKeys(raw, "chatgpt", "free_image_route", "paid_image_route", "free_image_model", "paid_image_model")
 }
 

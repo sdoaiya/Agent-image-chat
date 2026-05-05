@@ -1,3 +1,4 @@
+import { useState, type KeyboardEvent } from "react";
 import { MessageSquarePlus, PanelLeftClose, PanelLeftOpen, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConversations } from "@/store/conversations";
@@ -13,7 +14,38 @@ export function ConversationList({ sidebarOpen = true, onToggleSidebar }: Conver
   const setActive = useConversations((s) => s.setActive);
   const create = useConversations((s) => s.create);
   const remove = useConversations((s) => s.remove);
+  const rename = useConversations((s) => s.rename);
   const loaded = useConversations((s) => s.loaded);
+  const loadError = useConversations((s) => s.loadError);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+
+  const startRename = (id: string, title: string) => {
+    setEditingId(id);
+    setEditingTitle(title);
+  };
+
+  const commitRename = () => {
+    if (!editingId) return;
+    rename(editingId, editingTitle);
+    setEditingId(null);
+  };
+
+  const cancelRename = () => {
+    setEditingId(null);
+    setEditingTitle("");
+  };
+
+  const handleRenameKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitRename();
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelRename();
+    }
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -55,6 +87,10 @@ export function ConversationList({ sidebarOpen = true, onToggleSidebar }: Conver
           <div className="px-3 py-6 text-center text-sm text-muted-foreground">
             加载中...
           </div>
+        ) : loadError ? (
+          <div className="px-3 py-6 text-center text-sm leading-5 text-muted-foreground">
+            {loadError}
+          </div>
         ) : conversations.length === 0 ? (
           <div className="px-3 py-6 text-center text-sm text-muted-foreground">
             暂无对话
@@ -66,12 +102,37 @@ export function ConversationList({ sidebarOpen = true, onToggleSidebar }: Conver
               <div
                 key={conv.id}
                 onClick={() => setActive(conv.id)}
+                onDoubleClick={(e) => {
+                  e.preventDefault();
+                  startRename(conv.id, conv.title);
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setActive(conv.id);
+                  startRename(conv.id, conv.title);
+                }}
                 className={cn(
                   "group flex cursor-pointer items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-muted",
                   isActive && "bg-primary text-primary-foreground hover:bg-primary",
                 )}
               >
-                <span className="min-w-0 flex-1 truncate">{conv.title}</span>
+                {editingId === conv.id ? (
+                  <input
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onBlur={commitRename}
+                    onKeyDown={handleRenameKeyDown}
+                    className={cn(
+                      "min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring",
+                      isActive && "border-primary-foreground/40 bg-primary-foreground text-primary",
+                    )}
+                    autoFocus
+                    aria-label="重命名对话"
+                  />
+                ) : (
+                  <span className="min-w-0 flex-1 truncate" title="双击或右键重命名">{conv.title}</span>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

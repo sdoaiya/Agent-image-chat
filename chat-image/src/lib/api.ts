@@ -2,7 +2,7 @@ import client from "./request";
 import type { ModelCapabilities } from "@/types/image-workflow";
 
 export interface ImageGenerationRequest {
-  model: string;
+  model?: string;
   prompt: string;
   n?: number;
   quality?: "auto" | "low" | "medium" | "high" | "standard" | "hd";
@@ -10,6 +10,10 @@ export interface ImageGenerationRequest {
   response_format?: "url" | "b64_json";
   style?: "vivid" | "natural";
   reference_images?: string[];
+}
+
+export interface RequestOptions {
+  signal?: AbortSignal;
 }
 
 export interface ImageData {
@@ -41,10 +45,9 @@ export interface ModelsResponse {
 
 export interface ConfigPayload {
   app: {
-    apiMode: string;
     apiKey: string;
     baseUrl: string;
-    imageFormat: string;
+    imageFormat: "url" | "b64_json";
     authKey: string;
   };
   server: {
@@ -61,7 +64,6 @@ export interface ConfigPayload {
   proxy: {
     enabled: boolean;
     url: string;
-    mode: string;
   };
   capabilities?: ModelCapabilities;
 }
@@ -70,6 +72,8 @@ export interface NormalizedModelState {
   availableModels: string[];
   selectedModel: string;
 }
+
+const DEFAULT_IMAGE_MODEL = "gpt-image-2";
 
 function normalizeModelValue(model: unknown): string {
   return typeof model === "string" ? model.trim() : "";
@@ -113,12 +117,14 @@ export function normalizeModelState(args: {
 
   return {
     availableModels,
-    selectedModel: normalizeModelValue(args.selected) || availableModels[0] || "gpt-5.4",
+    selectedModel: normalizeModelValue(args.selected) || availableModels[0] || DEFAULT_IMAGE_MODEL,
   };
 }
 
-export async function generateImages(req: ImageGenerationRequest): Promise<ImageResult> {
-  const { data } = await client.post<ImageResult>("/v1/images/generations", req);
+export async function generateImages(req: ImageGenerationRequest, options?: RequestOptions): Promise<ImageResult> {
+  const { data } = options?.signal
+    ? await client.post<ImageResult>("/v1/images/generations", req, { signal: options.signal })
+    : await client.post<ImageResult>("/v1/images/generations", req);
   return data;
 }
 

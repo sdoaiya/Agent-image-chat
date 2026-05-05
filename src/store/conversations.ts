@@ -55,12 +55,14 @@ interface ConversationsState {
   conversations: Conversation[];
   activeId: string | null;
   loaded: boolean;
+  loadError: string | null;
 }
 
 interface ConversationsActions {
   load: () => Promise<void>;
   create: () => string;
   remove: (id: string) => void;
+  rename: (id: string, title: string) => void;
   setActive: (id: string | null) => void;
   addTurn: (convId: string, turn: ConversationTurn) => void;
   updateTurn: (convId: string, turnId: string, partial: Partial<ConversationTurn>) => void;
@@ -107,14 +109,20 @@ export const useConversations = create<ConversationsState & ConversationsActions
     conversations: [],
     activeId: null,
     loaded: false,
+    loadError: null,
 
     load: async () => {
-      const stored = (await store.getItem<Conversation[]>(STORAGE_KEY)) ?? [];
-      const conversations = stored.map((c) => ({
-        ...c,
-        turns: normalizeTurns(c.turns),
-      }));
-      set({ conversations, loaded: true, activeId: conversations[0]?.id ?? null });
+      try {
+        const stored = (await store.getItem<Conversation[]>(STORAGE_KEY)) ?? [];
+        const conversations = stored.map((c) => ({
+          ...c,
+          turns: normalizeTurns(c.turns),
+        }));
+        set({ conversations, loaded: true, loadError: null, activeId: conversations[0]?.id ?? null });
+      } catch (err) {
+        console.error("[gimg] Failed to load conversations:", err);
+        set({ conversations: [], loaded: true, loadError: "对话读取失败，可新建对话继续使用。", activeId: null });
+      }
     },
 
     create: () => {
@@ -130,7 +138,7 @@ export const useConversations = create<ConversationsState & ConversationsActions
       set((state) => {
         const conversations = [conv, ...state.conversations];
         persistConversations(conversations);
-        return { conversations, activeId: id };
+        return { conversations, activeId: id, loadError: null };
       });
       return id;
     },
@@ -143,6 +151,18 @@ export const useConversations = create<ConversationsState & ConversationsActions
           conversations,
           activeId: state.activeId === id ? (conversations[0]?.id ?? null) : state.activeId,
         };
+      });
+    },
+
+    rename: (id, title) => {
+      const trimmed = title.trim();
+      if (!trimmed) return;
+      set((state) => {
+        const conversations = state.conversations.map((c) =>
+          c.id === id ? { ...c, title: trimmed.slice(0, 80), updated_at: Date.now() } : c,
+        );
+        persistConversations(conversations);
+        return { conversations };
       });
     },
 

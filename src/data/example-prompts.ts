@@ -15,6 +15,7 @@ export interface ExamplePromptItem {
   createdAt: string;
   sourceUrl: string;
   imageUrl: string;
+  referenceImageUrl?: string;
   width: number;
   height: number;
   prompt: string;
@@ -25,6 +26,17 @@ export interface ExamplePromptItem {
   imagePath: string;
   sourceType: GallerySourceType;
   upstreamDoc: string;
+  sourceOrigin?: "local" | "youmind";
+  upstreamId?: number;
+  upstreamPromptUrl?: string;
+  engagement?: {
+    likes?: number;
+    comments?: number;
+    reposts?: number;
+    views?: number;
+    bookmarks?: number;
+    resultsCount?: number;
+  };
 }
 
 export interface ExamplePromptDatasetSummary {
@@ -74,6 +86,7 @@ function toExamplePromptItem(seed: ParsedGalleryExampleSeed): ExamplePromptItem 
     imagePath: seed.imageRelativePath,
     sourceType: seed.sourceType,
     upstreamDoc: seed.upstreamDoc,
+    sourceOrigin: "local",
   };
 }
 

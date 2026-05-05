@@ -148,6 +148,11 @@ describe("settings drawer save chain regression", () => {
   });
 
   it("保存时应先写入本地 store，再将统一 generations 所需关键字段透传到后端 payload", async () => {
+    Object.assign(mockSettingsState, {
+      importedModels: ["legacy-imported-model"],
+      availableModels: ["gpt-image-2", "legacy-imported-model"],
+    });
+
     render(<SettingsDrawer open onOpenChange={() => {}} />);
 
     fireEvent.change(screen.getByPlaceholderText("sk-..."), { target: { value: "new-api-key" } });
@@ -159,9 +164,10 @@ describe("settings drawer save chain regression", () => {
     expect(mockHealthCheck).toHaveBeenCalled();
     expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
       apiKey: "new-api-key",
+      authKey: "",
       baseUrl: "https://example.gateway.dev",
       defaultModel: "gpt-image-2",
-      defaultQuality: "auto",
+      importedModels: [],
     }));
 
     const backendPayload = mockUpdateBackendSettings.mock.calls[0]?.[0];
@@ -169,10 +175,11 @@ describe("settings drawer save chain regression", () => {
       app: expect.objectContaining({
         apiKey: "new-api-key",
         baseUrl: "https://example.gateway.dev",
-        authKey: "store-auth-key",
+        authKey: "",
       }),
       chatgpt: expect.objectContaining({
         model: "gpt-image-2",
+        requestTimeout: 300,
         availableModels: expect.arrayContaining(["gpt-image-2"]),
       }),
       proxy: expect.objectContaining({
@@ -193,7 +200,7 @@ describe("settings drawer save chain regression", () => {
     expect(toastSuccessMock).toHaveBeenCalledWith("设置已保存");
   });
 
-  it("打开设置时若本地已选自定义模型，不应被后端返回的其他模型覆盖", async () => {
+  it("打开设置时若本地已选导入模型，应随导入列表废弃回落到内置模型", async () => {
     Object.assign(mockSettingsState, {
       defaultModel: "custom-model",
       remoteModels: ["server-model"],
@@ -208,8 +215,20 @@ describe("settings drawer save chain regression", () => {
 
     await waitFor(() => expect(updateStoreMock).toHaveBeenCalled());
     expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
-      defaultModel: "custom-model",
+      defaultModel: "gpt-image-2",
+      importedModels: [],
     }));
+  });
+
+  it("设置抽屉不再显示本地鉴权 Key、导入模型、默认生成张数和默认质量控件", async () => {
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    expect(screen.queryByText("本地鉴权 Key")).toBeNull();
+    expect(screen.queryByText("导入模型")).toBeNull();
+    expect(screen.queryByText("默认生成张数")).toBeNull();
+    expect(screen.queryByText("质量")).toBeNull();
   });
 
   it("后端短暂未就绪时应先重试 health，再继续同步保存", async () => {

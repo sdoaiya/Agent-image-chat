@@ -219,7 +219,7 @@ async function main() {
       await clickFirstVisibleAction(page, "一键引用：提示词 + 参照图");
       await page.waitForURL(/#\/$/);
       await page.getByText(/引用图片（1\/4）/).waitFor();
-      const prompt = await page.locator("textarea").inputValue();
+      const prompt = await page.getByRole("textbox", { name: "正向提示词" }).inputValue();
       if (!prompt.trim()) {
         throw new Error("一键引用后工作台提示词为空");
       }
@@ -239,10 +239,10 @@ async function main() {
       await clickFirstVisibleAction(page, "只引用提示词");
       await page.waitForURL(/#\/$/);
       await page.waitForFunction(() => {
-        const el = document.querySelector("textarea");
+        const el = document.querySelector("#prompt-positive-input");
         return !!el && "value" in el && String(el.value).trim().length > 0;
       });
-      const prompt = await page.locator("textarea").inputValue();
+      const prompt = await page.getByRole("textbox", { name: "正向提示词" }).inputValue();
       if (!prompt.trim()) {
         throw new Error("仅提示词导入后 textarea 为空");
       }
@@ -258,12 +258,13 @@ async function main() {
       };
     });
 
-    await runStep("仅参照图：workbench 内嵌示例区", async () => {
-      await page.goto(`${baseUrl}/#/`, { waitUntil: "networkidle" });
-      await page.locator("textarea").fill("");
+    await runStep("仅参照图：gallery -> workbench", async () => {
+      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "networkidle" });
       await clickFirstVisibleAction(page, "只引用参照图");
+      await page.waitForURL(/#\/$/);
       await page.getByText(/引用图片（1\/4）/).waitFor();
-      const prompt = await page.locator("textarea").inputValue();
+      const positivePromptInput = page.getByRole("textbox", { name: "正向提示词" });
+      const prompt = await positivePromptInput.inputValue();
       if (prompt.trim()) {
         throw new Error("仅参照图导入后 prompt 不应包含文本");
       }
@@ -278,15 +279,16 @@ async function main() {
       };
     });
 
-    await runStep("图片失败退化：工作台内嵌示例区", async () => {
-      await page.goto(`${baseUrl}/#/`, { waitUntil: "networkidle" });
-      await page.locator("textarea").fill("");
+    await runStep("图片失败退化：gallery -> workbench", async () => {
+      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "networkidle" });
       const firstGalleryImage = page.locator("img").first();
       await firstGalleryImage.dispatchEvent("error");
       await page.getByText(/图片暂不可用/).first().waitFor();
       await page.getByRole("button", { name: "图片不可用，点击后将退化为仅提示词" }).first().click({ force: true });
+      await page.waitForURL(/#\/$/);
       await page.getByText("示例图片加载失败，已退化为仅引用提示词").waitFor();
-      const prompt = await page.locator("textarea").inputValue();
+      const positivePromptInput = page.getByRole("textbox", { name: "正向提示词" });
+      const prompt = await positivePromptInput.inputValue();
       if (!prompt.trim()) {
         throw new Error("图片失败退化后未回填提示词");
       }
@@ -317,7 +319,7 @@ async function main() {
         if (!importedCountText.includes("引用图片（1/4）")) {
           throw new Error(`本地文件导入后引用计数异常：${importedCountText}`);
         }
-        await localImportPage.getByRole("button", { name: "发送" }).waitFor();
+        await localImportPage.getByRole("button", { name: /^(发送|生成)$/ }).waitFor();
 
         const previewShot = screenshotPath("07-local-import-preview.png");
         await localImportPage.screenshot({ path: previewShot, fullPage: true });

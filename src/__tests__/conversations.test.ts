@@ -16,7 +16,7 @@ function createTurn(overrides: Partial<ConversationTurn> = {}): ConversationTurn
 
 describe("normalizeTurns", () => {
   beforeEach(() => {
-    useConversations.setState({ conversations: [], activeId: null, loaded: false });
+    useConversations.setState({ conversations: [], activeId: null, loaded: false, loadError: null });
   });
 
   it("should mark pending turns as error with descriptive message", () => {
@@ -90,5 +90,35 @@ describe("persistConversations error handling", () => {
 
     expect(consoleErrorSpy).toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
+  });
+});
+
+describe("conversation rename", () => {
+  beforeEach(() => {
+    useConversations.setState({
+      conversations: [{
+        id: "conv-1",
+        title: "旧标题",
+        turns: [],
+        created_at: 1,
+        updated_at: 1,
+      }],
+      activeId: "conv-1",
+      loaded: true,
+      loadError: null,
+    });
+  });
+
+  it("should trim and persist a renamed conversation title", () => {
+    useConversations.getState().rename("conv-1", "  新标题  ");
+
+    expect(useConversations.getState().conversations[0]?.title).toBe("新标题");
+    expect(useConversations.getState().conversations[0]?.updated_at).toBeGreaterThan(1);
+  });
+
+  it("should ignore empty renamed titles", () => {
+    useConversations.getState().rename("conv-1", "   ");
+
+    expect(useConversations.getState().conversations[0]?.title).toBe("旧标题");
   });
 });

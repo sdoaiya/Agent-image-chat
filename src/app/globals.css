@@ -114,6 +114,16 @@ body {
   box-shadow: 0 8px 18px rgb(15 23 42 / 0.05);
 }
 
+.examples-page-toolbar-controls {
+  display: flex;
+  min-width: 320px;
+  max-width: 680px;
+  flex: 1 1 480px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .examples-page-body {
   display: flex;
   min-width: 0;
@@ -142,8 +152,41 @@ body {
   user-select: none;
 }
 
+.app-window-drag {
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
 .titlebar-no-drag {
   -webkit-app-region: no-drag;
+}
+
+.app-window-drag :where(
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  option,
+  label,
+  summary,
+  canvas,
+  audio,
+  video,
+  [role="button"],
+  [role="tab"],
+  [role="tablist"],
+  [role="slider"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="menu"],
+  [role="menuitem"],
+  [contenteditable="true"],
+  .titlebar-no-drag,
+  .cursor-pointer
+) {
+  -webkit-app-region: no-drag;
+  user-select: auto;
 }
 
 .sidebar-scrollbar::-webkit-scrollbar {
@@ -285,6 +328,56 @@ a:focus-visible {
   white-space: nowrap;
 }
 
+.example-search-control {
+  display: flex;
+  min-width: 180px;
+  max-width: 320px;
+  flex: 1 1 240px;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 0.95rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
+  background: rgb(255 255 255 / 0.92);
+  padding: 0.5rem 0.72rem;
+  color: color-mix(in oklab, var(--color-foreground) 70%, var(--color-muted-foreground) 30%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.example-search-control input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--color-foreground);
+  font-size: 0.78rem;
+  font-weight: 650;
+  outline: none;
+}
+
+.example-search-control input::placeholder {
+  color: color-mix(in oklab, var(--color-muted-foreground) 76%, transparent);
+}
+
+.example-filter-select {
+  min-height: 2.25rem;
+  max-width: 9.5rem;
+  border-radius: 0.95rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
+  background: rgb(255 255 255 / 0.92);
+  color: color-mix(in oklab, var(--color-foreground) 74%, var(--color-muted-foreground) 26%);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1;
+  padding: 0 0.65rem;
+  outline: none;
+}
+
+.example-filter-select:focus-visible,
+.example-search-control:focus-within {
+  outline: 3px solid color-mix(in oklab, var(--color-ring) 78%, white 22%);
+  outline-offset: 3px;
+}
+
 .example-view-pill {
   display: inline-flex;
   min-width: 0;
@@ -322,6 +415,23 @@ a:focus-visible {
   align-items: center;
   overflow: visible;
   text-overflow: clip;
+  white-space: nowrap;
+}
+
+.example-sort-order-button {
+  min-width: 5rem;
+}
+
+.example-sync-pill {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
+  background: color-mix(in oklab, var(--color-primary) 8%, white 92%);
+  color: color-mix(in oklab, var(--color-foreground) 78%, var(--color-primary) 22%);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0.58rem 0.72rem;
   white-space: nowrap;
 }
 
@@ -1321,11 +1431,10 @@ a:focus-visible {
 
 .canvas-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(260px, 19vw, 300px);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) clamp(248px, 17vw, 282px);
+  grid-template-rows: minmax(0, 1fr);
   grid-template-areas:
-    "stage settings"
-    "composer composer";
+    "stage settings";
   min-width: 0;
   flex: 1 1 0;
   height: 100%;
@@ -1335,22 +1444,41 @@ a:focus-visible {
   grid-area: stage;
   min-width: 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  padding: calc(env(titlebar-area-height, 32px) + 0.78rem) 1.55rem 1.55rem;
+  -webkit-app-region: no-drag;
+  user-select: auto;
+}
+
+.canvas-stage-content {
+  padding: 0;
 }
 
 .canvas-control-panel {
   grid-area: settings;
+  display: flex;
   min-width: 0;
-  overflow-y: auto;
+  min-height: 0;
+  overflow: hidden;
   border-left: 1px solid var(--color-border);
-  background: color-mix(in oklab, var(--color-card) 92%, var(--color-background));
+  background: color-mix(in oklab, var(--color-background) 88%, var(--color-card));
+  padding-top: calc(env(titlebar-area-height, 32px) + 0.78rem);
+  -webkit-app-region: drag;
+  user-select: none;
 }
 
-.canvas-composer-panel {
-  grid-area: composer;
-  min-width: 0;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-card);
+.canvas-control-panel-scroll {
+  display: flex;
+  min-height: 0;
+  height: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.62rem;
+  overflow-y: auto;
+  padding-bottom: 1cm;
+  -webkit-app-region: drag;
+  user-select: none;
 }
 
 .prompt-bar-shell {
@@ -1370,13 +1498,34 @@ a:focus-visible {
 
 .prompt-bar-shell--workspace-settings {
   display: flex;
-  height: 100%;
+  flex: 0 0 auto;
   border-top: 0;
-  padding: 1.16rem 0.85rem 0.78rem;
+  margin: 0 0.7rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
+  padding: 0.68rem;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.04);
 }
 
 .prompt-bar-shell--workspace-composer {
-  padding: 0.75rem 1rem;
+  flex: 0 0 auto;
+  min-height: 0;
+  margin: auto 0.7rem 0.55rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
+  padding: 0.58rem;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.04);
+}
+
+.prompt-bar-shell--workspace-composer [data-testid="prompt-attachments-panel"] {
+  margin-bottom: 0.46rem;
+  border-radius: 0.78rem;
+  padding: 0.46rem;
+}
+
+.prompt-bar-shell--workspace-composer [data-testid="prompt-attachment-preview"] {
+  width: 3rem;
+  height: 3rem;
 }
 
 .prompt-parameter-panel {
@@ -1388,11 +1537,10 @@ a:focus-visible {
 
 .prompt-bar-shell--workspace-settings .prompt-parameter-panel {
   display: flex;
-  min-height: 100%;
   width: 100%;
   flex-direction: column;
   margin-bottom: 0;
-  gap: 0.56rem;
+  gap: 0.42rem;
 }
 
 .prompt-parameter-heading,
@@ -1401,7 +1549,7 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 650;
 }
 
@@ -1494,7 +1642,7 @@ a:focus-visible {
 }
 
 .prompt-bar-shell--workspace-settings .prompt-output-panel {
-  margin-top: 0.72rem;
+  margin-top: 0.28rem;
   padding-top: 0;
 }
 
@@ -1507,12 +1655,12 @@ a:focus-visible {
 }
 
 .prompt-output-button {
-  min-height: 2.35rem;
+  min-height: 2.12rem;
   border: 0;
   border-right: 1px solid color-mix(in oklab, var(--color-border) 82%, transparent);
   background: var(--color-background);
   color: var(--color-foreground);
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -1590,52 +1738,65 @@ a:focus-visible {
   color: var(--color-primary);
 }
 
+.canvas-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.canvas-image-grid > * {
+  min-width: 0;
+  width: 100%;
+}
+
 .prompt-bar-shell--side .prompt-aspect-grid,
 .prompt-bar-shell--workspace-settings .prompt-aspect-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem;
+  gap: 0.36rem;
 }
 
 .prompt-bar-shell--side .prompt-aspect-button,
 .prompt-bar-shell--workspace-settings .prompt-aspect-button {
-  min-height: 3.42rem;
-  grid-template-rows: 1.36rem auto auto;
-  border-radius: 0.68rem;
-  padding: 0.38rem 0.35rem;
+  min-height: 3.04rem;
+  grid-template-rows: 1.12rem auto auto;
+  border-radius: 0.64rem;
+  padding: 0.28rem 0.3rem;
 }
 
 .prompt-bar-shell--side .prompt-aspect-preview--square,
 .prompt-bar-shell--workspace-settings .prompt-aspect-preview--square {
-  width: 1.42rem;
-  height: 1.42rem;
+  width: 1.12rem;
+  height: 1.12rem;
 }
 
 .prompt-bar-shell--side .prompt-aspect-preview--landscape,
 .prompt-bar-shell--workspace-settings .prompt-aspect-preview--landscape {
-  width: 1.76rem;
-  height: 1.08rem;
+  width: 1.42rem;
+  height: 0.88rem;
 }
 
 .prompt-bar-shell--side .prompt-aspect-preview--ultrawide,
 .prompt-bar-shell--workspace-settings .prompt-aspect-preview--ultrawide {
-  width: 1.88rem;
-  height: 0.72rem;
+  width: 1.5rem;
+  height: 0.54rem;
 }
 
 .prompt-bar-shell--side .prompt-aspect-preview--portrait,
 .prompt-bar-shell--workspace-settings .prompt-aspect-preview--portrait {
-  width: 1rem;
-  height: 1.58rem;
+  width: 0.78rem;
+  height: 1.24rem;
 }
 
 .prompt-bar-shell--side .prompt-aspect-title,
 .prompt-bar-shell--workspace-settings .prompt-aspect-title {
-  font-size: 0.76rem;
+  font-size: 0.72rem;
 }
 
 .prompt-bar-shell--side .prompt-aspect-value,
 .prompt-bar-shell--workspace-settings .prompt-aspect-value {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
 }
 
 .prompt-bar-shell--side .prompt-input-row,
@@ -1643,19 +1804,108 @@ a:focus-visible {
   align-items: stretch;
 }
 
+.prompt-bar-shell--workspace-composer .prompt-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.46rem;
+}
+
 .prompt-bar-shell--side textarea,
 .prompt-bar-shell--workspace-composer textarea {
   min-width: 0;
 }
 
+.prompt-bar-shell--workspace-composer textarea {
+  width: 100%;
+  min-height: 3.8rem;
+  max-height: 6.4rem;
+  padding: 0.64rem 0.74rem;
+  border-radius: 0.78rem;
+}
+
+.prompt-field-stack {
+  display: grid;
+  gap: 0.32rem;
+}
+
+.prompt-field-label {
+  color: var(--color-foreground);
+  font-size: 0.74rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.prompt-textarea {
+  resize: vertical;
+  border: 1px solid var(--color-input);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  outline: none;
+}
+
+.prompt-textarea::placeholder {
+  color: var(--color-muted-foreground);
+}
+
+.prompt-textarea:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-ring);
+}
+
+.prompt-textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.prompt-textarea--negative {
+  min-height: 4rem;
+}
+
+.prompt-textarea--positive {
+  min-height: 4.8rem;
+}
+
+.prompt-attach-button {
+  display: inline-flex;
+  min-height: 2.15rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px dashed color-mix(in oklab, var(--color-border) 86%, transparent);
+  background: color-mix(in oklab, var(--color-background) 86%, white 14%);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.prompt-generate-button {
+  min-height: 2.55rem;
+  width: 100%;
+  border-radius: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 @media (max-width: 1023px) {
+  .examples-page-titlebar {
+    flex-wrap: wrap;
+  }
+
+  .examples-page-toolbar-controls {
+    order: 4;
+    min-width: 0;
+    max-width: none;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+
   .canvas-workspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     grid-template-areas:
       "stage"
-      "settings"
-      "composer";
+      "settings";
   }
 
   .canvas-control-panel {
@@ -1707,6 +1957,18 @@ a:focus-visible {
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 0.55rem;
+  }
+
+  .example-search-control {
+    min-width: 100%;
+    max-width: none;
+    flex-basis: 100%;
+  }
+
+  .example-filter-select,
+  .example-sort-order-button {
+    flex: 1 1 0;
+    max-width: none;
   }
 
   .example-workspace-panel-head {

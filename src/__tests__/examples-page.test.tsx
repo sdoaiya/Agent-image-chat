@@ -23,6 +23,9 @@ describe("ExamplesPage", () => {
     expect(screen.queryByText("引用提示词与参照图，快速开始")).toBeNull();
     expect(screen.queryByText(/348 个案例/)).toBeNull();
     expect(screen.getByRole("tab", { name: "全部" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("searchbox", { name: "搜索示例" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "来源筛选" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "排序字段" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "全部示例" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "全部专题" })).toBeTruthy();
   });

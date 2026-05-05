@@ -39,7 +39,7 @@ describe("ExampleGallery", () => {
     expect(screen.getAllByRole("button", { name: /图片不可用/ }).length).toBeGreaterThan(0);
   });
 
-  it("removes legacy gallery counters, sort controls, status copy and card meta clutter", () => {
+  it("adds search, source and sort controls without restoring legacy card meta clutter", () => {
     const { container } = render(
       <MemoryRouter>
         <ExampleGallery mode="gallery" />
@@ -49,6 +49,10 @@ describe("ExampleGallery", () => {
     expect(screen.queryByText(/348 个案例/)).toBeNull();
     expect(screen.queryByRole("button", { name: "热门" })).toBeNull();
     expect(screen.queryByRole("button", { name: "最新" })).toBeNull();
+    expect(screen.getByRole("searchbox", { name: "搜索示例" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "来源筛选" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "排序字段" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "切换为升序" })).toBeTruthy();
     expect(screen.queryByText(/完整画廊当前收录/)).toBeNull();
     expect(screen.queryByText(/本地图集已接入/)).toBeNull();
     expect(container.querySelector(".example-gallery-status-panel")).toBeNull();
@@ -71,9 +75,41 @@ describe("ExampleGallery", () => {
     );
 
     const initialCount = container.querySelectorAll(".example-masonry-card").length;
+    expect(container.querySelector(".example-infinite-button .animate-spin")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "继续加载" }));
 
     expect(container.querySelectorAll(".example-masonry-card").length).toBeGreaterThan(initialCount);
+  });
+
+  it("keeps loading beyond the previous 138-item gallery cap", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    for (let index = 0; index < 6; index += 1) {
+      fireEvent.click(screen.getByRole("button", { name: "继续加载" }));
+    }
+
+    expect(container.querySelectorAll(".example-masonry-card").length).toBeGreaterThan(138);
+  });
+
+  it("filters the all examples stream by search query and source", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "搜索示例" }), { target: { value: "AP Calculus" } });
+
+    expect(screen.getByText("AP Calculus 学习表信息图")).toBeTruthy();
+    expect(container.querySelectorAll(".example-masonry-card")).toHaveLength(1);
+
+    fireEvent.change(screen.getByRole("combobox", { name: "来源筛选" }), { target: { value: "youmind" } });
+
+    expect(screen.getByText("当前筛选下暂无案例")).toBeTruthy();
   });
 
   it("opens a standalone image detail view from the image and keeps three reference actions", () => {
@@ -180,5 +216,19 @@ describe("ExampleGallery", () => {
     fireEvent.click(screen.getByRole("button", { name: "全部专题" }));
 
     expect(screen.getAllByRole("button", { name: /打开专题：/ })).toHaveLength(2);
+  });
+
+  it("applies source filtering to the topic branch as well as the flat stream", () => {
+    render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByRole("combobox", { name: "来源筛选" }), { target: { value: "youmind" } });
+    fireEvent.click(screen.getByRole("button", { name: "全部专题" }));
+
+    expect(screen.getByText("当前分类下暂无专题")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /打开专题：/ })).toBeNull();
   });
 });

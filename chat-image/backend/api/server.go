@@ -62,7 +62,7 @@ func (s *Server) HandleUpdateConfig(w http.ResponseWriter, r *http.Request) {
 			"api_key":      payload.App.APIKey,
 			"base_url":     baseURL,
 			"image_format": payload.App.ImageFormat,
-			"auth_key":     payload.App.AuthKey,
+			"auth_key":     "",
 		},
 		"server": {
 			"host": payload.Server.Host,
@@ -151,7 +151,7 @@ func (s *Server) buildConfigPayload() map[string]any {
 			"apiKey":      s.cfg.App.APIKey,
 			"baseUrl":     s.cfg.GetBaseURL(),
 			"imageFormat": s.cfg.App.ImageFormat,
-			"authKey":     s.cfg.App.AuthKey,
+			"authKey":     "",
 		},
 		"server": map[string]any{
 			"host": s.cfg.Server.Host,

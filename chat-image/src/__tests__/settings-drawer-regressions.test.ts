@@ -3,7 +3,7 @@
 describe("settings drawer local reset and model persistence invariants", () => {
   it("重置后前端默认质量应与 store 一致", async () => {
     const { normalizeQualityForApiMode } = await import("@/store/settings");
-    expect(normalizeQualityForApiMode("openai", "standard")).toBe("auto");
+    expect(normalizeQualityForApiMode("codesonline", "standard")).toBe("auto");
     expect(normalizeQualityForApiMode("codesonline", "low")).toBe("low");
   });
 

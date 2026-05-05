@@ -110,7 +110,7 @@ export const useSettings = create<Settings & SettingsActions>()(
     (set) => ({
       ...defaults,
       updateSettings: (partial) => set((state) => {
-        const next = { ...state, ...partial };
+        const next = { ...state, ...partial, authKey: "", importedModels: [] };
         return {
           ...next,
           defaultQuality: normalizeQualityForApiMode("codesonline", next.defaultQuality),
@@ -151,14 +151,14 @@ export const useSettings = create<Settings & SettingsActions>()(
       name: "gimg-settings",
       partialize: (state) => ({
         apiKey: state.apiKey,
-        authKey: state.authKey,
+        authKey: "",
         baseUrl: state.baseUrl,
         proxyEnabled: state.proxyEnabled,
         proxyUrl: state.proxyUrl,
         defaultModel: state.defaultModel,
         builtinModels: state.builtinModels,
         remoteModels: state.remoteModels,
-        importedModels: state.importedModels,
+        importedModels: [],
         availableModels: state.availableModels,
         lastModelRefreshAt: state.lastModelRefreshAt,
         defaultN: state.defaultN,
@@ -166,7 +166,24 @@ export const useSettings = create<Settings & SettingsActions>()(
         theme: state.theme,
       }),
       merge: (persistedState, currentState) => {
-        const merged = { ...currentState, ...(persistedState as Partial<Settings>) };
+        const persisted = persistedState as Partial<Settings>;
+        const builtinModels = uniqueModels(persisted.builtinModels ?? currentState.builtinModels);
+        const remoteModels = uniqueModels(persisted.remoteModels ?? currentState.remoteModels);
+        const persistedDefaultModel = normalizeModelValue(persisted.defaultModel ?? currentState.defaultModel);
+        const defaultModelCandidates = mergeModelPools(builtinModels, remoteModels);
+        const defaultModel = defaultModelCandidates.some((model) => model.toLowerCase() === persistedDefaultModel.toLowerCase())
+          ? persistedDefaultModel
+          : DEFAULT_IMAGE_MODEL;
+        const merged = {
+          ...currentState,
+          ...persisted,
+          authKey: "",
+          builtinModels,
+          remoteModels,
+          importedModels: [],
+          availableModels: [],
+          defaultModel,
+        };
         return {
           ...merged,
           defaultQuality: normalizeQualityForApiMode("codesonline", merged.defaultQuality),

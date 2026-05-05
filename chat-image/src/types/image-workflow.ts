@@ -1,4 +1,4 @@
-export type TurnMode = "generate" | "reference";
+export type TurnMode = "generate";
 
 export interface AttachmentRef {
   id: string;
@@ -10,8 +10,11 @@ export interface AttachmentRef {
 
 export interface ModelCapabilities {
   supportsGenerate: boolean;
-  supportsReferenceGeneration: boolean;
   resolutions: string[];
   maxReferenceImages: number;
   supportsMultiImageReference: boolean;
+  supportsEdit?: boolean;
+  supportsUpscale?: boolean;
+  upscaleFactors?: string[];
+  supportsMask?: boolean;
 }

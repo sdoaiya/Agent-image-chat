@@ -129,7 +129,9 @@ async function getBaseURL(): Promise<string> {
 
 function selectAuthToken(state?: { authKey?: string; apiKey?: string; accessToken?: string; apiMode?: string }): string | undefined {
   if (!state) return undefined;
-  return state.apiKey || state.authKey || state.accessToken;
+  const apiKey = state.apiKey?.trim();
+  if (apiKey) return apiKey;
+  return undefined;
 }
 
 function responseErrorText(data: unknown): string | null {
@@ -179,7 +181,7 @@ function humanizeMessage(message: string): string {
       : "网络连接失败，请确认 backend 已启动或服务地址可访问";
   }
   if (lower.includes("invalid api key") || lower.includes("401") || lower.includes("unauthorized")) {
-    return "鉴权失败，请检查 API Key 或本地鉴权 Key";
+    return "鉴权失败，请检查 API Key";
   }
   if (lower.includes("native upscale is not supported") || lower.includes("unSUPPORTED_upscale".toLowerCase())) {
     return "当前模型或模式不支持放大，请切换支持放大的服务后再试";

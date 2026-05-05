@@ -1,7 +1,6 @@
 [app]
   api_key = "gimg"
   api_mode = "codesonline"
-  auth_key = ""
   base_url = "https://image.codesonline.dev/v1"
   image_format = "url"
 

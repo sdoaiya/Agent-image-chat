@@ -1,27 +1,19 @@
-# GIMG Backend Configuration
-
 [app]
-api_mode = "openai"
 api_key = ""
-base_url = ""
-account_id = ""
+base_url = "https://image.codesonline.dev"
 image_format = "url"
-auth_key = "gimg"
+auth_key = ""
 
 [server]
 host = "0.0.0.0"
 port = 8080
 
 [chatgpt]
-model = "gpt-5.4-mini"
+model = "gpt-image-2"
 sse_timeout = 300
-request_timeout = 30
-free_image_route = "legacy"
-paid_image_route = "responses"
-free_image_model = "auto"
-paid_image_model = "gpt-5.4-mini"
+request_timeout = 300
+available_models = ["gpt-image-2"]
 
 [proxy]
 enabled = false
 url = "socks5h://127.0.0.1:10808"
-mode = "fixed"

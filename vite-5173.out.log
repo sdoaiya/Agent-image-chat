@@ -1,0 +1,18 @@
+Port 5173 is in use, trying another one...
+
+  [32m[1mVITE[22m v7.3.2[39m  [2mready in [0m[1m21161[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5174[22m/[39m
+[2m12:07:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css[22m
+[2m12:23:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/components/settings/settings-drawer.tsx[22m
+[2m12:23:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/components/settings/settings-drawer.tsx[22m
+[2m12:24:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/components/settings/settings-drawer.tsx[22m
+[2m12:24:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/components/settings/settings-drawer.tsx[22m
+[2m12:24:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/app/layout.tsx, /src/app/canvas/page.tsx, /src/components/settings/settings-drawer.tsx, /src/app/canvas/prompt-bar.tsx[22m
+[2m12:25:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/app/canvas/page.tsx, /src/components/settings/settings-drawer.tsx[22m
+[2m12:25:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/canvas/page.tsx, /src/app/globals.css[22m
+[2m12:27:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/app/layout.tsx, /src/app/canvas/page.tsx, /src/components/settings/settings-drawer.tsx, /src/app/canvas/prompt-bar.tsx[22m
+/settings/settings-drawer.tsx[22m
+[2m12:25:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/app/canvas/page.tsx, /src/components/settings/settings-drawer.tsx[22m
+[2m12:25:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/app/canvas/page.tsx[22m
+[2m12:27:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/app/globals.css, /src/app/layout.tsx, /src/app/canvas/page.tsx, /src/app/canvas/prompt-bar.tsx, /src/components/settings/settings-drawer.tsx[22m

@@ -18,7 +18,7 @@ const (
 
 	DefaultBaseURL        = "https://image.codesonline.dev"
 	DefaultImageModel     = "gpt-image-2"
-	DefaultRequestTimeout = 180
+	DefaultRequestTimeout = 300
 	LegacyMiniModel       = "gpt-5.4-mini"
 )
 
@@ -128,7 +128,11 @@ func (c *Config) SaveOverrides(values map[string]map[string]any) error {
 		}
 		raw[section] = sec
 	}
-	removeLegacyOverrideKeys(raw)
+	normalized, err := normalizeOverrideMapForSave(raw)
+	if err != nil {
+		c.loadMu.Unlock()
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
 		c.loadMu.Unlock()
 		return fmt.Errorf("create config dir: %w", err)
@@ -139,7 +143,7 @@ func (c *Config) SaveOverrides(values map[string]map[string]any) error {
 		return fmt.Errorf("create override file: %w", err)
 	}
 	defer f.Close()
-	if err := toml.NewEncoder(f).Encode(raw); err != nil {
+	if err := toml.NewEncoder(f).Encode(normalized); err != nil {
 		c.loadMu.Unlock()
 		return fmt.Errorf("encode override: %w", err)
 	}
@@ -241,9 +245,10 @@ func (c *Config) GetBaseURL() string {
 }
 
 func (c *Config) GetAuthKey() string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return strings.TrimSpace(c.App.AuthKey)
+	if runtimeAuthKey := strings.TrimSpace(os.Getenv("GIMG_AUTH_KEY")); runtimeAuthKey != "" {
+		return runtimeAuthKey
+	}
+	return ""
 }
 
 func (c *Config) GetSSETimeout() int {
@@ -358,6 +363,23 @@ func decodeDefaultTemplate(target *Config) error {
 	return err
 }
 
+func normalizeOverrideMapForSave(raw map[string]any) (*Config, error) {
+	migrateLegacyOverrideMap(raw)
+
+	normalized := &Config{}
+	if err := decodeDefaultTemplate(normalized); err != nil {
+		return nil, fmt.Errorf("decode embedded defaults: %w", err)
+	}
+	if err := applyOverrideMap(reflect.ValueOf(normalized).Elem(), raw); err != nil {
+		return nil, err
+	}
+	normalized.migrateLegacyModels()
+	if err := normalized.validate(); err != nil {
+		return nil, err
+	}
+	return normalized, nil
+}
+
 func migrateLegacyOverrideMap(raw map[string]any) {
 	app, _ := raw["app"].(map[string]any)
 	if app == nil {
@@ -370,6 +392,7 @@ func migrateLegacyOverrideMap(raw map[string]any) {
 	if imageFormat, ok := app["image_format"].(string); !ok || strings.TrimSpace(imageFormat) == "" {
 		app["image_format"] = "url"
 	}
+	app["auth_key"] = ""
 	delete(app, "account_id")
 
 	chatgpt, _ := raw["chatgpt"].(map[string]any)
@@ -424,22 +447,6 @@ func collectLegacyAvailableModels(chatgpt map[string]any, primaryModel string) [
 		}
 	}
 	return normalizeAvailableModels(values, primaryModel)
-}
-
-func removeLegacyOverrideKeys(raw map[string]any) {
-	if app, ok := raw["app"].(map[string]any); ok {
-		delete(app, "account_id")
-		delete(app, "api_mode")
-	}
-	if chatgpt, ok := raw["chatgpt"].(map[string]any); ok {
-		delete(chatgpt, "free_image_route")
-		delete(chatgpt, "paid_image_route")
-		delete(chatgpt, "free_image_model")
-		delete(chatgpt, "paid_image_model")
-	}
-	if proxy, ok := raw["proxy"].(map[string]any); ok {
-		delete(proxy, "mode")
-	}
 }
 
 func applyOverrideMap(dst reflect.Value, raw map[string]any) error {

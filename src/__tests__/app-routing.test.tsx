@@ -1,6 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
+const useYouMindPromptSyncMock = vi.hoisted(() => vi.fn(() => ({
+  canSync: false,
+  status: "unavailable",
+  items: [],
+  total: 0,
+  syncedAt: null,
+  pagesFetched: 0,
+  error: null,
+  refreshNow: vi.fn(),
+})));
+
 vi.mock("sonner", () => ({
   Toaster: () => null,
   toast: {
@@ -10,10 +21,15 @@ vi.mock("sonner", () => ({
   },
 }));
 
+vi.mock("@/hooks/use-youmind-prompt-sync", () => ({
+  useYouMindPromptSync: useYouMindPromptSyncMock,
+}));
+
 import App from "@/App";
 
 describe("App routing", () => {
   beforeEach(() => {
+    useYouMindPromptSyncMock.mockClear();
     localStorage.clear();
     window.location.hash = "#/examples";
     Object.defineProperty(window, "matchMedia", {
@@ -37,5 +53,13 @@ describe("App routing", () => {
     expect(screen.queryByText("页面加载中…")).toBeNull();
     expect(screen.getByRole("tab", { name: "全部" }).getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("button", { name: "全部专题" })).toBeTruthy();
+  });
+
+  it("starts the YouMind background sync outside the examples page", () => {
+    window.location.hash = "#/";
+
+    render(<App />);
+
+    expect(useYouMindPromptSyncMock).toHaveBeenCalledWith({ enabled: true });
   });
 });

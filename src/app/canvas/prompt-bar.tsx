@@ -13,6 +13,7 @@ export interface PromptOptions {
   quality?: string;
   n?: number;
   aspectRatio?: string;
+  negativePrompt?: string;
 }
 
 interface PromptBarProps {
@@ -30,6 +31,11 @@ interface PromptBarProps {
 
 const DEFAULT_ASPECT_RATIO = "1:1";
 const DEFAULT_SIZE = "1024x1024";
+const OUTPUT_LONG_EDGE_BY_QUALITY: Record<string, number> = {
+  medium: 2048,
+  high: 4096,
+};
+const DIMENSION_GRANULARITY = 8;
 const MIN_IMAGE_COUNT = 1;
 const MAX_IMAGE_COUNT = 4;
 
@@ -77,19 +83,53 @@ function buildPromptWithAspectInstruction(prompt: string, aspectRatio: string): 
   return `${instruction}\n${trimmed}`;
 }
 
+function buildPromptWithNegativePrompt(prompt: string, negativePrompt: string): string {
+  const trimmedNegative = negativePrompt.trim();
+  if (!trimmedNegative) return prompt;
+  return `${prompt}\n\n负面提示词：\n${trimmedNegative}`;
+}
+
 function resolveAspectSize(aspectRatio: string, availableSizes: string[]): string {
   const option = aspectRatioOptions.find((item) => item.value === aspectRatio) ?? aspectRatioOptions[0]!;
   if (availableSizes.includes(option.size)) return option.size;
   return availableSizes[0] ?? DEFAULT_SIZE;
 }
 
+function parseAspectRatio(aspectRatio: string): { width: number; height: number } {
+  const [rawWidth, rawHeight] = aspectRatio.split(":").map((part) => Number(part));
+  if (rawWidth === undefined || rawHeight === undefined || !Number.isFinite(rawWidth) || !Number.isFinite(rawHeight) || rawWidth <= 0 || rawHeight <= 0) {
+    return { width: 1, height: 1 };
+  }
+  return { width: rawWidth, height: rawHeight };
+}
+
+function roundDimension(value: number): number {
+  return Math.max(DIMENSION_GRANULARITY, Math.round(value / DIMENSION_GRANULARITY) * DIMENSION_GRANULARITY);
+}
+
+function resolveScaledAspectSize(aspectRatio: string, longEdge: number): string {
+  const ratio = parseAspectRatio(aspectRatio);
+  if (ratio.width >= ratio.height) {
+    return `${longEdge}x${roundDimension((longEdge * ratio.height) / ratio.width)}`;
+  }
+  return `${roundDimension((longEdge * ratio.width) / ratio.height)}x${longEdge}`;
+}
+
+function resolveOutputSize(aspectRatio: string, outputQuality: string, availableSizes: string[]): string {
+  const longEdge = OUTPUT_LONG_EDGE_BY_QUALITY[outputQuality];
+  if (longEdge) return resolveScaledAspectSize(aspectRatio, longEdge);
+  return resolveAspectSize(aspectRatio, availableSizes);
+}
+
 export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initialFiles, onInitialConsumed, capabilities, defaultQuality, defaultN = 1, layout = "bottom" }: PromptBarProps) {
   const [prompt, setPrompt] = useState("");
+  const [negativePrompt, setNegativePrompt] = useState("");
   const [files, setFiles] = useState<AttachedPromptFile[]>([]);
   const [aspectRatio, setAspectRatio] = useState(DEFAULT_ASPECT_RATIO);
   const [imageCount, setImageCount] = useState(() => clampImageCount(defaultN));
   const [quality, setQuality] = useState(() => normalizeOutputQuality(defaultQuality));
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const controlPanelScrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     return () => {
@@ -183,20 +223,23 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
 
   const handleSubmit = () => {
     const trimmed = prompt.trim();
+    const trimmedNegative = negativePrompt.trim();
     if (disabled) return;
     if (!trimmed && files.length === 0) return;
 
     const availableSizes = capabilities?.resolutions?.length ? capabilities.resolutions : [DEFAULT_SIZE, "1024x1536", "1536x1024"];
-    const nextSize = resolveAspectSize(aspectRatio, availableSizes);
-    const nextPrompt = buildPromptWithAspectInstruction(trimmed, aspectRatio);
+    const nextSize = resolveOutputSize(aspectRatio, quality, availableSizes);
+    const nextPrompt = buildPromptWithNegativePrompt(buildPromptWithAspectInstruction(trimmed, aspectRatio), trimmedNegative);
 
     onSubmit(nextPrompt, files.length > 0 ? files.map((f) => f.file) : undefined, {
       size: nextSize,
       quality,
       n: imageCount,
       aspectRatio,
+      negativePrompt: trimmedNegative || undefined,
     });
     setPrompt("");
+    setNegativePrompt("");
     files.forEach((f) => URL.revokeObjectURL(f.preview));
     setFiles([]);
   };
@@ -228,8 +271,20 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
     setImageCount(clampImageCount(defaultN));
   }, [defaultN]);
 
+  useEffect(() => {
+    if (layout !== "workspace" || files.length === 0) return;
+    const frame = window.requestAnimationFrame(() => {
+      const scrollRoot = controlPanelScrollRef.current;
+      if (scrollRoot) {
+        scrollRoot.scrollTop = scrollRoot.scrollHeight;
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [files.length, layout]);
+
   const canSubmit = !disabled && (!!prompt.trim() || files.length > 0);
   const actionDisabled = disabled ? !onCancel : !canSubmit;
+  const isWorkspaceLayout = layout === "workspace";
 
   const attachmentsPanel = files.length > 0 && (
         <div className="mb-3 rounded-2xl border border-border bg-muted/20 p-2.5" data-testid="prompt-attachments-panel">
@@ -320,15 +375,46 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
   );
 
   const inputPanel = (
-      <div className="prompt-input-row flex items-end gap-3">
+      <div className={cn("prompt-input-row flex items-end gap-3", isWorkspaceLayout && "prompt-input-row--workspace")}>
+        {isWorkspaceLayout && (
+          <div className="prompt-field-stack">
+            <label className="prompt-field-label" htmlFor="prompt-negative-input">负面提示词</label>
+            <textarea
+              id="prompt-negative-input"
+              value={negativePrompt}
+              onChange={(e) => setNegativePrompt(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="不想出现的内容，例如：低清晰度、畸形手指、文字错误..."
+              disabled={disabled}
+              rows={3}
+              className="prompt-textarea prompt-textarea--negative"
+            />
+            <label className="prompt-field-label" htmlFor="prompt-positive-input">正向提示词</label>
+            <textarea
+              id="prompt-positive-input"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder="描述你想生成的画面..."
+              disabled={disabled}
+              rows={4}
+              className="prompt-textarea prompt-textarea--positive"
+            />
+          </div>
+        )}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="shrink-0 rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className={cn(
+            "shrink-0 rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            isWorkspaceLayout && "prompt-attach-button",
+          )}
           title="上传图片"
           aria-label="上传图片"
         >
           <Paperclip className="h-4 w-4" />
+          {isWorkspaceLayout && <span>添加参考图</span>}
         </button>
         <input
           ref={(node) => { fileInputRef.current = node; }}
@@ -338,45 +424,46 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
           className="hidden"
           onChange={handleFileChange}
         />
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          placeholder="输入提示词，可只传图片让模型参考生成..."
-          disabled={disabled}
-          rows={1}
-          className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        />
+        {!isWorkspaceLayout && (
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            placeholder="输入提示词，可只传图片让模型参考生成..."
+            disabled={disabled}
+            rows={1}
+            className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        )}
         <Button
-          size="icon"
+          size={isWorkspaceLayout ? "lg" : "icon"}
           variant={disabled ? "destructive" : "default"}
           onClick={handlePrimaryAction}
           disabled={actionDisabled}
-          className="shrink-0 rounded-2xl"
-          aria-label={disabled ? "停止生成" : "发送"}
-          title={disabled ? "停止生成" : "发送"}
+          className={cn("shrink-0 rounded-2xl", isWorkspaceLayout && "prompt-generate-button")}
+          aria-label={disabled ? "停止生成" : isWorkspaceLayout ? "生成" : "发送"}
+          title={disabled ? "停止生成" : isWorkspaceLayout ? "生成" : "发送"}
         >
           {disabled ? <Square className="h-4 w-4 fill-current" /> : <Send className="h-4 w-4" />}
+          {isWorkspaceLayout && <span>{disabled ? "停止生成" : "生成"}</span>}
         </Button>
       </div>
   );
 
   if (layout === "workspace") {
     return (
-      <>
-        <aside className="canvas-control-panel" aria-label="图片生成设置">
+      <aside className="canvas-control-panel" aria-label="图片生成设置">
+        <div className="canvas-control-panel-scroll" ref={controlPanelScrollRef}>
           <div className="prompt-bar-shell prompt-bar-shell--workspace-settings">
             {parameterPanel}
           </div>
-        </aside>
-        <div className="canvas-composer-panel" aria-label="图片生成输入">
           <div className="prompt-bar-shell prompt-bar-shell--workspace-composer">
             {attachmentsPanel}
             {inputPanel}
           </div>
         </div>
-      </>
+      </aside>
     );
   }
 

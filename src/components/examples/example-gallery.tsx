@@ -1,10 +1,32 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowUp, FileText, FolderOpen, ImageOff, ImagePlus, Images, Loader2, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowDown10,
+  ArrowLeft,
+  ArrowUp,
+  ArrowUp10,
+  FileText,
+  FolderOpen,
+  ImageOff,
+  ImagePlus,
+  Images,
+  Loader2,
+  Search,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
-import { examplePromptDatasetSummary, examplePromptLibrary, type ExamplePromptItem } from "@/data/example-prompts";
-import { galleryTopicLibrary, galleryTopicSeeds, type GalleryTopicItem } from "@/data/gallery-topics";
+import { examplePromptLibrary, type ExamplePromptItem } from "@/data/example-prompts";
+import {
+  filterAndSortExamplePrompts,
+  mergeExamplePromptLibraries,
+  type ExampleSortField,
+  type ExampleSortOrder,
+  type ExampleSourceFilter,
+} from "@/data/example-library";
+import { galleryTopicLibrary, type GalleryTopicItem } from "@/data/gallery-topics";
 import { useExampleImport } from "@/store/example-import";
+import { useYouMindPromptSync } from "@/hooks/use-youmind-prompt-sync";
 import type { AttachedPromptFile } from "@/app/canvas/prompt-bar";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +41,14 @@ interface ExampleGalleryProps {
   onGalleryViewChange?: (view: ExampleGalleryView) => void;
   activeTopicId?: string | null;
   onActiveTopicChange?: (topicId: string | null) => void;
+  sourceFilter?: ExampleSourceFilter;
+  onSourceFilterChange?: (source: ExampleSourceFilter) => void;
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
+  sortField?: ExampleSortField;
+  onSortFieldChange?: (field: ExampleSortField) => void;
+  sortOrder?: ExampleSortOrder;
+  onSortOrderChange?: (order: ExampleSortOrder) => void;
   hideToolbar?: boolean;
   onUseExample?: (example: ExamplePromptItem) => void;
   onUsePromptOnly?: (example: ExamplePromptItem) => void;
@@ -35,11 +65,22 @@ const categoryLabels: Record<ExampleCategoryFilter, string> = {
   community: "社区",
 };
 
+const sourceFilterLabels: Record<ExampleSourceFilter, string> = {
+  all: "全部来源",
+  local: "本地",
+  youmind: "YouMind",
+};
+
+const sortFieldLabels: Record<ExampleSortField, string> = {
+  time: "时间",
+  likes: "点赞",
+  title: "标题",
+};
+
 const PAGE_SIZE_WORKSPACE = 6;
 const PAGE_SIZE_GALLERY = 24;
 const EXAMPLE_IMAGE_MAX_HEIGHT = 600;
 const EXAMPLE_IMAGE_MIN_HEIGHT = 220;
-const GALLERY_SEED_IDS = new Set(galleryTopicSeeds.flatMap((topic) => topic.entries.map((entry) => entry.id)));
 const GALLERY_COLUMN_COUNT = 4;
 const TOPIC_WATERFALL_COLUMN_COUNT = GALLERY_COLUMN_COUNT;
 const DESKTOP_GALLERY_MIN_WIDTH = 960;
@@ -59,13 +100,27 @@ function inferImageMimeType(imagePath: string): string {
   return EXAMPLE_IMAGE_MIME_BY_EXT[ext] ?? "image/jpeg";
 }
 
-async function toAttachedPromptFile(item: ExamplePromptItem): Promise<AttachedPromptFile> {
-  const response = await fetch(item.imageUrl, { cache: "force-cache" });
+function shouldUseElectronImageFetch(imageUrl: string): boolean {
+  return /^https?:\/\//i.test(imageUrl) && Boolean(window.electronAPI?.fetchImageBytes);
+}
+
+async function fetchExampleImageBlob(item: ExamplePromptItem): Promise<Blob> {
+  const referenceImageUrl = item.referenceImageUrl ?? item.imageUrl;
+  if (shouldUseElectronImageFetch(referenceImageUrl)) {
+    const payload = await window.electronAPI!.fetchImageBytes!(referenceImageUrl);
+    return new Blob([Uint8Array.from(payload.bytes)], { type: payload.contentType || inferImageMimeType(item.imagePath) });
+  }
+
+  const response = await fetch(referenceImageUrl, { cache: "force-cache" });
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
   }
 
-  const blob = await response.blob();
+  return response.blob();
+}
+
+async function toAttachedPromptFile(item: ExamplePromptItem): Promise<AttachedPromptFile> {
+  const blob = await fetchExampleImageBlob(item);
   const mimeType = blob.type || inferImageMimeType(item.imagePath);
   const extension = item.imagePath.split(".").pop()?.toLowerCase() ?? "jpg";
   const file = new File([blob], `${item.id}.${extension}`, { type: mimeType });
@@ -545,6 +600,14 @@ export function ExampleGallery({
   onGalleryViewChange,
   activeTopicId: controlledActiveTopicId,
   onActiveTopicChange,
+  sourceFilter: controlledSourceFilter,
+  onSourceFilterChange,
+  searchQuery: controlledSearchQuery,
+  onSearchQueryChange,
+  sortField: controlledSortField,
+  onSortFieldChange,
+  sortOrder: controlledSortOrder,
+  onSortOrderChange,
   hideToolbar = false,
   onUseExample,
   onUsePromptOnly,
@@ -556,6 +619,10 @@ export function ExampleGallery({
   const [page, setPage] = useState(1);
   const [localGalleryView, setLocalGalleryView] = useState<ExampleGalleryView>("featured");
   const [localActiveTopicId, setLocalActiveTopicId] = useState<string | null>(null);
+  const [localSourceFilter, setLocalSourceFilter] = useState<ExampleSourceFilter>("all");
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const [localSortField, setLocalSortField] = useState<ExampleSortField>("time");
+  const [localSortOrder, setLocalSortOrder] = useState<ExampleSortOrder>("desc");
   const [selectedExample, setSelectedExample] = useState<ExamplePromptItem | null>(null);
   const [imageStates, setImageStates] = useState<Record<string, GalleryImageState>>({});
   const resultsRef = useRef<HTMLDivElement | null>(null);
@@ -565,6 +632,11 @@ export function ExampleGallery({
   const category = controlledCategory ?? localCategory;
   const galleryView = controlledGalleryView ?? localGalleryView;
   const activeTopicId = controlledActiveTopicId === undefined ? localActiveTopicId : controlledActiveTopicId;
+  const sourceFilter = controlledSourceFilter ?? localSourceFilter;
+  const searchQuery = controlledSearchQuery ?? localSearchQuery;
+  const sortField = controlledSortField ?? localSortField;
+  const sortOrder = controlledSortOrder ?? localSortOrder;
+  const youMindSync = useYouMindPromptSync({ enabled: isGallery });
 
   const setCategory = useCallback((next: ExampleCategoryFilter) => {
     if (controlledCategory === undefined) {
@@ -587,36 +659,93 @@ export function ExampleGallery({
     onActiveTopicChange?.(next);
   }, [controlledActiveTopicId, onActiveTopicChange]);
 
+  const setSourceFilter = useCallback((next: ExampleSourceFilter) => {
+    if (controlledSourceFilter === undefined) {
+      setLocalSourceFilter(next);
+    }
+    onSourceFilterChange?.(next);
+  }, [controlledSourceFilter, onSourceFilterChange]);
+
+  const setSearchQuery = useCallback((next: string) => {
+    if (controlledSearchQuery === undefined) {
+      setLocalSearchQuery(next);
+    }
+    onSearchQueryChange?.(next);
+  }, [controlledSearchQuery, onSearchQueryChange]);
+
+  const setSortField = useCallback((next: ExampleSortField) => {
+    if (controlledSortField === undefined) {
+      setLocalSortField(next);
+    }
+    onSortFieldChange?.(next);
+  }, [controlledSortField, onSortFieldChange]);
+
+  const setSortOrder = useCallback((next: ExampleSortOrder) => {
+    if (controlledSortOrder === undefined) {
+      setLocalSortOrder(next);
+    }
+    onSortOrderChange?.(next);
+  }, [controlledSortOrder, onSortOrderChange]);
+
   useEffect(() => {
     setPage(1);
     setSelectedExample(null);
-  }, [category, galleryView, activeTopicId]);
+  }, [category, galleryView, activeTopicId, sourceFilter, searchQuery, sortField, sortOrder]);
 
-  const filteredExamples = useMemo(() => {
-    const base = examplePromptLibrary.filter((item) => category === "all" || item.category === category);
+  const mergedExamples = useMemo(
+    () => mergeExamplePromptLibraries(examplePromptLibrary, youMindSync.items),
+    [youMindSync.items],
+  );
 
-    return [...base].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [category]);
+  const filteredExamples = useMemo(
+    () => filterAndSortExamplePrompts(mergedExamples, {
+      category,
+      source: sourceFilter,
+      query: searchQuery,
+      sortField,
+      sortOrder,
+    }),
+    [category, mergedExamples, searchQuery, sortField, sortOrder, sourceFilter],
+  );
 
   const filteredTopics = useMemo(() => {
     const base = galleryTopicLibrary.filter((topic) => category === "all" || topic.category === category);
 
-    return [...base].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [category]);
+    return base
+      .map((topic) => {
+        const entries = filterAndSortExamplePrompts(topic.entries, {
+          category,
+          source: sourceFilter,
+          query: searchQuery,
+          sortField,
+          sortOrder,
+        });
+        const cover = entries[0];
+        if (!cover) {
+          return null;
+        }
 
-  const featuredExamples = useMemo(() => {
-    if (!isGallery) {
-      return filteredExamples;
-    }
+        return {
+          ...topic,
+          coverImageUrl: cover.imageUrl,
+          coverWidth: cover.width,
+          coverHeight: cover.height,
+          entries,
+          totalEntries: entries.length,
+        };
+      })
+      .filter((topic): topic is GalleryTopicItem => Boolean(topic))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [category, searchQuery, sortField, sortOrder, sourceFilter]);
 
-    const merged = filteredExamples.filter((item) => GALLERY_SEED_IDS.has(item.id));
-    return merged.length ? merged : filteredExamples;
-  }, [filteredExamples, isGallery]);
+  const galleryExamples = useMemo(() => {
+    return filteredExamples;
+  }, [filteredExamples]);
 
   const pagedExamples = useMemo(() => {
-    const source = isGallery ? featuredExamples : filteredExamples;
+    const source = isGallery ? galleryExamples : filteredExamples;
     return source.slice(0, page * pageSize);
-  }, [featuredExamples, filteredExamples, isGallery, page, pageSize]);
+  }, [filteredExamples, galleryExamples, isGallery, page, pageSize]);
 
   const activeTopic = useMemo(
     () => (activeTopicId ? filteredTopics.find((topic) => topic.id === activeTopicId) ?? null : null),
@@ -628,11 +757,12 @@ export function ExampleGallery({
     [activeTopic, page],
   );
 
-  const visibleExampleCount = isGallery ? featuredExamples.length : filteredExamples.length;
+  const visibleExampleCount = isGallery ? galleryExamples.length : filteredExamples.length;
   const visibleStreamCount = activeTopic ? activeTopic.entries.length : visibleExampleCount;
   const renderedStreamCount = activeTopic ? activeTopicPagedEntries.length : pagedExamples.length;
   const hasMoreExamples = renderedStreamCount < visibleStreamCount;
-  const categoryCaseCount = category === "all" ? examplePromptDatasetSummary.structuredCaseCount : filteredExamples.length;
+  const categoryCaseCount = filteredExamples.length;
+  const upstreamExampleCount = youMindSync.items.length;
   const shouldUseFourColumnGallery = isGallery && galleryView !== "topics";
 
   const setImageState = useCallback((key: string, state: GalleryImageState) => {
@@ -673,9 +803,16 @@ export function ExampleGallery({
       if (onUseImageOnly) {
         await onUseImageOnly(item);
       } else {
-        setExampleImportPending({ mode: "generate", prompt: "", files: [] });
-        navigate("/");
-        toast.info("示例页暂不直接挂载工作台上传对象，请在工作台继续补充参照图。已为你打开工作台。", { duration: 2600 });
+        try {
+          const attachedFile = await toAttachedPromptFile(item);
+          setExampleImportPending({ mode: "generate", prompt: "", files: [attachedFile] });
+          navigate("/");
+          toast.success("已引用参照图，工作台已打开");
+        } catch {
+          setExampleImportPending({ mode: "generate", prompt: item.prompt, files: [] });
+          navigate("/");
+          toast.info("示例图片加载失败，已退化为仅引用提示词");
+        }
       }
       return;
     }
@@ -756,6 +893,30 @@ export function ExampleGallery({
     void importExample(example, "image");
   }, [importExample]);
 
+  const toggleSortOrder = useCallback(() => {
+    setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+  }, [setSortOrder, sortOrder]);
+
+  const syncSummary = useMemo(() => {
+    if (!isGallery || !youMindSync.canSync) {
+      return null;
+    }
+
+    if (youMindSync.status === "syncing") {
+      return "上游同步中";
+    }
+
+    if (youMindSync.status === "error") {
+      return "上游暂不可用";
+    }
+
+    if (upstreamExampleCount > 0) {
+      return `YouMind ${upstreamExampleCount}/${youMindSync.total || upstreamExampleCount}`;
+    }
+
+    return null;
+  }, [isGallery, upstreamExampleCount, youMindSync.canSync, youMindSync.status, youMindSync.total]);
+
   const gallerySectionTitleId = `example-gallery-title-${mode}`;
   const galleryResultsId = `example-gallery-results-${mode}`;
   const topicGalleryGridStyle = isGallery
@@ -822,7 +983,51 @@ export function ExampleGallery({
               </button>
             ))}
           </div>
+          <label className="example-search-control" aria-label="搜索示例">
+            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="搜索提示词 / 标题 / 作者"
+              aria-label="搜索示例"
+            />
+          </label>
           <div className="example-filter-side">
+            <select
+              className="example-filter-select"
+              value={sourceFilter}
+              onChange={(event) => setSourceFilter(event.target.value as ExampleSourceFilter)}
+              aria-label="来源筛选"
+            >
+              {Object.entries(sourceFilterLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <select
+              className="example-filter-select"
+              value={sortField}
+              onChange={(event) => setSortField(event.target.value as ExampleSortField)}
+              aria-label="排序字段"
+            >
+              {Object.entries(sortFieldLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="example-view-pill example-sort-order-button"
+              onClick={toggleSortOrder}
+              aria-label={sortOrder === "desc" ? "切换为升序" : "切换为降序"}
+              title={sortOrder === "desc" ? "降序" : "升序"}
+            >
+              {sortOrder === "desc" ? <ArrowDown10 className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowUp10 className="h-3.5 w-3.5" aria-hidden="true" />}
+              <span className="example-view-pill-label">{sortOrder === "desc" ? "降序" : "升序"}</span>
+            </button>
             {isGallery ? (
               <>
                 <button
@@ -853,7 +1058,14 @@ export function ExampleGallery({
             ) : (
               <span className="example-filter-count">{categoryCaseCount} 个案例</span>
             )}
+            {syncSummary ? <span className="example-sync-pill">{syncSummary}</span> : null}
           </div>
+        </div>
+      ) : null}
+
+      {hideToolbar && syncSummary ? (
+        <div className="example-filter-bar example-filter-bar--sync-only titlebar-no-drag" aria-live="polite">
+          <span className="example-sync-pill">{syncSummary}</span>
         </div>
       ) : null}
 
@@ -996,7 +1208,7 @@ export function ExampleGallery({
         {hasMoreExamples && !showingTopicList && !showingExampleDetail ? (
           <div ref={infiniteLoadRef} className="example-infinite-sentinel" role="status" aria-live="polite">
             <button type="button" className="example-infinite-button" onClick={loadNextPage}>
-              <Loader2 className="h-3.5 w-3.5" aria-hidden="true" />
+              <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
               <span>继续加载</span>
             </button>
           </div>

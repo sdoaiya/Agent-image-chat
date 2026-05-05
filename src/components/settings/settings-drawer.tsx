@@ -7,7 +7,6 @@ import {
   Monitor,
   Moon,
   Palette,
-  Plus,
   RefreshCw,
   RotateCcw,
   Settings2,
@@ -29,13 +28,9 @@ import {
   DEFAULT_IMAGE_MODEL,
   CODESONLINE_BASE_URL,
   useSettings,
-  type ImageQuality,
-  getQualityOptionsByApiMode,
-  normalizeQualityForApiMode,
 } from "@/store/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -45,7 +40,7 @@ const themeIcons: Record<string, React.ReactNode> = {
   system: <Monitor className="h-4 w-4" />,
 };
 
-const BACKEND_REQUEST_TIMEOUT_SECONDS = 180;
+const BACKEND_REQUEST_TIMEOUT_SECONDS = 300;
 
 interface BackendSettingsPayload {
   app: {
@@ -92,20 +87,6 @@ function objectValue(value: unknown): Record<string, unknown> {
 function formatRefreshTime(value: number | null): string {
   if (!value) return "尚未刷新";
   return new Date(value).toLocaleString();
-}
-
-function parseImportedModels(value: string): string[] {
-  const seen = new Set<string>();
-  return value
-    .split(/[\n,，]/g)
-    .map((item) => item.trim())
-    .filter((item) => {
-      if (!item) return false;
-      const key = item.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
 }
 
 function isBackendUnavailableError(error: unknown): boolean {
@@ -161,38 +142,29 @@ function deriveDraftState(args: {
 
 interface SettingsDraftSnapshot {
   apiKey: string;
-  authKey: string;
   baseUrl: string;
   proxyEnabled: boolean;
   proxyUrl: string;
   defaultModel: string;
-  defaultN: number;
-  defaultQuality: ImageQuality;
   theme: "light" | "dark" | "system";
 }
 
 function hasMeaningfulDraftChanges(args: {
   open: boolean;
   apiKey: string;
-  authKey: string;
   baseUrl: string;
   proxyEnabled: boolean;
   proxyUrl: string;
   defaultModel: string;
-  defaultN: number;
-  defaultQuality: ImageQuality;
   theme: "light" | "dark" | "system";
   settings: SettingsDraftSnapshot;
 }): boolean {
   if (!args.open) return false;
   return args.apiKey !== args.settings.apiKey
-    || args.authKey !== args.settings.authKey
     || args.baseUrl !== args.settings.baseUrl
     || args.proxyEnabled !== args.settings.proxyEnabled
     || args.proxyUrl !== args.settings.proxyUrl
     || args.defaultModel !== args.settings.defaultModel
-    || args.defaultN !== args.settings.defaultN
-    || args.defaultQuality !== args.settings.defaultQuality
     || args.theme !== args.settings.theme;
 }
 
@@ -204,16 +176,11 @@ interface SettingsDrawerProps {
 export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
   const settings = useSettings();
   const [apiKey, setApiKey] = useState(settings.apiKey);
-  const [authKey, setAuthKey] = useState(settings.authKey);
   const [baseUrl, setBaseUrl] = useState(settings.baseUrl);
   const [proxyEnabled, setProxyEnabled] = useState(settings.proxyEnabled);
   const [proxyUrl, setProxyUrl] = useState(settings.proxyUrl);
   const [defaultModel, setDefaultModel] = useState(settings.defaultModel);
-  const [defaultN, setDefaultN] = useState(settings.defaultN);
-  const [defaultQuality, setDefaultQuality] = useState<ImageQuality>(settings.defaultQuality);
   const [theme, setTheme] = useState(settings.theme);
-  const [importValue, setImportValue] = useState("");
-  const [importing, setImporting] = useState(false);
   const [refreshingModels, setRefreshingModels] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
@@ -222,21 +189,15 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
 
   const refreshDraftFromStore = useCallback(() => {
     setApiKey(settings.apiKey);
-    setAuthKey(settings.authKey);
     setBaseUrl(settings.baseUrl);
     setProxyEnabled(settings.proxyEnabled);
     setProxyUrl(settings.proxyUrl);
     setDefaultModel(settings.defaultModel);
-    setDefaultN(settings.defaultN);
-    setDefaultQuality(settings.defaultQuality);
     setTheme(settings.theme);
   }, [
     settings.apiKey,
-    settings.authKey,
     settings.baseUrl,
     settings.defaultModel,
-    settings.defaultN,
-    settings.defaultQuality,
     settings.proxyEnabled,
     settings.proxyUrl,
     settings.theme,
@@ -247,13 +208,10 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     if (hasMeaningfulDraftChanges({
       open,
       apiKey,
-      authKey,
       baseUrl,
       proxyEnabled,
       proxyUrl,
       defaultModel,
-      defaultN,
-      defaultQuality,
       theme,
       settings,
     })) {
@@ -262,11 +220,8 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     refreshDraftFromStore();
   }, [
     apiKey,
-    authKey,
     baseUrl,
     defaultModel,
-    defaultN,
-    defaultQuality,
     open,
     proxyEnabled,
     proxyUrl,
@@ -295,7 +250,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
             defaultModel: settings.defaultModel,
             builtinModels: settings.builtinModels,
             remoteModels: mergedRemoteModels,
-            importedModels: settings.importedModels,
+            importedModels: [],
             backendConfig: config,
           });
           setDefaultModel(normalized.selectedModel);
@@ -308,39 +263,28 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     return () => {
       cancelled = true;
     };
-  }, [open, settings.builtinModels, settings.defaultModel, settings.importedModels, settings.remoteModels]);
+  }, [open, settings.builtinModels, settings.defaultModel, settings.remoteModels]);
 
   useEffect(() => {
     if (!baseUrl || baseUrl === "https://api.openai.com") {
       setBaseUrl(CODESONLINE_BASE_URL);
     }
-    if (defaultModel !== "gpt-image-2" && !settings.importedModels.includes(defaultModel) && !settings.remoteModels.includes(defaultModel)) {
+    if (defaultModel !== "gpt-image-2" && !settings.remoteModels.includes(defaultModel)) {
       setDefaultModel("gpt-image-2");
     }
-  }, [baseUrl, defaultModel, settings.importedModels, settings.remoteModels]);
-
-  useEffect(() => {
-    const normalizedQuality = normalizeQualityForApiMode("codesonline", defaultQuality);
-    if (normalizedQuality !== defaultQuality) {
-      setDefaultQuality(normalizedQuality);
-    }
-  }, [defaultQuality]);
+  }, [baseUrl, defaultModel, settings.remoteModels]);
 
   const capabilities = backendConfig?.capabilities;
-
-  const qualityOptions = useMemo(() => {
-    return getQualityOptionsByApiMode("codesonline").map((value) => ({ value, label: value }));
-  }, []);
 
   const availableModels = useMemo(() => {
     return normalizeModelState({
       builtins: settings.builtinModels,
       remote: settings.remoteModels,
-      imported: settings.importedModels,
+      imported: [],
       backend: backendConfig,
       selected: defaultModel,
     }).availableModels;
-  }, [backendConfig, defaultModel, settings.builtinModels, settings.importedModels, settings.remoteModels]);
+  }, [backendConfig, defaultModel, settings.builtinModels, settings.remoteModels]);
 
   const refreshModels = async () => {
     setRefreshingModels(true);
@@ -369,7 +313,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
         defaultModel,
         builtinModels: settings.builtinModels,
         remoteModels: refreshedModels,
-        importedModels: settings.importedModels,
+        importedModels: [],
         backendConfig: nextBackendConfig,
       });
       setDefaultModel(normalized.selectedModel);
@@ -387,53 +331,28 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     }
   };
 
-  const handleImportModels = () => {
-    setImporting(true);
-    try {
-      const models = parseImportedModels(importValue);
-      if (models.length === 0) {
-        toast.error("请输入至少一个模型名称");
-        return;
-      }
-      const added = settings.addImportedModels(models);
-      if (added.length === 0) {
-        toast.info("导入的模型已存在，无需重复添加");
-        return;
-      }
-      if (!defaultModel) {
-        setDefaultModel(added[0] || DEFAULT_IMAGE_MODEL);
-      }
-      setImportValue("");
-      toast.success(`已导入 ${added.length} 个模型`);
-    } finally {
-      setImporting(false);
-    }
-  };
-
   const save = async () => {
     const normalized = deriveDraftState({
       defaultModel,
       builtinModels: settings.builtinModels,
       remoteModels: settings.remoteModels,
-      importedModels: settings.importedModels,
+      importedModels: [],
       backendConfig,
     });
     const selectedModel = normalized.selectedModel;
-    const normalizedQuality = normalizeQualityForApiMode("codesonline", defaultQuality);
 
     setSaving(true);
     setSaveStatus("idle");
     setSaveMessage("正在保存...");
     settings.updateSettings({
       apiKey,
-      authKey,
+      authKey: "",
       baseUrl,
       proxyEnabled,
       proxyUrl,
       defaultModel: selectedModel,
+      importedModels: [],
       availableModels: normalized.availableModels,
-      defaultN,
-      defaultQuality: normalizedQuality,
       theme,
     });
 
@@ -442,7 +361,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
         apiKey,
         baseUrl,
         imageFormat: "url",
-        authKey,
+        authKey: "",
       },
       server: {
         host: "0.0.0.0",
@@ -481,7 +400,6 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
         selectedModel,
       );
       setDefaultModel(selectedModel);
-      setDefaultQuality(normalizedQuality);
       setSaveStatus("success");
       setSaveMessage("设置已保存，模型与能力信息已刷新。");
       toast.success("设置已保存");
@@ -504,15 +422,11 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
   const handleReset = () => {
     settings.resetSettings();
     setApiKey("");
-    setAuthKey("");
     setBaseUrl(CODESONLINE_BASE_URL);
     setProxyEnabled(false);
     setProxyUrl("");
     setDefaultModel(DEFAULT_IMAGE_MODEL);
-    setDefaultN(1);
-    setDefaultQuality(normalizeQualityForApiMode("codesonline", "standard"));
     setTheme("system");
-    setImportValue("");
     toast.success("设置已重置");
   };
 
@@ -537,10 +451,6 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium">API Key</label>
                 <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">本地鉴权 Key</label>
-                <Input type="password" value={authKey} onChange={(e) => setAuthKey(e.target.value)} placeholder="local auth key" />
               </div>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium">
@@ -576,41 +486,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
                   <span>·</span>
                   <span>刷新 {settings.remoteModels.length}</span>
                   <span>·</span>
-                  <span>导入 {settings.importedModels.length}</span>
-                  <span>·</span>
                   <span>最近刷新：{formatRefreshTime(settings.lastModelRefreshAt)}</span>
-                </div>
-              </div>
-              <div className="space-y-3 rounded-xl border border-border bg-background px-3 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <label className="text-sm font-medium">导入模型</label>
-                  <Button type="button" size="sm" variant="outline" onClick={handleImportModels} disabled={importing}>
-                    <Plus className="h-4 w-4" /> 导入
-                  </Button>
-                </div>
-                <Textarea
-                  value={importValue}
-                  onChange={(e) => setImportValue(e.target.value)}
-                  placeholder="支持换行或逗号分隔，例如：gpt-image-2, my-custom-model"
-                  className="min-h-[92px] resize-y bg-card"
-                />
-                <p className="text-xs text-muted-foreground">导入模型会与内置模型和刷新结果合并，并持久化保留。</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">默认生成张数</label>
-                  <Input type="number" min={1} max={4} value={defaultN} onChange={(e) => setDefaultN(Math.max(1, Number(e.target.value) || 1))} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">质量</label>
-                  <Select value={defaultQuality} onValueChange={(v) => setDefaultQuality(v as typeof defaultQuality)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {qualityOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
               <div className="space-y-2">

@@ -9,9 +9,8 @@ import {
 describe("settings store quality normalization", () => {
   it("应在统一链路下返回固定质量选项", () => {
     const expected = ["auto", "low", "medium", "high"];
-    expect(getQualityOptionsByApiMode("openai")).toEqual(expected);
     expect(getQualityOptionsByApiMode("codesonline")).toEqual(expected);
-    expect(normalizeQualityForApiMode("openai", "hd")).toBe("auto");
+    expect(normalizeQualityForApiMode("codesonline", "hd")).toBe("auto");
     expect(normalizeQualityForApiMode("codesonline", "medium")).toBe("medium");
   });
 

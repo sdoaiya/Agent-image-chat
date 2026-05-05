@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { Aperture, FolderOpen, Images } from "lucide-react";
+import { Aperture, ArrowDown10, ArrowUp10, FolderOpen, Images, Search } from "lucide-react";
 import { type ExamplePromptItem } from "@/data/example-prompts";
+import type { ExampleSortField, ExampleSortOrder, ExampleSourceFilter } from "@/data/example-library";
 import { ExampleGallery } from "@/components/examples/example-gallery";
 
 export function ExamplesPage() {
   const [category, setCategory] = useState<ExamplePromptItem["category"] | "all">("all");
   const [galleryView, setGalleryView] = useState<"featured" | "topics">("featured");
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<ExampleSourceFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<ExampleSortField>("time");
+  const [sortOrder, setSortOrder] = useState<ExampleSortOrder>("desc");
   const headerCategories: Array<{ value: ExamplePromptItem["category"] | "all"; label: string }> = [
     { value: "all", label: "全部" },
     { value: "portrait", label: "人像" },
@@ -16,6 +21,16 @@ export function ExamplesPage() {
     { value: "infographic", label: "图鉴" },
     { value: "community", label: "社区" },
   ];
+  const sourceFilterLabels: Record<ExampleSourceFilter, string> = {
+    all: "全部来源",
+    local: "本地",
+    youmind: "YouMind",
+  };
+  const sortFieldLabels: Record<ExampleSortField, string> = {
+    time: "时间",
+    likes: "点赞",
+    title: "标题",
+  };
 
   return (
     <div className="examples-page-shell flex h-full min-h-0 flex-col overflow-hidden">
@@ -39,6 +54,52 @@ export function ExamplesPage() {
               {item.label}
             </button>
           ))}
+        </div>
+        <div className="titlebar-no-drag examples-page-toolbar-controls">
+          <label className="example-search-control" aria-label="搜索示例">
+            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="搜索提示词 / 标题 / 作者"
+              aria-label="搜索示例"
+            />
+          </label>
+          <select
+            className="example-filter-select"
+            value={sourceFilter}
+            onChange={(event) => setSourceFilter(event.target.value as ExampleSourceFilter)}
+            aria-label="来源筛选"
+          >
+            {Object.entries(sourceFilterLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <select
+            className="example-filter-select"
+            value={sortField}
+            onChange={(event) => setSortField(event.target.value as ExampleSortField)}
+            aria-label="排序字段"
+          >
+            {Object.entries(sortFieldLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="example-view-pill example-sort-order-button"
+            onClick={() => setSortOrder((current) => (current === "desc" ? "asc" : "desc"))}
+            aria-label={sortOrder === "desc" ? "切换为升序" : "切换为降序"}
+            title={sortOrder === "desc" ? "降序" : "升序"}
+          >
+            {sortOrder === "desc" ? <ArrowDown10 className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowUp10 className="h-3.5 w-3.5" aria-hidden="true" />}
+            <span className="example-view-pill-label">{sortOrder === "desc" ? "降序" : "升序"}</span>
+          </button>
         </div>
         <button
           type="button"
@@ -75,6 +136,14 @@ export function ExamplesPage() {
             onGalleryViewChange={setGalleryView}
             activeTopicId={activeTopicId}
             onActiveTopicChange={setActiveTopicId}
+            sourceFilter={sourceFilter}
+            onSourceFilterChange={setSourceFilter}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            sortField={sortField}
+            onSortFieldChange={setSortField}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
             hideToolbar
           />
         </div>

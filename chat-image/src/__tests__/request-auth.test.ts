@@ -9,17 +9,16 @@ describe("Auth token priority", () => {
     })).toBe("sk-test");
   });
 
-  it("缺失 apiKey 时应回退到 authKey", () => {
+  it("缺失 apiKey 时不应回退到 authKey", () => {
     expect(selectAuthToken({
       authKey: "auth-test",
-    })).toBe("auth-test");
+    })).toBeUndefined();
   });
 
   it("accessToken 不在统一链路鉴权范围内", () => {
     expect(selectAuthToken({
       apiKey: "",
       authKey: "",
-      // @ts-expect-error legacy field should be ignored by selector
       accessToken: "tok-fallback",
     })).toBeUndefined();
   });

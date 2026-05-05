@@ -9,10 +9,10 @@ describe("Auth token priority", () => {
     })).toBe("sk-test");
   });
 
-  it("缺失 apiKey 时应回退到 authKey", () => {
+  it("缺失 apiKey 时不再回退到本地鉴权 Key", () => {
     expect(selectAuthToken({
       authKey: "auth-test",
-    })).toBe("auth-test");
+    })).toBeUndefined();
   });
 
   it("accessToken 不在统一链路鉴权范围内", () => {
