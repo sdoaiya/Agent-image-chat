@@ -115,9 +115,7 @@ async function getBaseURL(): Promise<string> {
 }
 
 function selectAuthToken(state?: { authKey?: string; apiKey?: string }): string | undefined {
-  if (!state) return undefined;
-  const apiKey = state.apiKey?.trim();
-  if (apiKey) return apiKey;
+  void state;
   return undefined;
 }
 
@@ -183,6 +181,12 @@ function humanizeMessage(message: string): string {
   if (lower.includes("invalid api key") || lower.includes("401") || lower.includes("unauthorized")) {
     return "鉴权失败，请检查 API Key";
   }
+  if (lower.includes("invalid size") || lower.includes("longest edge")) {
+    return "输出尺寸过大，请改用原图、2K 高清，或选择最长边不超过 3840 的尺寸。";
+  }
+  if (lower.includes("safety_violations") || lower.includes("rejected by the safety system")) {
+    return "请求被上游安全系统拒绝，请调整提示词或参考图后重试。";
+  }
   if (lower.includes("context deadline exceeded") || lower.includes("client.timeout exceeded") || lower.includes("awaiting headers")) {
     return "生成请求等待超时，请稍后重试；如果多次出现，请检查上游服务或代理。";
   }
@@ -216,6 +220,11 @@ export { getBaseURL, resolveElectronBaseURL, resolveFallbackBaseURL, selectAuthT
 client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const baseURL = await getBaseURL();
   config.baseURL = baseURL;
+
+  const existingAuthorization = config.headers?.Authorization ?? config.headers?.authorization;
+  if (existingAuthorization) {
+    return config;
+  }
 
   const raw = localStorage.getItem("gimg-settings");
   if (raw) {

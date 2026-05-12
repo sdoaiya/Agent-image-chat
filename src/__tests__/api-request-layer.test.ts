@@ -80,8 +80,14 @@ describe("api request layer", () => {
     await expect(updateSettings({ app: { apiMode: "openai" } })).resolves.toEqual(configResponse);
 
     expect(mockGet).toHaveBeenNthCalledWith(1, "/v1/models");
-    expect(mockGet).toHaveBeenNthCalledWith(2, "/api/config");
-    expect(mockPut).toHaveBeenCalledWith("/api/config", { app: { apiMode: "openai" } });
+    expect(mockGet).toHaveBeenNthCalledWith(2, "/api/config", {
+      signal: undefined,
+      headers: undefined,
+    });
+    expect(mockPut).toHaveBeenCalledWith("/api/config", { app: { apiMode: "openai" } }, {
+      signal: undefined,
+      headers: undefined,
+    });
   });
   it("generateImages 应把停止信号传给请求层", async () => {
     const response = { created: 1, data: [{ b64_json: "abc" }] };

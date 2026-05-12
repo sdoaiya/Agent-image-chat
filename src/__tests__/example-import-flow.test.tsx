@@ -172,6 +172,57 @@ describe("ExampleGallery import fallback chain", () => {
     expect(toastInfoMock).toHaveBeenCalledWith("示例图片加载失败，已退化为仅引用提示词");
   }, IMPORT_FLOW_TIMEOUT_MS);
 
+  it("浏览器环境远程原图被 CORS 拦截时会回退抓取当前展示图", async () => {
+    const remoteOriginalUrl = "https://cms-assets.youmind.com/media/original.jpg";
+    const localPreviewUrl = "/assets/local-preview.jpg";
+    syncStateMock.items = [{
+      id: "youmind-browser-fallback",
+      title: "YouMind Browser Fallback",
+      category: "portrait",
+      author: "@YouMind",
+      language: "zh",
+      createdAt: "2026-05-05T00:00:00.000Z",
+      sourceUrl: "https://x.com/example/status/2",
+      imageUrl: localPreviewUrl,
+      referenceImageUrl: remoteOriginalUrl,
+      width: 300,
+      height: 450,
+      prompt: "Create with browser fallback image.",
+      summary: "browser fallback case",
+      tags: ["YouMind"],
+      caseNumber: 101000,
+      imageAlt: "YouMind Browser Fallback",
+      imagePath: "local-preview.jpg",
+      sourceType: "linked",
+      upstreamDoc: "youmind:gpt-image-2-prompts",
+      sourceOrigin: "youmind",
+    }];
+    const fetchMock = vi.fn()
+      .mockRejectedValueOnce(new Error("CORS"))
+      .mockResolvedValueOnce({
+        ok: true,
+        blob: async () => new Blob(["abc"], { type: "image/jpeg" }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { container } = render(
+      createElement(
+        MemoryRouter,
+        null,
+        createElement(ExampleGallery, { mode: "gallery", sourceFilter: "youmind" }),
+      ),
+    );
+
+    clickActionByIndex(container, 0);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2), { timeout: IMPORT_FLOW_TIMEOUT_MS });
+    expect(fetchMock).toHaveBeenNthCalledWith(1, remoteOriginalUrl, { cache: "force-cache" });
+    expect(fetchMock).toHaveBeenNthCalledWith(2, localPreviewUrl, { cache: "force-cache" });
+    await waitFor(() => expect(setPendingMock).toHaveBeenCalledTimes(1), { timeout: IMPORT_FLOW_TIMEOUT_MS });
+    expect(setPendingMock.mock.calls[0]?.[0]?.files?.[0]?.file).toBeInstanceOf(File);
+    expect(toastSuccessMock).toHaveBeenCalledWith("已引用提示词和参照图，工作台已打开");
+  }, IMPORT_FLOW_TIMEOUT_MS);
+
   it("YouMind 远程示例一键引用时通过 Electron 后台抓取参照图，避免渲染层 CORS 失败", async () => {
     const remoteImageUrl = "https://cms-assets.youmind.com/media/remote-300x450.jpg";
     const originalImageUrl = "https://cms-assets.youmind.com/media/remote.jpg";

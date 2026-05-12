@@ -2,14 +2,14 @@
 import { selectAuthToken } from "@/lib/request";
 
 describe("Auth token priority", () => {
-  it("应优先使用 apiKey", () => {
+  it("不应把 API Key 当成本地后端鉴权 Bearer", () => {
     expect(selectAuthToken({
       apiKey: "sk-test",
       authKey: "auth-test",
-    })).toBe("sk-test");
+    })).toBeUndefined();
   });
 
-  it("缺失 apiKey 时不再回退到本地鉴权 Key", () => {
+  it("不再回退到本地鉴权 Key", () => {
     expect(selectAuthToken({
       authKey: "auth-test",
     })).toBeUndefined();

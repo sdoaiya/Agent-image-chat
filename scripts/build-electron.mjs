@@ -9,7 +9,7 @@ const isWin = process.platform === "win32";
 const backendBin = isWin ? "gimg-backend.exe" : "gimg-backend";
 
 console.log("[1/3] Building Go backend...");
-execSync(`go build -o ../resources/${backendBin} .`, {
+execSync(`go build -ldflags="-s -w" -o ../resources/${backendBin} .`, {
   cwd: path.join(root, "backend"),
   stdio: "inherit",
 });

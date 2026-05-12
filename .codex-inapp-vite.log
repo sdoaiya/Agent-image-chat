@@ -1,0 +1,26 @@
+
+> gimg@0.1.0 dev
+> concurrently -k "vite" "wait-on http://localhost:5173 && npm run dev:electron" --host 127.0.0.1
+
+[0] 
+[0]   [32m[1mVITE[22m v7.3.2[39m  [2mready in [0m[1m9870[22m[2m[0m ms[22m
+[0] 
+[0]   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[0] [2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[1] 
+[1] > gimg@0.1.0 dev:electron
+[1] > tsc -p tsconfig.node.json && electron .
+[1] 
+[1] 
+[1] [gimg] Backend binary candidates: E:\codex项目\img2\gimg-clean\resources\gimg-backend.exe, E:\codex项目\img2\gimg-clean\backend\gimg-backend.exe, E:\codex项目\img2\gimg-clean\resources\gimg-backend.exe
+[1] [gimg] Using backend binary: E:\codex项目\img2\gimg-clean\resources\gimg-backend.exe
+[1] [gimg] Starting embedded backend on http://127.0.0.1:62261: binary=E:\codex项目\img2\gimg-clean\resources\gimg-backend.exe, resource_dir=E:\codex项目\img2\gimg-clean\resources, data_dir=E:\codex项目\img2\gimg-clean\resources\data
+[1] [backend:stdout] time=2026-05-06T20:58:30.166+08:00 level=INFO msg="gimg server listening" addr=127.0.0.1:62261 data_dir=E:\codex项目\img2\gimg-clean\resources\data resource_dir=E:\codex项目\img2\gimg-clean\resources config_path=E:\codex项目\img2\gimg-clean\resources\data\config.toml
+[1] [gimg] Backend ready on http://127.0.0.1:62261
+[1] [gimg] Using preload script: E:\codex项目\img2\gimg-clean\dist-electron\preload.cjs
+[1] Can't find filter element
+[1] Can't find filter element
+[1] [gimg] Backend exited with code null, signal SIGTERM
+[1] wait-on http://localhost:5173 && npm run dev:electron exited with code 0
+--> Sending SIGTERM to other processes..
+[0] vite exited with code 1

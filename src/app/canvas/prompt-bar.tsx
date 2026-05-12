@@ -4,13 +4,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AttachmentRef, ModelCapabilities } from "@/types/image-workflow";
-import { normalizeQualityForApiMode } from "@/store/settings";
 
 export interface AttachedPromptFile extends AttachmentRef {}
 
 export interface PromptOptions {
   size?: string;
   quality?: string;
+  style?: string;
+  upscale?: string;
   n?: number;
   aspectRatio?: string;
   negativePrompt?: string;
@@ -22,6 +23,8 @@ interface PromptBarProps {
   disabled?: boolean;
   initialPrompt?: string;
   initialFiles?: AttachedPromptFile[];
+  initialImportKey?: string;
+  replaceInitial?: boolean;
   onInitialConsumed?: () => void;
   capabilities?: ModelCapabilities;
   defaultQuality?: string;
@@ -30,32 +33,38 @@ interface PromptBarProps {
 }
 
 const DEFAULT_ASPECT_RATIO = "1:1";
-const DEFAULT_SIZE = "1024x1024";
-const OUTPUT_LONG_EDGE_BY_QUALITY: Record<string, number> = {
-  medium: 2048,
-  high: 4096,
-};
-const DIMENSION_GRANULARITY = 8;
 const MIN_IMAGE_COUNT = 1;
 const MAX_IMAGE_COUNT = 4;
 
 const aspectRatioOptions = [
-  { value: "1:1", title: "方形", size: "1024x1024", preview: "square" },
-  { value: "5:4", title: "横屏", size: "1536x1024", preview: "landscape" },
-  { value: "9:16", title: "故事", size: "1024x1536", preview: "portrait" },
-  { value: "21:9", title: "超宽屏", size: "1536x1024", preview: "ultrawide" },
-  { value: "16:9", title: "宽屏", size: "1536x1024", preview: "landscape" },
-  { value: "4:3", title: "横屏", size: "1536x1024", preview: "landscape" },
-  { value: "3:2", title: "宽幅", size: "1536x1024", preview: "landscape" },
-  { value: "4:5", title: "标准", size: "1024x1536", preview: "portrait" },
-  { value: "3:4", title: "竖版", size: "1024x1536", preview: "portrait" },
-  { value: "2:3", title: "竖版", size: "1024x1536", preview: "portrait" },
+  { value: "1:1", title: "方形", size: "1:1", preview: "square" },
+  { value: "5:4", title: "横屏", size: "5:4", preview: "landscape" },
+  { value: "9:16", title: "故事", size: "9:16", preview: "portrait" },
+  { value: "21:9", title: "超宽屏", size: "21:9", preview: "ultrawide" },
+  { value: "16:9", title: "宽屏", size: "16:9", preview: "landscape" },
+  { value: "4:3", title: "横屏", size: "4:3", preview: "landscape" },
+  { value: "3:2", title: "宽幅", size: "3:2", preview: "landscape" },
+  { value: "4:5", title: "标准", size: "4:5", preview: "portrait" },
+  { value: "3:4", title: "竖版", size: "3:4", preview: "portrait" },
+  { value: "2:3", title: "竖版", size: "2:3", preview: "portrait" },
 ];
 
 const outputSizeOptions = [
-  { value: "auto", label: "原图" },
-  { value: "medium", label: "2K 高清" },
-  { value: "high", label: "4K 高清" },
+  { value: "", label: "原图" },
+  { value: "2k", label: "2K 放大" },
+  { value: "4k", label: "4K 放大" },
+];
+
+const qualityOptions = [
+  { value: "", label: "默认" },
+  { value: "high", label: "高质量" },
+  { value: "standard", label: "标准" },
+];
+
+const styleOptions = [
+  { value: "", label: "默认" },
+  { value: "natural", label: "自然" },
+  { value: "vivid", label: "鲜明" },
 ];
 
 function clampImageCount(value: unknown): number {
@@ -64,23 +73,23 @@ function clampImageCount(value: unknown): number {
   return Math.min(MAX_IMAGE_COUNT, Math.max(MIN_IMAGE_COUNT, Math.round(parsed)));
 }
 
-function normalizeOutputQuality(value: unknown): string {
-  const normalized = normalizeQualityForApiMode("codesonline", value);
-  return outputSizeOptions.some((item) => item.value === normalized) ? normalized : "auto";
+function normalizeQuality(value: unknown): string {
+  const normalized = typeof value === "string" ? value.trim().toLowerCase() : "";
+  return qualityOptions.some((item) => item.value === normalized) ? normalized : "high";
 }
 
 function getAspectInstruction(aspectRatio: string): string {
-  return `Make the aspect ratio ${aspectRatio},`;
+  return `Make the aspect ratio ${aspectRatio} , `;
 }
 
 function buildPromptWithAspectInstruction(prompt: string, aspectRatio: string): string {
   const instruction = getAspectInstruction(aspectRatio);
   const trimmed = prompt.trim();
   if (!trimmed) return instruction;
-  if (/^make the aspect ratio\s+[^,\n]+,/i.test(trimmed)) {
-    return trimmed.replace(/^make the aspect ratio\s+[^,\n]+,/i, instruction);
+  if (/^make the aspect ratio\s+\S+\s*,\s*/i.test(trimmed)) {
+    return trimmed.replace(/^make the aspect ratio\s+\S+\s*,\s*/i, instruction);
   }
-  return `${instruction}\n${trimmed}`;
+  return `${instruction}${trimmed}`;
 }
 
 function buildPromptWithNegativePrompt(prompt: string, negativePrompt: string): string {
@@ -92,44 +101,37 @@ function buildPromptWithNegativePrompt(prompt: string, negativePrompt: string): 
 function resolveAspectSize(aspectRatio: string, availableSizes: string[]): string {
   const option = aspectRatioOptions.find((item) => item.value === aspectRatio) ?? aspectRatioOptions[0]!;
   if (availableSizes.includes(option.size)) return option.size;
-  return availableSizes[0] ?? DEFAULT_SIZE;
+  return option.size;
 }
 
-function parseAspectRatio(aspectRatio: string): { width: number; height: number } {
-  const [rawWidth, rawHeight] = aspectRatio.split(":").map((part) => Number(part));
-  if (rawWidth === undefined || rawHeight === undefined || !Number.isFinite(rawWidth) || !Number.isFinite(rawHeight) || rawWidth <= 0 || rawHeight <= 0) {
-    return { width: 1, height: 1 };
-  }
-  return { width: rawWidth, height: rawHeight };
-}
-
-function roundDimension(value: number): number {
-  return Math.max(DIMENSION_GRANULARITY, Math.round(value / DIMENSION_GRANULARITY) * DIMENSION_GRANULARITY);
-}
-
-function resolveScaledAspectSize(aspectRatio: string, longEdge: number): string {
-  const ratio = parseAspectRatio(aspectRatio);
-  if (ratio.width >= ratio.height) {
-    return `${longEdge}x${roundDimension((longEdge * ratio.height) / ratio.width)}`;
-  }
-  return `${roundDimension((longEdge * ratio.width) / ratio.height)}x${longEdge}`;
-}
-
-function resolveOutputSize(aspectRatio: string, outputQuality: string, availableSizes: string[]): string {
-  const longEdge = OUTPUT_LONG_EDGE_BY_QUALITY[outputQuality];
-  if (longEdge) return resolveScaledAspectSize(aspectRatio, longEdge);
-  return resolveAspectSize(aspectRatio, availableSizes);
-}
-
-export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initialFiles, onInitialConsumed, capabilities, defaultQuality, defaultN = 1, layout = "bottom" }: PromptBarProps) {
+export function PromptBar({
+  onSubmit,
+  onCancel,
+  disabled,
+  initialPrompt,
+  initialFiles,
+  initialImportKey,
+  replaceInitial,
+  onInitialConsumed,
+  capabilities,
+  defaultQuality,
+  defaultN = 1,
+  layout = "bottom",
+}: PromptBarProps) {
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
   const [files, setFiles] = useState<AttachedPromptFile[]>([]);
   const [aspectRatio, setAspectRatio] = useState(DEFAULT_ASPECT_RATIO);
   const [imageCount, setImageCount] = useState(() => clampImageCount(defaultN));
-  const [quality, setQuality] = useState(() => normalizeOutputQuality(defaultQuality));
+  const [outputScale, setOutputScale] = useState("");
+  const [quality, setQuality] = useState(() => normalizeQuality(defaultQuality));
+  const [style, setStyle] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const controlPanelScrollRef = useRef<HTMLDivElement | null>(null);
+  const positivePromptRef = useRef<HTMLTextAreaElement | null>(null);
+  const negativePromptRef = useRef<HTMLTextAreaElement | null>(null);
+  const lastFocusedPromptRef = useRef<"positive" | "negative">("positive");
+  const maxReferenceImages = Math.max(1, capabilities?.maxReferenceImages ?? 4);
 
   useEffect(() => {
     return () => {
@@ -141,13 +143,31 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
   }, []);
 
   useEffect(() => {
-    if (!initialPrompt && !initialFiles?.length) return;
+    const hasInitialPayload = initialPrompt !== undefined || initialFiles !== undefined;
+    if (!hasInitialPayload) return;
+    if (!replaceInitial && !initialPrompt && !initialFiles?.length) return;
+
+    if (replaceInitial) {
+      setPrompt(initialPrompt ?? "");
+      setFiles((prev) => {
+        const limit = maxReferenceImages;
+        const next = (initialFiles ?? []).slice(0, limit);
+        const nextPreviews = new Set(next.map((file) => file.preview));
+        for (const file of prev) {
+          if (!nextPreviews.has(file.preview)) URL.revokeObjectURL(file.preview);
+        }
+        return next;
+      });
+      onInitialConsumed?.();
+      return;
+    }
+
     if (initialPrompt) setPrompt(initialPrompt);
     if (initialFiles?.length) {
       setFiles((prev) => {
         const existingIds = new Set(prev.map((f) => f.id));
         const next = [...prev];
-        const limit = capabilities?.maxReferenceImages ?? 4;
+        const limit = maxReferenceImages;
         for (const file of initialFiles) {
           if (next.length >= limit) break;
           if (existingIds.has(file.id)) continue;
@@ -157,7 +177,7 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
       });
     }
     onInitialConsumed?.();
-  }, [capabilities?.maxReferenceImages, initialFiles, initialPrompt, onInitialConsumed]);
+  }, [initialFiles, initialImportKey, initialPrompt, maxReferenceImages, onInitialConsumed, replaceInitial]);
 
   const removeFile = (id: string) => {
     setFiles((prev) => {
@@ -168,7 +188,7 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
   };
 
   const addFiles = (fileList: FileList | File[]) => {
-    const limit = capabilities?.maxReferenceImages ?? 4;
+    const limit = maxReferenceImages;
     const incomingFiles = Array.from(fileList);
     const imageFiles = incomingFiles.filter((file) => file.type.startsWith("image/"));
     const duplicateKeys = new Set(files.map((item) => `${item.file.name}:${item.file.size}:${item.file.lastModified}`));
@@ -227,13 +247,15 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
     if (disabled) return;
     if (!trimmed && files.length === 0) return;
 
-    const availableSizes = capabilities?.resolutions?.length ? capabilities.resolutions : [DEFAULT_SIZE, "1024x1536", "1536x1024"];
-    const nextSize = resolveOutputSize(aspectRatio, quality, availableSizes);
+    const availableSizes = capabilities?.resolutions?.length ? capabilities.resolutions : [];
+    const nextSize = resolveAspectSize(aspectRatio, availableSizes);
     const nextPrompt = buildPromptWithNegativePrompt(buildPromptWithAspectInstruction(trimmed, aspectRatio), trimmedNegative);
 
     onSubmit(nextPrompt, files.length > 0 ? files.map((f) => f.file) : undefined, {
       size: nextSize,
-      quality,
+      quality: quality || undefined,
+      style: style || undefined,
+      upscale: outputScale || undefined,
       n: imageCount,
       aspectRatio,
       negativePrompt: trimmedNegative || undefined,
@@ -252,6 +274,16 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
     handleSubmit();
   };
 
+  const focusLastPromptField = () => {
+    const target = lastFocusedPromptRef.current === "negative" ? negativePromptRef.current : positivePromptRef.current;
+    target?.focus();
+  };
+
+  const restorePromptFocusAfterControl = () => {
+    if (layout !== "workspace") return;
+    window.requestAnimationFrame(focusLastPromptField);
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.nativeEvent.isComposing) return;
     if (e.key === "Enter" && !e.shiftKey) {
@@ -261,9 +293,8 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
   };
 
   useEffect(() => {
-    const normalizedQuality = normalizeOutputQuality(quality ?? defaultQuality);
-    if (normalizedQuality !== quality) {
-      setQuality(normalizedQuality);
+    if (!qualityOptions.some((item) => item.value === quality)) {
+      setQuality(normalizeQuality(defaultQuality));
     }
   }, [defaultQuality, quality]);
 
@@ -289,7 +320,7 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
   const attachmentsPanel = files.length > 0 && (
         <div className="mb-3 rounded-2xl border border-border bg-muted/20 p-2.5" data-testid="prompt-attachments-panel">
           <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-            <span data-testid="prompt-attachments-count">引用图片（{files.length}/{capabilities?.maxReferenceImages ?? 4}）</span>
+            <span data-testid="prompt-attachments-count">引用图片（{files.length}/{maxReferenceImages}）</span>
             <span>首张图片优先作为参考主图</span>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
@@ -325,7 +356,10 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
               key={item.value}
               type="button"
               className={cn("prompt-aspect-button", aspectRatio === item.value && "prompt-aspect-button--active")}
-              onClick={() => setAspectRatio(item.value)}
+              onClick={() => {
+                setAspectRatio(item.value);
+                restorePromptFocusAfterControl();
+              }}
               disabled={disabled}
               aria-label={`选择画面比例 ${item.title} ${item.value}`}
               aria-pressed={aspectRatio === item.value}
@@ -349,6 +383,8 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
           step={1}
           value={imageCount}
           onChange={(event) => setImageCount(clampImageCount(event.target.value))}
+          onPointerUp={restorePromptFocusAfterControl}
+          onKeyUp={restorePromptFocusAfterControl}
           disabled={disabled}
           className="prompt-count-slider"
         />
@@ -361,10 +397,57 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
               <button
                 key={item.value}
                 type="button"
+                className={cn("prompt-output-button", outputScale === item.value && "prompt-output-button--active")}
+                onClick={() => {
+                  setOutputScale(item.value);
+                  restorePromptFocusAfterControl();
+                }}
+                disabled={disabled}
+                aria-pressed={outputScale === item.value}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="prompt-output-panel">
+          <div className="prompt-parameter-heading">
+            <span>画质偏好</span>
+          </div>
+          <div className="prompt-output-segment" role="group" aria-label="画质偏好">
+            {qualityOptions.map((item) => (
+              <button
+                key={item.value || "default"}
+                type="button"
                 className={cn("prompt-output-button", quality === item.value && "prompt-output-button--active")}
-                onClick={() => setQuality(item.value)}
+                onClick={() => {
+                  setQuality(item.value);
+                  restorePromptFocusAfterControl();
+                }}
                 disabled={disabled}
                 aria-pressed={quality === item.value}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="prompt-output-panel">
+          <div className="prompt-parameter-heading">
+            <span>风格偏好</span>
+          </div>
+          <div className="prompt-output-segment" role="group" aria-label="风格偏好">
+            {styleOptions.map((item) => (
+              <button
+                key={item.value || "default"}
+                type="button"
+                className={cn("prompt-output-button", style === item.value && "prompt-output-button--active")}
+                onClick={() => {
+                  setStyle(item.value);
+                  restorePromptFocusAfterControl();
+                }}
+                disabled={disabled}
+                aria-pressed={style === item.value}
               >
                 {item.label}
               </button>
@@ -381,8 +464,10 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
             <label className="prompt-field-label" htmlFor="prompt-negative-input">负面提示词</label>
             <textarea
               id="prompt-negative-input"
+              ref={negativePromptRef}
               value={negativePrompt}
               onChange={(e) => setNegativePrompt(e.target.value)}
+              onFocus={() => { lastFocusedPromptRef.current = "negative"; }}
               onKeyDown={handleKeyDown}
               placeholder="不想出现的内容，例如：低清晰度、畸形手指、文字错误..."
               disabled={disabled}
@@ -392,8 +477,10 @@ export function PromptBar({ onSubmit, onCancel, disabled, initialPrompt, initial
             <label className="prompt-field-label" htmlFor="prompt-positive-input">正向提示词</label>
             <textarea
               id="prompt-positive-input"
+              ref={positivePromptRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onFocus={() => { lastFocusedPromptRef.current = "positive"; }}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               placeholder="描述你想生成的画面..."

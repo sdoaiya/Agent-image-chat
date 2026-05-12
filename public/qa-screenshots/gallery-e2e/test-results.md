@@ -1,7 +1,7 @@
 # Gallery + Workbench E2E Evidence
 
 - 状态：passed
-- 生成时间：2026-05-05T00:45:04.161Z
+- 生成时间：2026-05-06T17:20:09.329Z
 - 基础地址：http://127.0.0.1:4173
 
 ## 步骤结果
@@ -28,7 +28,7 @@
 ### 5. 仅提示词：gallery -> workbench
 - 状态：passed
 - 证据：public/qa-screenshots/gallery-e2e/04-workbench-prompt-only.png
-- 观察：工作台 textarea 已接收提示词，长度 365；工作台当前引用图片区块数量 0
+- 观察：工作台 textarea 已接收提示词，长度 1284；工作台当前引用图片区块数量 0
 
 ### 6. 仅参照图：gallery -> workbench
 - 状态：passed

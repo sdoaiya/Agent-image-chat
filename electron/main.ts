@@ -67,6 +67,17 @@ function resolvePreloadPath(): string {
   return resolved;
 }
 
+function resolveAppIconPath(): string | undefined {
+  const candidates = [
+    path.join(app.getAppPath(), "resources", "icon.ico"),
+    path.resolve(process.resourcesPath, "resources", "icon.ico"),
+    path.join(app.getAppPath(), "resources", "icon.png"),
+    path.resolve(process.resourcesPath, "resources", "icon.png"),
+  ];
+
+  return candidates.find((candidate) => fs.existsSync(candidate));
+}
+
 function resolveGalleryImagesDir(): string | null {
   return GALLERY_VENDOR_IMAGES_DIR_CANDIDATES.find((candidate) => fs.existsSync(candidate)) ?? null;
 }
@@ -205,6 +216,7 @@ async function createWindow() {
     titleBarStyle: "hidden",
     titleBarOverlay: overlay,
     backgroundColor: initialTheme === "dark" ? "#1a1816" : "#fcfaf9",
+    icon: resolveAppIconPath(),
     webPreferences: {
       preload: resolvePreloadPath(),
       contextIsolation: true,

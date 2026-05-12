@@ -7,11 +7,24 @@
   "build": {
     "appId": "com.gimg.desktop",
     "productName": "GIMG",
+    "icon": "resources/icon.ico",
     "files": [
-      "dist/**",
-      "dist-electron/**",
+      "dist/**/*",
+      "!dist/qa-screenshots/**",
+      "!dist/win-unpacked/**",
+      "!dist/*.exe",
+      "!dist/*.blockmap",
+      "!dist/builder-debug.yml",
+      "dist-electron/**/*",
       "package.json"
     ],
+    "win": {
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico"
+    },
     "extraResources": [
       {
         "from": "resources",

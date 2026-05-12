@@ -159,7 +159,7 @@ async function main() {
       const postNavTitle = await targetPage.title().catch(() => "");
       const postNavBody = await targetPage.locator("body").innerText().catch(() => "");
       const postNavSelectors = await targetPage.evaluate(() => ({
-        promptTextarea: !!document.querySelector('textarea[placeholder="输入提示词..."]'),
+        promptTextarea: !!document.querySelector('textarea[aria-label="正向提示词"], textarea[placeholder="输入提示词，可只传图片让模型参考生成..."], textarea[placeholder="输入提示词..."]'),
         uploadButton: !!document.querySelector('button[aria-label="上传图片"]'),
         fileInput: !!document.querySelector('input[type="file"]'),
         settingsButton: !!document.querySelector('button[aria-label="打开设置"]'),
@@ -188,7 +188,7 @@ async function main() {
         "utf8",
       );
 
-      await targetPage.getByPlaceholder("输入提示词...").waitFor({ timeout: 15000 });
+      await targetPage.getByRole("textbox", { name: "正向提示词" }).waitFor({ timeout: 15000 });
       await targetPage.getByRole("button", { name: "上传图片" }).waitFor({ timeout: 15000 });
       await targetPage.locator('input[type="file"]').waitFor({ state: "attached", timeout: 15000 });
     }
@@ -198,11 +198,11 @@ async function main() {
     await targetPage.screenshot({ path: workbenchShot, fullPage: true });
 
     const workbenchFileInput = targetPage.locator('input[type="file"]');
-    await targetPage.getByPlaceholder("输入提示词...").waitFor({ timeout: 15000 });
+    await targetPage.getByRole("textbox", { name: "正向提示词" }).waitFor({ timeout: 15000 });
     await targetPage.getByRole("button", { name: "上传图片" }).waitFor({ timeout: 15000 });
     await workbenchFileInput.waitFor({ state: "attached", timeout: 15000 });
     await workbenchFileInput.setInputFiles(localImportImagePath);
-    await targetPage.getByText(/引用图片（1\/4）/).waitFor();
+    await targetPage.getByText(/引用图片（1\/[1-9]\d*）/).waitFor();
     const importShot = path.join(outputDir, "packaged-workbench-import.png");
     await targetPage.screenshot({ path: importShot, fullPage: true });
 

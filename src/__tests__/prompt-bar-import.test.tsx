@@ -33,9 +33,9 @@ describe("PromptBar local image import stability", () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit).toHaveBeenCalledWith(
-      "Make the aspect ratio 1:1,",
+      "Make the aspect ratio 1:1 , ",
       [firstFile],
-      expect.objectContaining({ aspectRatio: "1:1", n: 1, quality: "auto", size: "1024x1024" }),
+      expect.objectContaining({ aspectRatio: "1:1", n: 1, quality: "high", size: "1:1" }),
     );
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:test-image");
 
@@ -74,25 +74,28 @@ describe("PromptBar local image import stability", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "选择画面比例 竖版 2:3" }));
     fireEvent.change(screen.getByLabelText("生成张数"), { target: { value: "3" } });
-    fireEvent.click(screen.getByRole("button", { name: "2K 高清" }));
+    fireEvent.click(screen.getByRole("button", { name: "2K 放大" }));
+    fireEvent.click(screen.getByRole("button", { name: "鲜明" }));
     fireEvent.change(screen.getByPlaceholderText("输入提示词，可只传图片让模型参考生成..."), {
       target: { value: "一张产品海报" },
     });
     fireEvent.click(screen.getByRole("button", { name: "发送" }));
 
     expect(onSubmit).toHaveBeenCalledWith(
-      "Make the aspect ratio 2:3,\n一张产品海报",
+      "Make the aspect ratio 2:3 , 一张产品海报",
       undefined,
       expect.objectContaining({
         aspectRatio: "2:3",
         n: 3,
-        quality: "medium",
-        size: "1368x2048",
+        quality: "high",
+        style: "vivid",
+        upscale: "2k",
+        size: "2:3",
       }),
     );
   });
 
-  it("2K 与 4K 输出尺寸应传出不同的实际像素尺寸", async () => {
+  it("2K 与 4K 输出尺寸应传出独立 upscale 参数", async () => {
     const onSubmit = vi.fn();
 
     const { PromptBar } = await import("@/app/canvas/prompt-bar");
@@ -101,26 +104,26 @@ describe("PromptBar local image import stability", () => {
     fireEvent.change(screen.getByPlaceholderText("输入提示词，可只传图片让模型参考生成..."), {
       target: { value: "方形头像" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "2K 高清" }));
+    fireEvent.click(screen.getByRole("button", { name: "2K 放大" }));
     fireEvent.click(screen.getByRole("button", { name: "发送" }));
 
     fireEvent.change(screen.getByPlaceholderText("输入提示词，可只传图片让模型参考生成..."), {
       target: { value: "方形头像" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "4K 高清" }));
+    fireEvent.click(screen.getByRole("button", { name: "4K 放大" }));
     fireEvent.click(screen.getByRole("button", { name: "发送" }));
 
     expect(onSubmit).toHaveBeenNthCalledWith(
       1,
-      "Make the aspect ratio 1:1,\n方形头像",
+      "Make the aspect ratio 1:1 , 方形头像",
       undefined,
-      expect.objectContaining({ quality: "medium", size: "2048x2048" }),
+      expect.objectContaining({ quality: "high", size: "1:1", upscale: "2k" }),
     );
     expect(onSubmit).toHaveBeenNthCalledWith(
       2,
-      "Make the aspect ratio 1:1,\n方形头像",
+      "Make the aspect ratio 1:1 , 方形头像",
       undefined,
-      expect.objectContaining({ quality: "high", size: "4096x4096" }),
+      expect.objectContaining({ quality: "high", size: "1:1", upscale: "4k" }),
     );
   });
 
@@ -187,6 +190,74 @@ describe("PromptBar local image import stability", () => {
     cancelFrame.mockRestore();
   });
 
+  it("替换式引用仅图片时应清空旧提示词并替换旧附件", async () => {
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:old-image");
+    const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+    const { PromptBar } = await import("@/app/canvas/prompt-bar");
+    const { rerender } = render(<PromptBar onSubmit={vi.fn()} layout="workspace" defaultQuality="auto" />);
+
+    fireEvent.change(screen.getByLabelText("正向提示词"), {
+      target: { value: "旧提示词" },
+    });
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const oldFile = new File(["old"], "old.png", { type: "image/png", lastModified: 1 });
+    fireEvent.change(fileInput, { target: { files: [oldFile] } });
+
+    expect(screen.getByText(/引用图片（1\/4）/)).toBeTruthy();
+
+    const newFile = new File(["new"], "new.png", { type: "image/png", lastModified: 2 });
+    rerender(
+      <PromptBar
+        onSubmit={vi.fn()}
+        layout="workspace"
+        defaultQuality="auto"
+        initialImportKey="image-only"
+        initialFiles={[{ id: "new-ref", file: newFile, preview: "blob:new-image", source: "workspace", name: "new.png" }]}
+        replaceInitial
+      />,
+    );
+
+    expect((screen.getByLabelText("正向提示词") as HTMLTextAreaElement).value).toBe("");
+    expect(screen.queryByAltText("old.png")).toBeNull();
+    expect(screen.getByAltText("new.png")).toBeTruthy();
+    expect(screen.getByText(/引用图片（1\/4）/)).toBeTruthy();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:old-image");
+
+    revokeObjectURL.mockRestore();
+  });
+
+  it("替换式引用仅提示词时应清空旧附件", async () => {
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:old-image");
+    const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+    const { PromptBar } = await import("@/app/canvas/prompt-bar");
+    const { rerender } = render(<PromptBar onSubmit={vi.fn()} layout="workspace" defaultQuality="auto" />);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const oldFile = new File(["old"], "old.png", { type: "image/png", lastModified: 1 });
+    fireEvent.change(fileInput, { target: { files: [oldFile] } });
+
+    rerender(
+      <PromptBar
+        onSubmit={vi.fn()}
+        layout="workspace"
+        defaultQuality="auto"
+        initialImportKey="prompt-only"
+        initialPrompt="新的提示词"
+        initialFiles={[]}
+        replaceInitial
+      />,
+    );
+
+    expect((screen.getByLabelText("正向提示词") as HTMLTextAreaElement).value).toBe("新的提示词");
+    expect(screen.queryByText(/引用图片（1\/4）/)).toBeNull();
+    expect(screen.queryByAltText("old.png")).toBeNull();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:old-image");
+
+    revokeObjectURL.mockRestore();
+  });
+
   it("工作台负面提示词应随正向提示词一起提交", async () => {
     const onSubmit = vi.fn();
     const { PromptBar } = await import("@/app/canvas/prompt-bar");
@@ -201,12 +272,40 @@ describe("PromptBar local image import stability", () => {
     fireEvent.click(screen.getByRole("button", { name: "生成" }));
 
     expect(onSubmit).toHaveBeenCalledWith(
-      "Make the aspect ratio 1:1,\n赛博少女海报\n\n负面提示词：\n低清晰度，畸形手指",
+      "Make the aspect ratio 1:1 , 赛博少女海报\n\n负面提示词：\n低清晰度，畸形手指",
       undefined,
       expect.objectContaining({
         aspectRatio: "1:1",
         negativePrompt: "低清晰度，畸形手指",
       }),
     );
+  });
+
+  it("工作台参数切换后应把焦点还给最后编辑的提示词输入框", async () => {
+    const requestFrame = vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
+
+    const { PromptBar } = await import("@/app/canvas/prompt-bar");
+    render(<PromptBar onSubmit={vi.fn()} layout="workspace" defaultQuality="auto" />);
+
+    const negativeInput = screen.getByLabelText("负面提示词") as HTMLTextAreaElement;
+    negativeInput.focus();
+    fireEvent.focus(negativeInput);
+
+    fireEvent.click(screen.getByRole("button", { name: "选择画面比例 竖版 2:3" }));
+
+    expect(document.activeElement).toBe(negativeInput);
+
+    const positiveInput = screen.getByLabelText("正向提示词") as HTMLTextAreaElement;
+    positiveInput.focus();
+    fireEvent.focus(positiveInput);
+
+    fireEvent.click(screen.getByRole("button", { name: "2K 放大" }));
+
+    expect(document.activeElement).toBe(positiveInput);
+
+    requestFrame.mockRestore();
   });
 });

@@ -52,10 +52,12 @@ func (s *Server) HandleUpdateConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := s.cfg.SaveOverrides(map[string]map[string]any{
 		"app": {
-			"api_key":      payload.App.APIKey,
-			"base_url":     payload.App.BaseURL,
-			"image_format": payload.App.ImageFormat,
-			"auth_key":     "",
+			"provider":          payload.App.Provider,
+			"api_key":           payload.App.APIKey,
+			"provider_api_keys": payload.App.ProviderAPIKeys,
+			"base_url":          payload.App.BaseURL,
+			"image_format":      payload.App.ImageFormat,
+			"auth_key":          "",
 		},
 		"server": {
 			"host": payload.Server.Host,
@@ -90,11 +92,8 @@ func (s *Server) RequireAuth(next http.Handler) http.Handler {
 			writeError(w, http.StatusUnauthorized, "invalid_request_error", "invalid api key", requestIDFrom(r), nil)
 			return
 		}
-		apiKey := s.cfg.GetAPIKey()
-		keys := parseKeys(apiKey)
-		allKeys := append(keys, authKey)
 		matched := false
-		for _, key := range allKeys {
+		for _, key := range parseKeys(authKey) {
 			if strings.TrimSpace(key) != "" && token == strings.TrimSpace(key) {
 				matched = true
 				break
@@ -110,10 +109,12 @@ func (s *Server) RequireAuth(next http.Handler) http.Handler {
 
 type configUpdatePayload struct {
 	App struct {
-		APIKey      string `json:"apiKey"`
-		BaseURL     string `json:"baseUrl"`
-		ImageFormat string `json:"imageFormat"`
-		AuthKey     string `json:"authKey"`
+		Provider        string            `json:"provider"`
+		APIKey          string            `json:"apiKey"`
+		ProviderAPIKeys map[string]string `json:"providerApiKeys"`
+		BaseURL         string            `json:"baseUrl"`
+		ImageFormat     string            `json:"imageFormat"`
+		AuthKey         string            `json:"authKey"`
 	} `json:"app"`
 	Server struct {
 		Host string `json:"host"`
@@ -135,10 +136,12 @@ func (s *Server) buildConfigPayload() map[string]any {
 	caps := s.cfg.GetCapabilities()
 	return map[string]any{
 		"app": map[string]any{
-			"apiKey":      s.cfg.App.APIKey,
-			"baseUrl":     s.cfg.GetBaseURL(),
-			"imageFormat": s.cfg.App.ImageFormat,
-			"authKey":     "",
+			"provider":        s.cfg.GetProvider(),
+			"apiKey":          s.cfg.GetAPIKey(),
+			"providerApiKeys": s.cfg.GetConfiguredProviderKeys(),
+			"baseUrl":         s.cfg.GetBaseURL(),
+			"imageFormat":     s.cfg.App.ImageFormat,
+			"authKey":         "",
 		},
 		"server": map[string]any{
 			"host": s.cfg.Server.Host,
@@ -209,7 +212,14 @@ func writeError(w http.ResponseWriter, status int, errorType, message, requestID
 func writeUpstreamError(w http.ResponseWriter, err error, requestID, operation string) {
 	var upstreamErr *UpstreamAPIError
 	if errors.As(err, &upstreamErr) {
-		writeError(w, http.StatusBadGateway, "upstream_api_error", upstreamErr.Error(), requestID, map[string]any{
+		message := upstreamErr.Error()
+		lowerBody := strings.ToLower(upstreamErr.Body)
+		if strings.Contains(lowerBody, "invalid size") || strings.Contains(lowerBody, "longest edge") {
+			message = "输出尺寸过大，请改用原图、2K 高清，或选择最长边不超过 3840 的尺寸。"
+		} else if strings.Contains(lowerBody, "safety_violations") || strings.Contains(lowerBody, "rejected by the safety system") {
+			message = "请求被上游安全系统拒绝，请调整提示词或参考图后重试。"
+		}
+		writeError(w, http.StatusBadGateway, "upstream_api_error", message, requestID, map[string]any{
 			"operation":     upstreamErr.Operation,
 			"endpoint":      upstreamErr.Endpoint,
 			"status_code":   upstreamErr.StatusCode,

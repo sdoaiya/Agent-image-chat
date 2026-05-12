@@ -4,13 +4,22 @@ import path from "path";
 
 const packageJson = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), "package.json"), "utf8")) as {
   build?: {
+    icon?: string;
     extraResources?: Array<{ from?: string; to?: string }>;
     files?: string[];
+    win?: {
+      icon?: string;
+    };
+    nsis?: {
+      installerIcon?: string;
+      uninstallerIcon?: string;
+    };
   };
 };
 const electronMainSource = fs.readFileSync(path.resolve(process.cwd(), "electron", "main.ts"), "utf8");
 const electronPreloadSource = fs.readFileSync(path.resolve(process.cwd(), "electron", "preload.cjs"), "utf8");
 const packagedConfigSource = fs.readFileSync(path.resolve(process.cwd(), "resources", "data", "config.toml"), "utf8");
+const electronBuilderSource = fs.readFileSync(path.resolve(process.cwd(), "electron-builder.yml"), "utf8");
 
 describe("electron packaged resources", () => {
   it("declares gallery images as packaged extra resources", () => {
@@ -21,14 +30,28 @@ describe("electron packaged resources", () => {
         to: "vendor/awesome-gpt-image-2-main/data/images",
       }),
     ]));
+    expect(electronBuilderSource).toContain("from: vendor/awesome-gpt-image-2-main/data/images");
   });
 
-  it("keeps renderer and Electron main artifacts in package files", () => {
+  it("keeps renderer and Electron main artifacts in package files while excluding QA/build leftovers", () => {
     expect(packageJson.build?.files ?? []).toEqual(expect.arrayContaining([
-      "dist/**",
-      "dist-electron/**",
+      "dist/**/*",
+      "dist-electron/**/*",
       "package.json",
+      "!dist/qa-screenshots/**",
+      "!dist/win-unpacked/**",
+      "!dist/*.exe",
     ]));
+    expect(electronBuilderSource).toContain("!dist/qa-screenshots/**");
+    expect(electronBuilderSource).toContain("!dist/win-unpacked/**");
+  });
+
+  it("declares a shared Windows app and installer icon", () => {
+    expect(packageJson.build?.icon).toBe("resources/icon.ico");
+    expect(packageJson.build?.win?.icon).toBe("resources/icon.ico");
+    expect(packageJson.build?.nsis?.installerIcon).toBe("resources/icon.ico");
+    expect(packageJson.build?.nsis?.uninstallerIcon).toBe("resources/icon.ico");
+    expect(electronMainSource).toContain("resolveAppIconPath()");
   });
 
   it("registers gallery-image as a safe fetchable protocol", () => {

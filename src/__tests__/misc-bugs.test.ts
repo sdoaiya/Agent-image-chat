@@ -87,10 +87,30 @@ describe("Settings drawer useEffect dependency optimization", () => {
 });
 
 describe("Settings defaults", () => {
+  it("should default to codesonline provider defaults", async () => {
+    const { useSettings, CODESONLINE_BASE_URL, DEFAULT_IMAGE_MODEL } = await import("@/store/settings");
+    useSettings.setState(useSettings.getInitialState());
+    expect(useSettings.getState().provider).toBe("codesonline");
+    expect(useSettings.getState().baseUrl).toBe(CODESONLINE_BASE_URL);
+    expect(useSettings.getState().defaultModel).toBe(DEFAULT_IMAGE_MODEL);
+  });
+
   it("should default to a request-safe quality value", async () => {
     const { useSettings } = await import("@/store/settings");
     useSettings.setState(useSettings.getInitialState());
     expect(useSettings.getState().defaultQuality).toBe("auto");
+  });
+
+  it("should expose BLT provider defaults and infer BLT from its baseUrl", async () => {
+    const { BLT_BASE_URL, DEFAULT_IMAGE_MODEL, getProviderDefaults, inferProviderFromSettings } = await import("@/store/settings");
+
+    expect(getProviderDefaults("blt")).toEqual({
+      provider: "blt",
+      baseUrl: BLT_BASE_URL,
+      defaultModel: DEFAULT_IMAGE_MODEL,
+    });
+    expect(inferProviderFromSettings({ baseUrl: BLT_BASE_URL })).toBe("blt");
+    expect(inferProviderFromSettings({ provider: "codesonline", baseUrl: BLT_BASE_URL })).toBe("blt");
   });
 });
 

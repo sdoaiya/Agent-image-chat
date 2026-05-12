@@ -111,12 +111,21 @@ async function fetchExampleImageBlob(item: ExamplePromptItem): Promise<Blob> {
     return new Blob([Uint8Array.from(payload.bytes)], { type: payload.contentType || inferImageMimeType(item.imagePath) });
   }
 
-  const response = await fetch(referenceImageUrl, { cache: "force-cache" });
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+  const urls = referenceImageUrl === item.imageUrl ? [referenceImageUrl] : [referenceImageUrl, item.imageUrl];
+  let lastError: unknown;
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, { cache: "force-cache" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.blob();
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  return response.blob();
+  throw lastError instanceof Error ? lastError : new Error("Failed to fetch example image");
 }
 
 async function toAttachedPromptFile(item: ExamplePromptItem): Promise<AttachedPromptFile> {
@@ -762,7 +771,6 @@ export function ExampleGallery({
   const renderedStreamCount = activeTopic ? activeTopicPagedEntries.length : pagedExamples.length;
   const hasMoreExamples = renderedStreamCount < visibleStreamCount;
   const categoryCaseCount = filteredExamples.length;
-  const upstreamExampleCount = youMindSync.items.length;
   const shouldUseFourColumnGallery = isGallery && galleryView !== "topics";
 
   const setImageState = useCallback((key: string, state: GalleryImageState) => {
@@ -896,26 +904,6 @@ export function ExampleGallery({
   const toggleSortOrder = useCallback(() => {
     setSortOrder(sortOrder === "desc" ? "asc" : "desc");
   }, [setSortOrder, sortOrder]);
-
-  const syncSummary = useMemo(() => {
-    if (!isGallery || !youMindSync.canSync) {
-      return null;
-    }
-
-    if (youMindSync.status === "syncing") {
-      return "上游同步中";
-    }
-
-    if (youMindSync.status === "error") {
-      return "上游暂不可用";
-    }
-
-    if (upstreamExampleCount > 0) {
-      return `YouMind ${upstreamExampleCount}/${youMindSync.total || upstreamExampleCount}`;
-    }
-
-    return null;
-  }, [isGallery, upstreamExampleCount, youMindSync.canSync, youMindSync.status, youMindSync.total]);
 
   const gallerySectionTitleId = `example-gallery-title-${mode}`;
   const galleryResultsId = `example-gallery-results-${mode}`;
@@ -1058,14 +1046,7 @@ export function ExampleGallery({
             ) : (
               <span className="example-filter-count">{categoryCaseCount} 个案例</span>
             )}
-            {syncSummary ? <span className="example-sync-pill">{syncSummary}</span> : null}
           </div>
-        </div>
-      ) : null}
-
-      {hideToolbar && syncSummary ? (
-        <div className="example-filter-bar example-filter-bar--sync-only titlebar-no-drag" aria-live="polite">
-          <span className="example-sync-pill">{syncSummary}</span>
         </div>
       ) : null}
 

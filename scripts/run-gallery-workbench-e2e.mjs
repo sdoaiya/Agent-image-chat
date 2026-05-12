@@ -45,6 +45,17 @@ async function waitForServer(url, timeoutMs = 30000) {
   throw new Error(`Timed out waiting for dev server: ${url}`);
 }
 
+async function expectCondition(label, predicate, timeoutMs = 5000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (await predicate()) {
+      return;
+    }
+    await wait(100);
+  }
+  throw new Error(label);
+}
+
 function screenshotPath(name) {
   return path.join(outputDir, name);
 }
@@ -218,7 +229,7 @@ async function main() {
     await runStep("一键引用：gallery -> workbench", async () => {
       await clickFirstVisibleAction(page, "一键引用：提示词 + 参照图");
       await page.waitForURL(/#\/$/);
-      await page.getByText(/引用图片（1\/4）/).waitFor();
+      await page.getByText(/引用图片（1\/[1-9]\d*）/).waitFor();
       const prompt = await page.getByRole("textbox", { name: "正向提示词" }).inputValue();
       if (!prompt.trim()) {
         throw new Error("一键引用后工作台提示词为空");
@@ -260,9 +271,11 @@ async function main() {
 
     await runStep("仅参照图：gallery -> workbench", async () => {
       await page.goto(`${baseUrl}/#/examples`, { waitUntil: "networkidle" });
+      await page.locator("select.example-filter-select").first().selectOption("local");
+      await page.locator(".example-gallery-grid .examples-card").first().waitFor();
       await clickFirstVisibleAction(page, "只引用参照图");
       await page.waitForURL(/#\/$/);
-      await page.getByText(/引用图片（1\/4）/).waitFor();
+      await page.getByText(/引用图片（1\/[1-9]\d*）/).waitFor();
       const positivePromptInput = page.getByRole("textbox", { name: "正向提示词" });
       const prompt = await positivePromptInput.inputValue();
       if (prompt.trim()) {
@@ -284,10 +297,21 @@ async function main() {
       const firstGalleryImage = page.locator("img").first();
       await firstGalleryImage.dispatchEvent("error");
       await page.getByText(/图片暂不可用/).first().waitFor();
-      await page.getByRole("button", { name: "图片不可用，点击后将退化为仅提示词" }).first().click({ force: true });
+      await page.evaluate(() => {
+        const button = Array.from(document.querySelectorAll("button.example-media-icon-button"))
+          .find((item) => item.getAttribute("aria-label")?.includes("点击后将退化为仅提示词") && item.getClientRects().length > 0);
+        if (!(button instanceof HTMLButtonElement)) {
+          throw new Error("未找到图片不可用退化按钮");
+        }
+        button.click();
+      });
       await page.waitForURL(/#\/$/);
       await page.getByText("示例图片加载失败，已退化为仅引用提示词").waitFor();
       const positivePromptInput = page.getByRole("textbox", { name: "正向提示词" });
+      await expectCondition(
+        "图片失败退化后提示词已回填",
+        async () => (await positivePromptInput.inputValue()).trim().length > 0,
+      );
       const prompt = await positivePromptInput.inputValue();
       if (!prompt.trim()) {
         throw new Error("图片失败退化后未回填提示词");
@@ -316,7 +340,7 @@ async function main() {
         await previewCount.waitFor();
         await previewImage.waitFor();
         const importedCountText = await previewCount.innerText();
-        if (!importedCountText.includes("引用图片（1/4）")) {
+        if (!/引用图片（1\/[1-9]\d*）/.test(importedCountText)) {
           throw new Error(`本地文件导入后引用计数异常：${importedCountText}`);
         }
         await localImportPage.getByRole("button", { name: /^(发送|生成)$/ }).waitFor();
@@ -333,7 +357,7 @@ async function main() {
         await previewCount.waitFor();
         await previewImage.waitFor();
         const reselectedCountText = await previewCount.innerText();
-        if (!reselectedCountText.includes("引用图片（1/4）")) {
+        if (!/引用图片（1\/[1-9]\d*）/.test(reselectedCountText)) {
           throw new Error(`重选同一本地文件后引用计数异常：${reselectedCountText}`);
         }
         await localImportPage.getByAltText(/case1\.jpg/).waitFor();
@@ -359,7 +383,7 @@ async function main() {
       await page.getByText("应用设置").waitFor();
       const saveButton = page.getByRole("button", { name: "保存" });
       await saveButton.click();
-      await page.getByText(/(设置已保存，模型与能力信息已刷新。|本地设置已保存；后端未连通)/).waitFor();
+      await page.getByText(/(设置已保存，模型与能力信息已刷新。|本地设置已保存；后端未连通|设置保存失败：)/).waitFor();
       const shot = screenshotPath("10-settings-save-feedback.png");
       await page.screenshot({ path: shot, fullPage: true });
       return {

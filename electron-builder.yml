@@ -1,11 +1,25 @@
-appId: com.gimg.app
+appId: com.gimg.desktop
 productName: GIMG
+icon: resources/icon.ico
 directories:
   output: release
 files:
   - dist/**/*
+  - '!dist/qa-screenshots/**'
+  - '!dist/win-unpacked/**'
+  - '!dist/*.exe'
+  - '!dist/*.blockmap'
+  - '!dist/builder-debug.yml'
   - dist-electron/**/*
+  - package.json
 extraResources:
   - from: resources/
     to: resources/
+  - from: vendor/awesome-gpt-image-2-main/data/images
+    to: vendor/awesome-gpt-image-2-main/data/images
 asar: true
+win:
+  icon: resources/icon.ico
+nsis:
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico

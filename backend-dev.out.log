@@ -1,0 +1,6 @@
+time=2026-05-06T23:42:35.427+08:00 level=INFO msg="gimg server listening" addr=0.0.0.0:8080 data_dir=data resource_dir=E:\codex项目\img2\gimg-clean\backend config_path=data\config.toml
+time=2026-05-06T23:44:15.897+08:00 level=INFO msg="[image-generations] request_id= model=openai/gpt-5.4-image-2 size=2160x3840 response_format=b64_json n=1 reference_count=0"
+time=2026-05-06T23:47:54.400+08:00 level=INFO msg="[image-generations] request_id= model=openai/gpt-5.4-image-2 size=2160x3840 response_format=b64_json n=1 reference_count=0"
+time=2026-05-06T23:49:34.006+08:00 level=INFO msg="[image-generations] request_id= model=openai/gpt-5.4-image-2 size=2160x3840 response_format=b64_json error=read response: context canceled"
+time=2026-05-07T07:17:25.958+08:00 level=INFO msg="shutdown signal received"
+time=2026-05-07T07:17:25.960+08:00 level=INFO msg="server stopped"

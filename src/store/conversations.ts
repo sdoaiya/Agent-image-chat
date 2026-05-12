@@ -12,6 +12,8 @@ export interface ImageData {
   file_id?: string;
   gen_id?: string;
   source_account_id?: string;
+  provider?: string;
+  source?: string;
   width?: number;
   height?: number;
   bytes?: number;
@@ -23,6 +25,7 @@ export interface ImageMeta {
   mode: TurnMode;
   size?: string;
   scale?: string;
+  provider?: string;
 }
 
 export interface ConversationTurn {
@@ -38,6 +41,8 @@ export interface ConversationTurn {
   size?: string;
   n?: number;
   quality?: string;
+  style?: string;
+  upscale?: string;
   aspectRatio?: string;
   model: string;
   created_at: number;
@@ -70,7 +75,15 @@ interface ConversationsActions {
 }
 
 const STORAGE_KEY = "gimg-conversations";
+const ACTIVE_ID_STORAGE_KEY = "gimg-active-conversation";
 const store = localforage.createInstance({ name: STORAGE_KEY });
+
+type StoredConversations =
+  | Conversation[]
+  | {
+      conversations?: Conversation[];
+      activeId?: string | null;
+    };
 
 function normalizeTurns(turns: ConversationTurn[]): ConversationTurn[] {
   return turns.map((t) => {
@@ -104,6 +117,23 @@ function persistConversations(conversations: Conversation[]): void {
   });
 }
 
+function persistActiveConversation(activeId: string | null): void {
+  writeQueue = writeQueue.then(async () => {
+    await store.setItem(ACTIVE_ID_STORAGE_KEY, activeId);
+  }).catch((err) => {
+    console.error("[gimg] Failed to persist active conversation:", err);
+  });
+}
+
+function normalizeStoredConversations(stored: StoredConversations | null): { conversations: Conversation[]; activeId: string | null } {
+  if (!stored) return { conversations: [], activeId: null };
+  if (Array.isArray(stored)) return { conversations: stored, activeId: null };
+  return {
+    conversations: Array.isArray(stored.conversations) ? stored.conversations : [],
+    activeId: typeof stored.activeId === "string" ? stored.activeId : null,
+  };
+}
+
 export const useConversations = create<ConversationsState & ConversationsActions>()(
   (set) => ({
     conversations: [],
@@ -113,12 +143,20 @@ export const useConversations = create<ConversationsState & ConversationsActions
 
     load: async () => {
       try {
-        const stored = (await store.getItem<Conversation[]>(STORAGE_KEY)) ?? [];
-        const conversations = stored.map((c) => ({
+        const [rawStored, storedActiveId] = await Promise.all([
+          store.getItem<StoredConversations>(STORAGE_KEY),
+          store.getItem<string | null>(ACTIVE_ID_STORAGE_KEY),
+        ]);
+        const stored = normalizeStoredConversations(rawStored);
+        const conversations = stored.conversations.map((c) => ({
           ...c,
           turns: normalizeTurns(c.turns),
         }));
-        set({ conversations, loaded: true, loadError: null, activeId: conversations[0]?.id ?? null });
+        const rememberedActiveId = storedActiveId || stored.activeId;
+        const activeId = conversations.some((item) => item.id === rememberedActiveId)
+          ? rememberedActiveId
+          : (conversations[0]?.id ?? null);
+        set({ conversations, loaded: true, loadError: null, activeId });
       } catch (err) {
         console.error("[gimg] Failed to load conversations:", err);
         set({ conversations: [], loaded: true, loadError: "对话读取失败，可新建对话继续使用。", activeId: null });
@@ -138,6 +176,7 @@ export const useConversations = create<ConversationsState & ConversationsActions
       set((state) => {
         const conversations = [conv, ...state.conversations];
         persistConversations(conversations);
+        persistActiveConversation(id);
         return { conversations, activeId: id, loadError: null };
       });
       return id;
@@ -147,9 +186,11 @@ export const useConversations = create<ConversationsState & ConversationsActions
       set((state) => {
         const conversations = state.conversations.filter((c) => c.id !== id);
         persistConversations(conversations);
+        const activeId = state.activeId === id ? (conversations[0]?.id ?? null) : state.activeId;
+        if (activeId !== state.activeId) persistActiveConversation(activeId);
         return {
           conversations,
-          activeId: state.activeId === id ? (conversations[0]?.id ?? null) : state.activeId,
+          activeId,
         };
       });
     },
@@ -167,6 +208,7 @@ export const useConversations = create<ConversationsState & ConversationsActions
     },
 
     setActive: (id) => {
+      persistActiveConversation(id);
       set({ activeId: id });
     },
 

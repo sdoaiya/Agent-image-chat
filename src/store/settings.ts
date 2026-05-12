@@ -4,6 +4,57 @@ import { persist } from "zustand/middleware";
 export const BUILTIN_IMAGE_MODELS = ["gpt-image-2"] as const;
 export const DEFAULT_IMAGE_MODEL = BUILTIN_IMAGE_MODELS[0];
 export const CODESONLINE_BASE_URL = "https://image.codesonline.dev";
+export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+export const OPENROUTER_DEFAULT_IMAGE_MODEL = "openai/gpt-5.4-image-2";
+export const BLT_BASE_URL = "https://api.bltcy.ai";
+
+export type ImageProvider = "codesonline" | "openrouter" | "blt";
+export type ProviderApiKeys = Partial<Record<ImageProvider, string>>;
+
+function normalizeProvider(provider: unknown): ImageProvider {
+  if (provider === "blt") return "blt";
+  return provider === "openrouter" ? "openrouter" : "codesonline";
+}
+
+export function inferProviderFromSettings(args: { provider?: unknown; baseUrl?: unknown; defaultModel?: unknown; apiKey?: unknown }): ImageProvider {
+  const baseUrl = typeof args.baseUrl === "string" ? args.baseUrl.trim() : "";
+  const defaultModel = typeof args.defaultModel === "string" ? args.defaultModel.trim() : "";
+  const apiKey = typeof args.apiKey === "string" ? args.apiKey.trim().toLowerCase() : "";
+  if (baseUrl === BLT_BASE_URL) {
+    return "blt";
+  }
+  if (baseUrl === OPENROUTER_BASE_URL || defaultModel === OPENROUTER_DEFAULT_IMAGE_MODEL) {
+    return "openrouter";
+  }
+  if (apiKey.startsWith("sk-or-v1-")) return "openrouter";
+  if (apiKey.startsWith("sk-blt")) return "blt";
+  if (args.provider === "blt") return "blt";
+  if (args.provider === "openrouter") return "openrouter";
+  return "codesonline";
+}
+
+export function getProviderDefaults(provider: unknown): { provider: ImageProvider; baseUrl: string; defaultModel: string } {
+  const normalized = normalizeProvider(provider);
+  if (normalized === "openrouter") {
+    return {
+      provider: normalized,
+      baseUrl: OPENROUTER_BASE_URL,
+      defaultModel: OPENROUTER_DEFAULT_IMAGE_MODEL,
+    };
+  }
+  if (normalized === "blt") {
+    return {
+      provider: normalized,
+      baseUrl: BLT_BASE_URL,
+      defaultModel: DEFAULT_IMAGE_MODEL,
+    };
+  }
+  return {
+    provider: normalized,
+    baseUrl: CODESONLINE_BASE_URL,
+    defaultModel: DEFAULT_IMAGE_MODEL,
+  };
+}
 
 function normalizeModelValue(model: unknown): string {
   return typeof model === "string" ? model.trim() : "";
@@ -47,7 +98,9 @@ export function normalizeQualityForApiMode(_apiMode: unknown, quality: unknown):
 }
 
 export interface Settings {
+  provider: ImageProvider;
   apiKey: string;
+  providerApiKeys: ProviderApiKeys;
   authKey: string;
   baseUrl: string;
   proxyEnabled: boolean;
@@ -73,7 +126,9 @@ interface SettingsActions {
 }
 
 const defaults: Settings = {
+  provider: "codesonline",
   apiKey: "",
+  providerApiKeys: {},
   authKey: "",
   baseUrl: CODESONLINE_BASE_URL,
   proxyEnabled: false,
@@ -105,15 +160,42 @@ function deriveModelState(state: Pick<Settings, "builtinModels" | "remoteModels"
   };
 }
 
+function normalizeProviderApiKeys(value: unknown): ProviderApiKeys {
+  if (!value || typeof value !== "object") return {};
+  const raw = value as Record<string, unknown>;
+  return {
+    codesonline: typeof raw.codesonline === "string" ? raw.codesonline : undefined,
+    openrouter: typeof raw.openrouter === "string" ? raw.openrouter : undefined,
+    blt: typeof raw.blt === "string" ? raw.blt : undefined,
+  };
+}
+
+function syncProviderApiKeys(state: Pick<Settings, "provider" | "apiKey" | "providerApiKeys">, partial: Partial<Settings>, nextProvider: ImageProvider): ProviderApiKeys {
+  const providerApiKeys = {
+    ...normalizeProviderApiKeys(state.providerApiKeys),
+    ...normalizeProviderApiKeys(partial.providerApiKeys),
+  };
+  const currentProvider = normalizeProvider(state.provider);
+  if (typeof partial.apiKey === "string") {
+    providerApiKeys[nextProvider] = partial.apiKey;
+  } else if (state.apiKey && nextProvider === currentProvider) {
+    providerApiKeys[currentProvider] = state.apiKey;
+  }
+  return providerApiKeys;
+}
+
 export const useSettings = create<Settings & SettingsActions>()(
   persist(
     (set) => ({
       ...defaults,
       updateSettings: (partial) => set((state) => {
-        const next = { ...state, ...partial, authKey: "", importedModels: [] };
+        const nextProvider = normalizeProvider(partial.provider ?? state.provider);
+        const providerApiKeys = syncProviderApiKeys(state, partial, nextProvider);
+        const apiKey = typeof partial.apiKey === "string" ? partial.apiKey : (providerApiKeys[nextProvider] ?? state.apiKey);
+        const next = { ...state, ...partial, provider: nextProvider, apiKey, providerApiKeys, authKey: "", importedModels: [] };
         return {
           ...next,
-          defaultQuality: normalizeQualityForApiMode("codesonline", next.defaultQuality),
+          defaultQuality: normalizeQualityForApiMode(nextProvider, next.defaultQuality),
           ...deriveModelState(next),
         };
       }),
@@ -150,7 +232,9 @@ export const useSettings = create<Settings & SettingsActions>()(
     {
       name: "gimg-settings",
       partialize: (state) => ({
+        provider: state.provider,
         apiKey: state.apiKey,
+        providerApiKeys: state.providerApiKeys,
         authKey: "",
         baseUrl: state.baseUrl,
         proxyEnabled: state.proxyEnabled,
@@ -167,17 +251,34 @@ export const useSettings = create<Settings & SettingsActions>()(
       }),
       merge: (persistedState, currentState) => {
         const persisted = persistedState as Partial<Settings>;
+        const provider = inferProviderFromSettings({
+          provider: persisted.provider ?? currentState.provider,
+          baseUrl: persisted.baseUrl ?? currentState.baseUrl,
+          defaultModel: persisted.defaultModel ?? currentState.defaultModel,
+          apiKey: persisted.apiKey ?? currentState.apiKey,
+        });
+        const providerApiKeys = normalizeProviderApiKeys(persisted.providerApiKeys);
+        const legacyApiKey = typeof persisted.apiKey === "string" ? persisted.apiKey : currentState.apiKey;
+        if (legacyApiKey && !providerApiKeys[provider]) {
+          providerApiKeys[provider] = legacyApiKey;
+        }
+        const providerDefaults = getProviderDefaults(provider);
         const builtinModels = uniqueModels(persisted.builtinModels ?? currentState.builtinModels);
         const remoteModels = uniqueModels(persisted.remoteModels ?? currentState.remoteModels);
-        const persistedDefaultModel = normalizeModelValue(persisted.defaultModel ?? currentState.defaultModel);
+        const persistedDefaultModel = normalizeModelValue(persisted.defaultModel);
         const defaultModelCandidates = mergeModelPools(builtinModels, remoteModels);
-        const defaultModel = defaultModelCandidates.some((model) => model.toLowerCase() === persistedDefaultModel.toLowerCase())
+        const defaultModel = persistedDefaultModel
+          && defaultModelCandidates.some((model) => model.toLowerCase() === persistedDefaultModel.toLowerCase())
           ? persistedDefaultModel
-          : DEFAULT_IMAGE_MODEL;
+          : providerDefaults.defaultModel;
         const merged = {
           ...currentState,
           ...persisted,
+          provider,
+          providerApiKeys,
+          apiKey: providerApiKeys[provider] ?? legacyApiKey ?? "",
           authKey: "",
+          baseUrl: normalizeModelValue(persisted.baseUrl) || providerDefaults.baseUrl,
           builtinModels,
           remoteModels,
           importedModels: [],
@@ -186,7 +287,7 @@ export const useSettings = create<Settings & SettingsActions>()(
         };
         return {
           ...merged,
-          defaultQuality: normalizeQualityForApiMode("codesonline", merged.defaultQuality),
+          defaultQuality: normalizeQualityForApiMode(provider, merged.defaultQuality),
           ...deriveModelState(merged),
         };
       },

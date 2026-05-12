@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-04-30T14:57:47.306Z",
+  "capturedAt": "2026-05-10T14:12:44.159Z",
   "exePath": "dist/win-unpacked/GIMG.exe",
   "screenshots": [
     "public/qa-screenshots/packaged-smoke/packaged-workbench-entry.png",
@@ -16,6 +16,6 @@
     "settingsOpened": true,
     "packagedStartedOnWorkbench": false
   },
-  "bodyPreview": "工作\n示例\n设置\n对话\nmobile phone photo\n工作台\n· mobile phone photo\n生成\nmobile phone photo, old CCD camera aesthetic, harsh flash, grainy, dim messy indoor lighting, candid snapshot feeling, slight motion blur, young Korean female idol, soft innocent look\n38分钟前\n\n鉴权失败，请检查 API Key、Access Token 或本地鉴权 Key\n\n重试\n删除\n引用图片（1/4）\ncase1.jpg\n生成\n编辑\n放大\n分辨率\n1024 × 1024\n1024 × 1536\n1536 × 1024\n质量\nstandard\nhd\n支持提示词、参考图与分辨率设置。\n应用",
-  "targetUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg/dist/win-unpacked/resources/app.asar/dist/index.html#/"
+  "bodyPreview": "工作\n示例\n设置\n工作台\n对话\n暂无对话\n开始创作\n\n输入提示词，或添加附件图开始创作\n\n画面比例\n1:1\n方形\n1:1\n横屏\n5:4\n故事\n9:16\n超宽屏\n21:9\n宽屏\n16:9\n横屏\n4:3\n宽幅\n3:2\n标准\n4:5\n竖版\n3:4\n竖版\n2:3\n张数\n1\n输出尺寸\n原图\n2K 高清\n4K 高清\n引用图片（1/4）\n首张图片优先作为参考主图\n主参考图\n负面提示词\n正向提示词\n添加参考图\n生成\n应用设置\n\n当前仅保留统一生图链路配置：保存后先写本地，再尝试同步到本地后端。\n\nAPI 配置\nProvider\nCodesOnline\nOpenRouter\nBLT\n\n切换 provider 时会自动带出推荐的 Base URL 和默认模型。\n\nBase URL\n\nBLT 默认地址：https://api.bltcy.ai\n\nAPI Key\n启用代理\n生成偏好\n默认模型\n刷新模型\ngpt-i",
+  "targetUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg-clean/dist/win-unpacked/resources/app.asar/dist/index.html#/"
 }

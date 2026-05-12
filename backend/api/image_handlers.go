@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,7 +18,12 @@ type ImageHandler struct {
 	cfg *config.Config
 }
 
-const maxUpstreamImageBatchSize = 2
+const maxUpstreamImageBatchSize = 1
+const maxUpstreamImageLongEdge = 3840
+
+func buildPartialBatchFailureMessage(successCount, totalCount int, err error) string {
+	return fmt.Sprintf("已成功生成 %d/%d 张，其余未完成：%s", successCount, totalCount, err.Error())
+}
 
 func NewImageHandler(cfg *config.Config) *ImageHandler {
 	return &ImageHandler{
@@ -32,6 +39,8 @@ func (h *ImageHandler) HandleImageGenerations(w http.ResponseWriter, r *http.Req
 		N               int      `json:"n"`
 		Size            string   `json:"size"`
 		Quality         string   `json:"quality"`
+		Style           string   `json:"style"`
+		Upscale         string   `json:"upscale"`
 		Background      string   `json:"background"`
 		ResponseFormat  string   `json:"response_format"`
 		ReferenceImages []string `json:"reference_images"`
@@ -50,12 +59,12 @@ func (h *ImageHandler) HandleImageGenerations(w http.ResponseWriter, r *http.Req
 	if req.ResponseFormat == "" {
 		req.ResponseFormat = "url"
 	}
+	req.Size, req.Upscale = normalizeImageSizeAndUpscale(req.Size, req.Upscale)
 
 	model := config.NormalizeImageModel(req.Model)
 	if model == "" {
 		model = h.cfg.GetModel()
 	}
-
 	referenceImages := make([][]byte, 0, len(req.ReferenceImages))
 	for _, rawImage := range req.ReferenceImages {
 		imgData, err := decodeBase64Image(rawImage)
@@ -67,7 +76,7 @@ func (h *ImageHandler) HandleImageGenerations(w http.ResponseWriter, r *http.Req
 	}
 
 	log.Printf("[image-generations] request_id=%s model=%s size=%s response_format=%s n=%d reference_count=%d", requestID, model, req.Size, req.ResponseFormat, req.N, len(referenceImages))
-	result, err := generateImagesInBatches(r.Context(), NewOpenAIClient(h.cfg), req.Prompt, model, req.N, req.Size, req.Quality, req.Background, req.ResponseFormat, referenceImages)
+	result, err := generateImagesInBatches(r.Context(), NewOpenAIClient(h.cfg), req.Prompt, model, req.N, req.Size, req.Quality, req.Style, req.Upscale, req.Background, req.ResponseFormat, referenceImages)
 	if err != nil {
 		log.Printf("[image-generations] request_id=%s model=%s size=%s response_format=%s error=%v", requestID, model, req.Size, req.ResponseFormat, err)
 		writeUpstreamError(w, err, requestID, "image generation")
@@ -77,11 +86,78 @@ func (h *ImageHandler) HandleImageGenerations(w http.ResponseWriter, r *http.Req
 	writeJSON(w, http.StatusOK, result)
 }
 
-func generateImagesInBatches(ctx context.Context, client *OpenAIClient, prompt, model string, n int, size, quality, background, responseFormat string, referenceImages [][]byte) (*ImageGenerationResponse, error) {
-	if n <= maxUpstreamImageBatchSize {
-		return client.GenerateImages(ctx, prompt, model, n, size, quality, background, responseFormat, referenceImages)
+func normalizeImageSizeAndUpscale(size, upscale string) (string, string) {
+	if ratioSize, ok := resolveAspectRatioPixelSize(size, upscale); ok {
+		return ratioSize, ""
+	}
+	return normalizeImageSize(size), strings.TrimSpace(upscale)
+}
+
+func normalizeImageSize(size string) string {
+	size = strings.TrimSpace(size)
+	if size == "" {
+		return ""
+	}
+	parts := strings.Split(size, "x")
+	if len(parts) != 2 {
+		return size
+	}
+	width, widthErr := strconv.Atoi(strings.TrimSpace(parts[0]))
+	height, heightErr := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if widthErr != nil || heightErr != nil || width <= 0 || height <= 0 {
+		return size
+	}
+	longEdge := max(width, height)
+	if longEdge <= maxUpstreamImageLongEdge {
+		return fmt.Sprintf("%dx%d", width, height)
+	}
+	scale := float64(maxUpstreamImageLongEdge) / float64(longEdge)
+	return fmt.Sprintf("%dx%d", roundToImageGranularity(float64(width)*scale), roundToImageGranularity(float64(height)*scale))
+}
+
+func resolveAspectRatioPixelSize(size, upscale string) (string, bool) {
+	longEdge := 0
+	switch strings.ToLower(strings.TrimSpace(upscale)) {
+	case "2k":
+		longEdge = 2048
+	case "4k":
+		longEdge = maxUpstreamImageLongEdge
+	default:
+		return "", false
 	}
 
+	parts := strings.Split(strings.TrimSpace(size), ":")
+	if len(parts) != 2 {
+		return "", false
+	}
+	widthRatio, widthErr := strconv.Atoi(strings.TrimSpace(parts[0]))
+	heightRatio, heightErr := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if widthErr != nil || heightErr != nil || widthRatio <= 0 || heightRatio <= 0 {
+		return "", false
+	}
+	if widthRatio >= heightRatio {
+		return fmt.Sprintf("%dx%d", longEdge, roundToImageGranularity(float64(longEdge)*float64(heightRatio)/float64(widthRatio))), true
+	}
+	return fmt.Sprintf("%dx%d", roundToImageGranularity(float64(longEdge)*float64(widthRatio)/float64(heightRatio)), longEdge), true
+}
+
+func roundToImageGranularity(value float64) int {
+	rounded := int(math.Round(value/8) * 8)
+	if rounded < 8 {
+		return 8
+	}
+	if rounded > maxUpstreamImageLongEdge {
+		return maxUpstreamImageLongEdge
+	}
+	return rounded
+}
+
+func generateImagesInBatches(ctx context.Context, client *OpenAIClient, prompt, model string, n int, size, quality, style, upscale, background, responseFormat string, referenceImages [][]byte) (*ImageGenerationResponse, error) {
+	if n <= maxUpstreamImageBatchSize {
+		return client.GenerateImages(ctx, prompt, model, n, size, quality, style, upscale, background, responseFormat, referenceImages)
+	}
+
+	total := n
 	remaining := n
 	result := &ImageGenerationResponse{
 		Data: make([]ImageData, 0, n),
@@ -94,12 +170,22 @@ func generateImagesInBatches(ctx context.Context, client *OpenAIClient, prompt, 
 			batchSize = remaining
 		}
 
-		batchResult, err := client.GenerateImages(ctx, prompt, model, batchSize, size, quality, background, responseFormat, referenceImages)
+		batchResult, err := client.GenerateImages(ctx, prompt, model, batchSize, size, quality, style, upscale, background, responseFormat, referenceImages)
 		if err != nil {
+			if len(result.Data) > 0 {
+				capabilityNotes = append(capabilityNotes, buildPartialBatchFailureMessage(len(result.Data), total, err))
+				break
+			}
 			return nil, err
 		}
 		if result.Created == 0 {
 			result.Created = batchResult.Created
+		}
+		if result.Provider == "" {
+			result.Provider = batchResult.Provider
+		}
+		if result.Source == "" {
+			result.Source = batchResult.Source
 		}
 		result.Data = append(result.Data, batchResult.Data...)
 		if batchResult.CapabilityNote != "" {
@@ -147,7 +233,7 @@ func (h *ImageHandler) HandleChatCompletions(w http.ResponseWriter, r *http.Requ
 		model = h.cfg.GetModel()
 	}
 
-	result, err := NewOpenAIClient(h.cfg).GenerateImages(r.Context(), prompt, model, 1, "", "", "", "b64_json", nil)
+	result, err := NewOpenAIClient(h.cfg).GenerateImages(r.Context(), prompt, model, 1, "", "", "", "", "", "b64_json", nil)
 	if err != nil {
 		log.Printf("[chat-completions] request_id=%s model=%s error=%v", requestID, model, err)
 		writeUpstreamError(w, err, requestID, "chat completions")
@@ -208,7 +294,7 @@ func (h *ImageHandler) HandleResponses(w http.ResponseWriter, r *http.Request) {
 		model = h.cfg.GetModel()
 	}
 
-	result, err := NewOpenAIClient(h.cfg).GenerateImages(r.Context(), prompt, model, 1, "", "", "", "b64_json", nil)
+	result, err := NewOpenAIClient(h.cfg).GenerateImages(r.Context(), prompt, model, 1, "", "", "", "", "", "b64_json", nil)
 	if err != nil {
 		log.Printf("[responses] request_id=%s model=%s error=%v", requestID, model, err)
 		writeUpstreamError(w, err, requestID, "responses")

@@ -16,9 +16,16 @@ const (
 	userConfigFile = "config.toml"
 	dataDirName    = "data"
 
+	ProviderCodesOnline   = "codesonline"
+	ProviderOpenRouter    = "openrouter"
+	ProviderBLT           = "blt"
+	DefaultProvider       = ProviderCodesOnline
 	DefaultBaseURL        = "https://image.codesonline.dev"
+	OpenRouterBaseURL     = "https://openrouter.ai/api/v1"
+	BLTBaseURL            = "https://api.bltcy.ai"
 	DefaultImageModel     = "gpt-image-2"
-	DefaultRequestTimeout = 300
+	OpenRouterImageModel  = "openai/gpt-5.4-image-2"
+	DefaultRequestTimeout = 900
 	LegacyMiniModel       = "gpt-5.4-mini"
 )
 
@@ -34,10 +41,12 @@ type Capabilities struct {
 }
 
 type AppConfig struct {
-	APIKey      string `toml:"api_key" json:"apiKey"`
-	BaseURL     string `toml:"base_url" json:"baseUrl"`
-	ImageFormat string `toml:"image_format" json:"imageFormat"`
-	AuthKey     string `toml:"auth_key" json:"authKey"`
+	Provider        string            `toml:"provider" json:"provider"`
+	APIKey          string            `toml:"api_key" json:"apiKey"`
+	ProviderAPIKeys map[string]string `toml:"provider_api_keys" json:"providerApiKeys"`
+	BaseURL         string            `toml:"base_url" json:"baseUrl"`
+	ImageFormat     string            `toml:"image_format" json:"imageFormat"`
+	AuthKey         string            `toml:"auth_key" json:"authKey"`
 }
 
 type ServerConfig struct {
@@ -161,16 +170,76 @@ func (c *Config) ProxyURL() string {
 }
 
 func (c *Config) normalizeInPlace() {
-	c.App.BaseURL = normalizeBaseURL(c.App.BaseURL)
+	c.App.Provider = inferProvider(c.App.Provider, c.App.BaseURL, c.ChatGPT.Model)
+	c.App.ProviderAPIKeys = normalizeProviderAPIKeys(c.App.ProviderAPIKeys)
+	c.App.APIKey = strings.TrimSpace(c.App.APIKey)
+	if c.App.APIKey != "" {
+		if c.App.ProviderAPIKeys == nil {
+			c.App.ProviderAPIKeys = map[string]string{}
+		}
+		if _, ok := c.App.ProviderAPIKeys[c.App.Provider]; !ok {
+			c.App.ProviderAPIKeys[c.App.Provider] = c.App.APIKey
+		}
+	}
+	c.App.BaseURL = normalizeBaseURLForProvider(c.App.Provider, c.App.BaseURL)
 	c.App.ImageFormat = normalizeImageFormat(c.App.ImageFormat)
 	c.ChatGPT.Model = normalizePrimaryModel(c.ChatGPT.Model, c.ChatGPT.AvailableModels)
 	c.ChatGPT.AvailableModels = normalizeAvailableModels(c.ChatGPT.AvailableModels, c.ChatGPT.Model)
 	c.ChatGPT.RequestTimeout = normalizeRequestTimeout(c.ChatGPT.RequestTimeout)
 }
 
-func normalizeBaseURL(value string) string {
+func normalizeProvider(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "", ProviderCodesOnline:
+		return ProviderCodesOnline
+	case ProviderOpenRouter:
+		return ProviderOpenRouter
+	case ProviderBLT:
+		return ProviderBLT
+	default:
+		return ProviderCodesOnline
+	}
+}
+
+func normalizeProviderAPIKeys(values map[string]string) map[string]string {
+	if len(values) == 0 {
+		return nil
+	}
+	normalized := make(map[string]string, len(values))
+	for provider, apiKey := range values {
+		provider = normalizeProvider(provider)
+		apiKey = strings.TrimSpace(apiKey)
+		if apiKey == "" {
+			continue
+		}
+		normalized[provider] = apiKey
+	}
+	if len(normalized) == 0 {
+		return nil
+	}
+	return normalized
+}
+
+func inferProvider(provider, baseURL, model string) string {
+	trimmedBaseURL := strings.TrimRight(strings.TrimSpace(baseURL), "/")
+	if trimmedBaseURL == BLTBaseURL {
+		return ProviderBLT
+	}
+	if trimmedBaseURL == OpenRouterBaseURL || strings.EqualFold(strings.TrimSpace(model), OpenRouterImageModel) {
+		return ProviderOpenRouter
+	}
+	return normalizeProvider(provider)
+}
+
+func normalizeBaseURLForProvider(provider, value string) string {
 	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
+	if trimmed == "" || strings.TrimRight(trimmed, "/") == "https://api.openai.com" {
+		switch normalizeProvider(provider) {
+		case ProviderOpenRouter:
+			return OpenRouterBaseURL
+		case ProviderBLT:
+			return BLTBaseURL
+		}
 		return DefaultBaseURL
 	}
 	return strings.TrimRight(trimmed, "/")
@@ -235,13 +304,64 @@ func normalizeLegacyImageModel(model string) string {
 func (c *Config) GetAPIKey() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return strings.TrimSpace(c.App.APIKey)
+	return apiKeyForProviderLocked(c.App, normalizeProvider(c.App.Provider))
+}
+
+func (c *Config) GetAPIKeyForProvider(provider string) string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return apiKeyForProviderLocked(c.App, provider)
+}
+
+func (c *Config) GetConfiguredProviderKeys() map[string]string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	result := normalizeProviderAPIKeys(c.App.ProviderAPIKeys)
+	if result == nil {
+		result = map[string]string{}
+	}
+	currentProvider := normalizeProvider(c.App.Provider)
+	if currentKey := strings.TrimSpace(c.App.APIKey); currentKey != "" {
+		if _, exists := result[currentProvider]; !exists {
+			result[currentProvider] = currentKey
+		}
+	}
+	return result
+}
+
+func apiKeyForProviderLocked(app AppConfig, provider string) string {
+	provider = normalizeProvider(provider)
+	if app.ProviderAPIKeys != nil {
+		if apiKey := strings.TrimSpace(app.ProviderAPIKeys[provider]); apiKey != "" {
+			return apiKey
+		}
+	}
+	if provider == normalizeProvider(app.Provider) {
+		return strings.TrimSpace(app.APIKey)
+	}
+	return ""
 }
 
 func (c *Config) GetBaseURL() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return normalizeBaseURL(c.App.BaseURL)
+	return normalizeBaseURLForProvider(c.App.Provider, c.App.BaseURL)
+}
+
+func (c *Config) GetBaseURLForProvider(provider string) string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	provider = normalizeProvider(provider)
+	if provider == normalizeProvider(c.App.Provider) {
+		return normalizeBaseURLForProvider(provider, c.App.BaseURL)
+	}
+	return normalizeBaseURLForProvider(provider, "")
+}
+
+func (c *Config) GetProvider() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return normalizeProvider(c.App.Provider)
 }
 
 func (c *Config) GetAuthKey() string {
@@ -272,17 +392,36 @@ func (c *Config) GetRequestTimeout() int {
 func (c *Config) GetModel() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+	if normalizeProvider(c.App.Provider) == ProviderOpenRouter {
+		return normalizeOpenRouterModel(c.ChatGPT.Model, c.ChatGPT.AvailableModels)
+	}
 	return normalizePrimaryModel(c.ChatGPT.Model, c.ChatGPT.AvailableModels)
 }
 
 func (c *Config) GetAvailableModels() []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+	if normalizeProvider(c.App.Provider) == ProviderOpenRouter {
+		models := normalizeOpenRouterModels(c.ChatGPT.AvailableModels, c.ChatGPT.Model)
+		return append([]string(nil), models...)
+	}
 	models := normalizeAvailableModels(c.ChatGPT.AvailableModels, c.ChatGPT.Model)
 	return append([]string(nil), models...)
 }
 
 func (c *Config) GetCapabilities() Capabilities {
+	if c.GetProvider() == ProviderOpenRouter {
+		return Capabilities{
+			SupportsGenerate:       true,
+			SupportsEdit:           false,
+			SupportsUpscale:        false,
+			Resolutions:            []string{"1024x1024", "1024x1536", "1536x1024"},
+			UpscaleFactors:         []string{},
+			MaxReferenceImages:     0,
+			SupportsMask:           false,
+			SupportsMultiReference: false,
+		}
+	}
 	return Capabilities{
 		SupportsGenerate:       true,
 		SupportsEdit:           true,
@@ -307,9 +446,48 @@ func NormalizeImageModel(model string) string {
 	}
 }
 
+func normalizeOpenRouterModel(model string, fallbacks []string) string {
+	normalized := strings.TrimSpace(model)
+	if normalized != "" {
+		return normalized
+	}
+	for _, fallback := range fallbacks {
+		if normalized = strings.TrimSpace(fallback); normalized != "" {
+			return normalized
+		}
+	}
+	return OpenRouterImageModel
+}
+
+func normalizeOpenRouterModels(models []string, primary string) []string {
+	seen := make(map[string]struct{})
+	result := make([]string, 0, len(models)+1)
+	for _, candidate := range append([]string{primary}, models...) {
+		normalized := strings.TrimSpace(candidate)
+		if normalized == "" {
+			continue
+		}
+		key := strings.ToLower(normalized)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		result = append(result, normalized)
+	}
+	if len(result) == 0 {
+		return []string{OpenRouterImageModel}
+	}
+	return result
+}
+
 func (c *Config) migrateLegacyModels() {
-	c.ChatGPT.Model = normalizePrimaryModel(c.ChatGPT.Model, c.ChatGPT.AvailableModels)
-	c.ChatGPT.AvailableModels = normalizeAvailableModels(c.ChatGPT.AvailableModels, c.ChatGPT.Model)
+	if normalizeProvider(c.App.Provider) == ProviderOpenRouter {
+		c.ChatGPT.Model = normalizeOpenRouterModel(c.ChatGPT.Model, c.ChatGPT.AvailableModels)
+		c.ChatGPT.AvailableModels = normalizeOpenRouterModels(c.ChatGPT.AvailableModels, c.ChatGPT.Model)
+	} else {
+		c.ChatGPT.Model = normalizePrimaryModel(c.ChatGPT.Model, c.ChatGPT.AvailableModels)
+		c.ChatGPT.AvailableModels = normalizeAvailableModels(c.ChatGPT.AvailableModels, c.ChatGPT.Model)
+	}
 	c.normalizeInPlace()
 }
 
@@ -386,9 +564,41 @@ func migrateLegacyOverrideMap(raw map[string]any) {
 		app = map[string]any{}
 		raw["app"] = app
 	}
-	if baseURL, ok := app["base_url"].(string); !ok || strings.TrimSpace(baseURL) == "" || strings.TrimRight(strings.TrimSpace(baseURL), "/") == "https://api.openai.com" {
-		app["base_url"] = DefaultBaseURL
+	if provider, ok := app["provider"].(string); !ok || strings.TrimSpace(provider) == "" {
+		app["provider"] = DefaultProvider
 	}
+	providerValue, _ := app["provider"].(string)
+	baseURLValue, _ := app["base_url"].(string)
+	modelValue := ""
+	if chatgpt, _ := raw["chatgpt"].(map[string]any); chatgpt != nil {
+		modelValue, _ = chatgpt["model"].(string)
+	}
+	providerValue = inferProvider(providerValue, baseURLValue, modelValue)
+	app["provider"] = providerValue
+	if providerAPIKeys, ok := app["provider_api_keys"].(map[string]any); ok {
+		normalizedKeys := map[string]string{}
+		for key, value := range providerAPIKeys {
+			text, ok := value.(string)
+			if !ok {
+				continue
+			}
+			if cleaned := strings.TrimSpace(text); cleaned != "" {
+				normalizedKeys[normalizeProvider(key)] = cleaned
+			}
+		}
+		app["provider_api_keys"] = normalizedKeys
+	}
+	if apiKey, ok := app["api_key"].(string); ok && strings.TrimSpace(apiKey) != "" {
+		providerAPIKeys, _ := app["provider_api_keys"].(map[string]string)
+		if providerAPIKeys == nil {
+			providerAPIKeys = map[string]string{}
+		}
+		if _, exists := providerAPIKeys[providerValue]; !exists {
+			providerAPIKeys[providerValue] = strings.TrimSpace(apiKey)
+		}
+		app["provider_api_keys"] = providerAPIKeys
+	}
+	app["base_url"] = normalizeBaseURLForProvider(providerValue, baseURLValue)
 	if imageFormat, ok := app["image_format"].(string); !ok || strings.TrimSpace(imageFormat) == "" {
 		app["image_format"] = "url"
 	}
@@ -500,6 +710,27 @@ func setOverrideValue(dst reflect.Value, raw any) error {
 		default:
 			return fmt.Errorf("expected int, got %T", raw)
 		}
+	case reflect.Map:
+		if dst.Type().Key().Kind() != reflect.String || dst.Type().Elem().Kind() != reflect.String {
+			return fmt.Errorf("unsupported map type %s", dst.Type())
+		}
+		rawMap, ok := raw.(map[string]any)
+		if !ok {
+			if typedMap, ok := raw.(map[string]string); ok {
+				dst.Set(reflect.ValueOf(typedMap))
+				return nil
+			}
+			return fmt.Errorf("expected map, got %T", raw)
+		}
+		next := reflect.MakeMap(dst.Type())
+		for key, value := range rawMap {
+			text, ok := value.(string)
+			if !ok {
+				return fmt.Errorf("expected string map value, got %T", value)
+			}
+			next.SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(text))
+		}
+		dst.Set(next)
 	default:
 		value := reflect.ValueOf(raw)
 		if value.IsValid() && value.Type().AssignableTo(dst.Type()) {

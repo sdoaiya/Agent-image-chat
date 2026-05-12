@@ -1,7 +1,10 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  Eye,
+  EyeOff,
   Key,
   Loader2,
   Monitor,
@@ -27,6 +30,12 @@ import {
 import {
   DEFAULT_IMAGE_MODEL,
   CODESONLINE_BASE_URL,
+  OPENROUTER_BASE_URL,
+  BLT_BASE_URL,
+  getProviderDefaults,
+  inferProviderFromSettings,
+  type ImageProvider,
+  type ProviderApiKeys,
   useSettings,
 } from "@/store/settings";
 import { Button } from "@/components/ui/button";
@@ -40,11 +49,13 @@ const themeIcons: Record<string, React.ReactNode> = {
   system: <Monitor className="h-4 w-4" />,
 };
 
-const BACKEND_REQUEST_TIMEOUT_SECONDS = 300;
+const BACKEND_REQUEST_TIMEOUT_SECONDS = 900;
 
 interface BackendSettingsPayload {
   app: {
+    provider: ImageProvider;
     apiKey: string;
+    providerApiKeys?: ProviderApiKeys;
     baseUrl: string;
     imageFormat: "url" | "b64_json";
     authKey: string;
@@ -141,7 +152,9 @@ function deriveDraftState(args: {
 }
 
 interface SettingsDraftSnapshot {
+  provider: ImageProvider;
   apiKey: string;
+  providerApiKeys: ProviderApiKeys;
   baseUrl: string;
   proxyEnabled: boolean;
   proxyUrl: string;
@@ -151,7 +164,9 @@ interface SettingsDraftSnapshot {
 
 function hasMeaningfulDraftChanges(args: {
   open: boolean;
+  provider: ImageProvider;
   apiKey: string;
+  providerApiKeys: ProviderApiKeys;
   baseUrl: string;
   proxyEnabled: boolean;
   proxyUrl: string;
@@ -160,12 +175,25 @@ function hasMeaningfulDraftChanges(args: {
   settings: SettingsDraftSnapshot;
 }): boolean {
   if (!args.open) return false;
-  return args.apiKey !== args.settings.apiKey
+  return args.provider !== args.settings.provider
+    || args.apiKey !== args.settings.apiKey
+    || JSON.stringify(args.providerApiKeys) !== JSON.stringify(args.settings.providerApiKeys)
     || args.baseUrl !== args.settings.baseUrl
     || args.proxyEnabled !== args.settings.proxyEnabled
     || args.proxyUrl !== args.settings.proxyUrl
     || args.defaultModel !== args.settings.defaultModel
     || args.theme !== args.settings.theme;
+}
+
+function providerApiKeysEqual(a: ProviderApiKeys, b: ProviderApiKeys): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function setProviderApiKeysIfChanged(
+  setter: Dispatch<SetStateAction<ProviderApiKeys>>,
+  next: ProviderApiKeys,
+): void {
+  setter((current) => (providerApiKeysEqual(current, next) ? current : next));
 }
 
 interface SettingsDrawerProps {
@@ -175,7 +203,13 @@ interface SettingsDrawerProps {
 
 export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
   const settings = useSettings();
+  const [provider, setProvider] = useState<ImageProvider>(inferProviderFromSettings(settings));
   const [apiKey, setApiKey] = useState(settings.apiKey);
+  const [providerApiKeys, setProviderApiKeys] = useState<ProviderApiKeys>(() => ({
+    ...settings.providerApiKeys,
+    [inferProviderFromSettings(settings)]: settings.apiKey || settings.providerApiKeys[inferProviderFromSettings(settings)] || "",
+  }));
+  const [showApiKey, setShowApiKey] = useState(false);
   const [baseUrl, setBaseUrl] = useState(settings.baseUrl);
   const [proxyEnabled, setProxyEnabled] = useState(settings.proxyEnabled);
   const [proxyUrl, setProxyUrl] = useState(settings.proxyUrl);
@@ -188,14 +222,23 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
   const [backendConfig, setBackendConfig] = useState<ConfigPayload | null>(null);
 
   const refreshDraftFromStore = useCallback(() => {
-    setApiKey(settings.apiKey);
+    const nextProvider = inferProviderFromSettings(settings);
+    const nextProviderApiKeys = {
+      ...settings.providerApiKeys,
+      [nextProvider]: settings.apiKey || settings.providerApiKeys[nextProvider] || "",
+    };
+    setProvider(nextProvider);
+    setProviderApiKeysIfChanged(setProviderApiKeys, nextProviderApiKeys);
+    setApiKey(nextProviderApiKeys[nextProvider] || "");
     setBaseUrl(settings.baseUrl);
     setProxyEnabled(settings.proxyEnabled);
     setProxyUrl(settings.proxyUrl);
     setDefaultModel(settings.defaultModel);
     setTheme(settings.theme);
   }, [
+    settings.provider,
     settings.apiKey,
+    settings.providerApiKeys,
     settings.baseUrl,
     settings.defaultModel,
     settings.proxyEnabled,
@@ -207,7 +250,9 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     if (!open) return;
     if (hasMeaningfulDraftChanges({
       open,
+      provider,
       apiKey,
+      providerApiKeys,
       baseUrl,
       proxyEnabled,
       proxyUrl,
@@ -220,9 +265,11 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     refreshDraftFromStore();
   }, [
     apiKey,
+    providerApiKeys,
     baseUrl,
     defaultModel,
     open,
+    provider,
     proxyEnabled,
     proxyUrl,
     refreshDraftFromStore,
@@ -240,6 +287,21 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
         if (cancelled) return;
 
         setBackendConfig(config);
+        const backendProvider = inferProviderFromSettings({
+          provider: config.app.provider ?? settings.provider,
+          baseUrl: config.app.baseUrl ?? settings.baseUrl,
+          defaultModel: config.chatgpt?.model ?? settings.defaultModel,
+          apiKey: config.app.apiKey ?? settings.apiKey,
+        });
+        const backendProviderApiKeys = {
+          ...settings.providerApiKeys,
+          ...(config.app.providerApiKeys ?? {}),
+          [backendProvider]: config.app.apiKey || config.app.providerApiKeys?.[backendProvider] || settings.apiKey,
+        };
+        setProvider(backendProvider);
+        setProviderApiKeysIfChanged(setProviderApiKeys, backendProviderApiKeys);
+        setApiKey(backendProviderApiKeys[backendProvider] || "");
+        setBaseUrl(config.app.baseUrl || getProviderDefaults(backendProvider).baseUrl);
         const backendModels = extractAvailableModels(config);
         const mergedRemoteModels = backendModels.length > 0
           ? Array.from(new Set([...settings.remoteModels, ...backendModels]))
@@ -263,16 +325,18 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     return () => {
       cancelled = true;
     };
-  }, [open, settings.builtinModels, settings.defaultModel, settings.remoteModels]);
+  }, [open, settings.builtinModels, settings.defaultModel, settings.providerApiKeys, settings.remoteModels]);
 
   useEffect(() => {
     if (!baseUrl || baseUrl === "https://api.openai.com") {
-      setBaseUrl(CODESONLINE_BASE_URL);
+      setBaseUrl(getProviderDefaults(provider).baseUrl);
     }
-    if (defaultModel !== "gpt-image-2" && !settings.remoteModels.includes(defaultModel)) {
-      setDefaultModel("gpt-image-2");
+    const providerDefaults = getProviderDefaults(provider);
+    const isAvailableModel = defaultModel === providerDefaults.defaultModel || settings.remoteModels.includes(defaultModel);
+    if (!isAvailableModel) {
+      setDefaultModel(providerDefaults.defaultModel);
     }
-  }, [baseUrl, defaultModel, settings.remoteModels]);
+  }, [baseUrl, defaultModel, provider, settings.remoteModels]);
 
   const capabilities = backendConfig?.capabilities;
 
@@ -340,12 +404,18 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
       backendConfig,
     });
     const selectedModel = normalized.selectedModel;
+    const nextProviderApiKeys = {
+      ...providerApiKeys,
+      [provider]: apiKey,
+    };
 
     setSaving(true);
     setSaveStatus("idle");
     setSaveMessage("正在保存...");
     settings.updateSettings({
+      provider,
       apiKey,
+      providerApiKeys: nextProviderApiKeys,
       authKey: "",
       baseUrl,
       proxyEnabled,
@@ -358,7 +428,9 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
 
     const payload: BackendSettingsPayload = {
       app: {
+        provider,
         apiKey,
+        providerApiKeys: nextProviderApiKeys,
         baseUrl,
         imageFormat: "url",
         authKey: "",
@@ -421,7 +493,9 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
 
   const handleReset = () => {
     settings.resetSettings();
+    setProvider("codesonline");
     setApiKey("");
+    setProviderApiKeys({});
     setBaseUrl(CODESONLINE_BASE_URL);
     setProxyEnabled(false);
     setProxyUrl("");
@@ -432,7 +506,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent modal={false} className="right-0 left-auto top-0 h-[100vh] w-full max-w-[520px] translate-x-0 translate-y-0 rounded-none border-l border-border p-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=closed]:slide-out-to-top-0 data-[state=open]:slide-in-from-top-0">
+      <DialogContent modal={false} closeClassName="top-7" className="right-0 left-auto top-0 h-[100vh] w-full max-w-[520px] translate-x-0 translate-y-0 rounded-none border-l border-border p-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=closed]:slide-out-to-top-0 data-[state=open]:slide-in-from-top-0">
         <DialogHeader className="border-b border-border px-6 py-5 text-left">
           <DialogTitle className="flex items-center gap-2"><Settings2 className="h-5 w-5 text-primary" /> 应用设置</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -444,13 +518,73 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
             <section className="space-y-4 rounded-2xl border border-border bg-card p-4">
               <div className="flex items-center gap-2 text-sm font-semibold"><Key className="h-4 w-4 text-primary" /> API 配置</div>
               <div className="space-y-2">
+                <label className="text-sm font-medium">Provider</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { value: "codesonline", label: "CodesOnline" },
+                    { value: "openrouter", label: "OpenRouter" },
+                    { value: "blt", label: "BLT" },
+                  ] as const).map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      data-testid={`settings-provider-${item.value}`}
+                      aria-pressed={provider === item.value}
+                      onClick={() => {
+                        const nextProvider = item.value as ImageProvider;
+                        const defaults = getProviderDefaults(nextProvider);
+                        const currentKeys = { ...providerApiKeys, [provider]: apiKey };
+                        setProvider(nextProvider);
+                        setProviderApiKeys(currentKeys);
+                        setApiKey(currentKeys[nextProvider] || "");
+                        setBaseUrl(defaults.baseUrl);
+                        setDefaultModel(defaults.defaultModel);
+                      }}
+                      className={`rounded-xl border px-3 py-2 text-sm ${provider === item.value ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:text-foreground"}`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground">切换 provider 时会自动带出推荐的 Base URL、默认模型和本机保存的对应 API Key。</p>
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Base URL</label>
                 <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder={CODESONLINE_BASE_URL} />
-                <p className="text-[11px] text-muted-foreground">默认使用 CodesOnline 网关地址，也可替换为自建兼容服务。</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {provider === "openrouter"
+                    ? `OpenRouter 默认地址：${OPENROUTER_BASE_URL}`
+                    : provider === "blt"
+                      ? `BLT 默认地址：${BLT_BASE_URL}`
+                    : "默认使用 CodesOnline 网关地址，也可替换为自建兼容服务。"}
+                </p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">API Key</label>
-                <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
+                <div className="flex gap-2">
+                  <Input
+                    type={showApiKey ? "text" : "password"}
+                    value={apiKey}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setApiKey(value);
+                      setProviderApiKeys((current) => ({ ...current, [provider]: value }));
+                    }}
+                    placeholder="sk-..."
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    aria-label={showApiKey ? "隐藏 API Key" : "显示 API Key"}
+                    onClick={() => setShowApiKey((current) => !current)}
+                  >
+                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  这里只编辑当前 provider 的 Key；切换 provider 后会显示该 provider 已保存在本机的 Key，保存后后端会使用这些 Key 做顺序轮询。
+                </p>
               </div>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium">

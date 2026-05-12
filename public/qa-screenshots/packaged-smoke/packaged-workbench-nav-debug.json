@@ -1,16 +1,16 @@
 {
-  "currentUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg/dist/win-unpacked/resources/app.asar/dist/index.html",
+  "currentUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg-clean/dist/win-unpacked/resources/app.asar/dist/index.html",
   "currentHash": "",
-  "examplesUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg/dist/win-unpacked/resources/app.asar/dist/index.html#/examples",
+  "examplesUrl": "file:///E:/codex%E9%A1%B9%E7%9B%AE/img2/gimg-clean/dist/win-unpacked/resources/app.asar/dist/index.html#/examples",
   "examplesHash": "#/examples",
   "hash": "#/",
   "title": "GIMG",
   "selectors": {
-    "promptTextarea": true,
+    "promptTextarea": false,
     "uploadButton": true,
     "fileInput": true,
     "settingsButton": true
   },
-  "bodyPreview": "工作\n示例\n设置\n对话\nmobile phone photo\n工作台\n· mobile phone photo\n生成\nmobile phone photo, old CCD camera aesthetic, harsh flash, grainy, dim messy indoor lighting, candid snapshot feeling, slight motion blur, young Korean female idol, soft innocent look\n38分钟前\n\n鉴权失败，请检查 API Key、Access Token 或本地鉴权 Key\n\n重试\n删除\n生成\n编辑\n放大\n分辨率\n1024 × 1024\n1024 × 1536\n1536 × 1024\n质量\nstandard\nhd\n支持提示词、参考图与分辨率设置。",
+  "bodyPreview": "工作\n示例\n设置\n工作台\n对话\n暂无对话\n开始创作\n\n输入提示词，或添加附件图开始创作\n\n画面比例\n1:1\n方形\n1:1\n横屏\n5:4\n故事\n9:16\n超宽屏\n21:9\n宽屏\n16:9\n横屏\n4:3\n宽幅\n3:2\n标准\n4:5\n竖版\n3:4\n竖版\n2:3\n张数\n1\n输出尺寸\n原图\n2K 高清\n4K 高清\n负面提示词\n正向提示词\n添加参考图\n生成",
   "screenshot": "public/qa-screenshots/packaged-smoke/packaged-workbench-nav-debug.png"
 }

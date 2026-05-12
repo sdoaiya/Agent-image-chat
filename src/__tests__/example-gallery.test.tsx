@@ -88,7 +88,7 @@ describe("ExampleGallery", () => {
       </MemoryRouter>,
     );
 
-    for (let index = 0; index < 6; index += 1) {
+    for (let index = 0; index < 5; index += 1) {
       fireEvent.click(screen.getByRole("button", { name: "继续加载" }));
     }
 

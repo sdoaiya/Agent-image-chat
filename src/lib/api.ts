@@ -1,5 +1,6 @@
 import client from "./request";
 import type { ModelCapabilities } from "@/types/image-workflow";
+import type { ImageProvider, ProviderApiKeys } from "@/store/settings";
 
 export interface ImageGenerationRequest {
   model?: string;
@@ -9,11 +10,13 @@ export interface ImageGenerationRequest {
   size?: string;
   response_format?: "url" | "b64_json";
   style?: "vivid" | "natural";
+  upscale?: "2k" | "4k";
   reference_images?: string[];
 }
 
 export interface RequestOptions {
   signal?: AbortSignal;
+  authToken?: string;
 }
 
 export interface ImageData {
@@ -23,6 +26,8 @@ export interface ImageData {
   file_id?: string;
   gen_id?: string;
   source_account_id?: string;
+  provider?: ImageProvider | string;
+  source?: string;
 }
 
 export interface ImageResult {
@@ -45,7 +50,9 @@ export interface ModelsResponse {
 
 export interface ConfigPayload {
   app: {
+    provider?: ImageProvider;
     apiKey: string;
+    providerApiKeys?: ProviderApiKeys;
     baseUrl: string;
     imageFormat: "url" | "b64_json";
     authKey: string;
@@ -143,13 +150,19 @@ export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
-export async function getSettings(): Promise<ConfigPayload> {
-  const { data } = await client.get<ConfigPayload>("/api/config");
+export async function getSettings(options?: RequestOptions): Promise<ConfigPayload> {
+  const { data } = await client.get<ConfigPayload>("/api/config", {
+    signal: options?.signal,
+    headers: options?.authToken ? { Authorization: `Bearer ${options.authToken}` } : undefined,
+  });
   return data;
 }
 
-export async function updateSettings<T extends object>(settings: T): Promise<ConfigPayload> {
-  const { data } = await client.put<ConfigPayload>("/api/config", settings);
+export async function updateSettings<T extends object>(settings: T, options?: RequestOptions): Promise<ConfigPayload> {
+  const { data } = await client.put<ConfigPayload>("/api/config", settings, {
+    signal: options?.signal,
+    headers: options?.authToken ? { Authorization: `Bearer ${options.authToken}` } : undefined,
+  });
   return data;
 }
 

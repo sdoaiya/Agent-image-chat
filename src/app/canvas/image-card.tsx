@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import { Download, ExternalLink, Maximize2, Pencil, RefreshCw, Sparkles, Trash2 } from "lucide-react";
+import { Download, ExternalLink, FileText, ImagePlus, Images, Maximize2, Pencil, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import type { ImageData, ImageMeta } from "@/store/conversations";
 import {
   Dialog,
@@ -12,17 +12,32 @@ import {
 interface ImageCardProps {
   image: ImageData;
   fileName?: string;
+  prompt?: string;
   onEdit?: () => void;
   onUpscale?: () => void;
   onReference?: () => void;
+  onPromptReference?: () => void;
+  onImageReference?: () => void;
   onContinueEdit?: () => void;
   onRetry?: () => void;
   onDelete?: () => void;
   meta?: ImageMeta;
 }
 
+function normalizeBase64Image(value: string): string {
+  const trimmed = value.trim();
+  const commaIndex = trimmed.indexOf(",");
+  if (trimmed.startsWith("data:") && commaIndex >= 0) {
+    return trimmed.slice(commaIndex + 1).trim();
+  }
+  return trimmed;
+}
+
 function imageSrc(image: ImageData): string {
-  return image.b64_json ? `data:image/png;base64,${image.b64_json}` : image.url;
+  if (!image.b64_json) return image.url;
+  const trimmed = image.b64_json.trim();
+  if (trimmed.startsWith("data:")) return trimmed;
+  return `data:image/png;base64,${trimmed}`;
 }
 
 async function downloadImage(image: ImageData, fileName: string) {
@@ -33,7 +48,7 @@ async function downloadImage(image: ImageData, fileName: string) {
   let objectUrl: string | undefined;
   try {
     if (image.b64_json) {
-      const bytes = Uint8Array.from(atob(image.b64_json), (char) => char.charCodeAt(0));
+      const bytes = Uint8Array.from(atob(normalizeBase64Image(image.b64_json)), (char) => char.charCodeAt(0));
       const blob = new Blob([bytes], { type: "image/png" });
       objectUrl = URL.createObjectURL(blob);
       href = objectUrl;
@@ -71,7 +86,7 @@ async function downloadImage(image: ImageData, fileName: string) {
 
 function estimateBytes(image: ImageData, src: string): number | undefined {
   if (image.bytes) return image.bytes;
-  if (image.b64_json) return Math.round((image.b64_json.length * 3) / 4);
+  if (image.b64_json) return Math.round((normalizeBase64Image(image.b64_json).length * 3) / 4);
   const match = src.match(/;base64,([A-Za-z0-9+/=]+)/);
   return match ? Math.round((match[1]!.length * 3) / 4) : undefined;
 }
@@ -99,7 +114,7 @@ async function fileFromImage(image: ImageData, fallbackName = "reference.png"): 
   const src = imageSrc(image);
   if (!src) return null;
   if (image.b64_json) {
-    const bytes = Uint8Array.from(atob(image.b64_json), (char) => char.charCodeAt(0));
+    const bytes = Uint8Array.from(atob(normalizeBase64Image(image.b64_json)), (char) => char.charCodeAt(0));
     return new File([bytes], fallbackName, { type: "image/png" });
   }
   const response = await fetch(src);
@@ -109,7 +124,20 @@ async function fileFromImage(image: ImageData, fallbackName = "reference.png"): 
 
 export { fileFromImage, imageSrc };
 
-export function ImageCard({ image, fileName = "generated-image.png", onEdit, onUpscale, onReference, onContinueEdit, onRetry, onDelete, meta }: ImageCardProps) {
+export function ImageCard({
+  image,
+  fileName = "generated-image.png",
+  prompt,
+  onEdit,
+  onUpscale,
+  onReference,
+  onPromptReference,
+  onImageReference,
+  onContinueEdit,
+  onRetry,
+  onDelete,
+  meta,
+}: ImageCardProps) {
   const [loaded, setLoaded] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const src = imageSrc(image);
@@ -131,7 +159,11 @@ export function ImageCard({ image, fileName = "generated-image.png", onEdit, onU
   if (!src) return null;
 
   const bytes = estimateBytes(image, src);
+  const detailPrompt = prompt?.trim() || image.revised_prompt?.trim() || "暂无提示词";
+  const revisedPrompt = image.revised_prompt?.trim();
+  const showRevisedPrompt = Boolean(revisedPrompt && revisedPrompt !== detailPrompt);
   const modeLabel = meta?.mode === "edit" ? "编辑" : meta?.mode === "upscale" ? "放大" : "生成";
+  const providerLabel = image.provider || image.source || meta?.provider;
   const resolutionLabel = dimension
     ? `${dimension.width} × ${dimension.height}`
     : (image.width && image.height ? `${image.width} × ${image.height}` : (meta?.size ?? "分辨率读取中"));
@@ -149,7 +181,7 @@ export function ImageCard({ image, fileName = "generated-image.png", onEdit, onU
             type="button"
             className="block w-full cursor-zoom-in text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => setPreviewOpen(true)}
-            aria-label="放大预览图片"
+            aria-label="查看图片详情"
           >
             <img
               src={src}
@@ -159,7 +191,7 @@ export function ImageCard({ image, fileName = "generated-image.png", onEdit, onU
             />
           </button>
           <div className="pointer-events-none absolute inset-0 flex flex-wrap items-start justify-end gap-1.5 p-3 rounded-2xl bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100">
-            <button onClick={stopAction(() => setPreviewOpen(true))} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="放大预览">
+            <button onClick={stopAction(() => setPreviewOpen(true))} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="打开图片详情" aria-label="打开图片详情">
               <Maximize2 className="h-4 w-4" />
             </button>
             {onEdit && (
@@ -205,24 +237,85 @@ export function ImageCard({ image, fileName = "generated-image.png", onEdit, onU
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             <span>{resolutionLabel}</span>
             <span>{formatBytes(bytes)}</span>
+            {providerLabel && <span>来源：{providerLabel}</span>}
             {meta?.scale && <span>{meta.scale}</span>}
           </div>
         </div>
       </div>
 
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-h-[92vh] max-w-[92vw] overflow-hidden p-4">
+        <DialogContent className="canvas-detail-dialog max-h-[92vh] w-[min(1120px,92vw)] max-w-none overflow-hidden p-0">
           <DialogHeader className="sr-only">
-            <DialogTitle>图片预览</DialogTitle>
-            <DialogDescription>查看生成图片的大图预览</DialogDescription>
+            <DialogTitle>图片详情</DialogTitle>
+            <DialogDescription>查看生成图片、提示词与引用操作</DialogDescription>
           </DialogHeader>
-          <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
-            {onReference && <button onClick={onReference} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">引用</button>}
-            {onContinueEdit && <button onClick={onContinueEdit} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">继续编辑</button>}
-            {onUpscale && <button onClick={onUpscale} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">放大</button>}
-            <button onClick={() => void downloadImage(image, fileName)} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">导出</button>
-          </div>
-          <img src={src} alt={image.revised_prompt ?? "Generated image preview"} className="max-h-[84vh] max-w-full rounded-lg object-contain" />
+          <section className="canvas-detail-view" aria-label="图片详情">
+            <div className="canvas-detail-image-panel">
+              <img src={src} alt={image.revised_prompt ?? "Generated image preview"} className="canvas-detail-image" />
+            </div>
+            <aside className="canvas-detail-copy">
+              <p className="canvas-detail-kicker">图片提示词</p>
+              <h3 className="canvas-detail-title">{modeLabel}结果</h3>
+              <p className="canvas-detail-prompt">{detailPrompt}</p>
+              {showRevisedPrompt ? (
+                <div className="canvas-detail-revised">
+                  <p className="canvas-detail-kicker">模型修订提示词</p>
+                  <p>{revisedPrompt}</p>
+                </div>
+              ) : null}
+              <dl className="canvas-detail-meta">
+                <div>
+                  <dt>模型</dt>
+                  <dd>{meta?.model ?? "未知"}</dd>
+                </div>
+                <div>
+                  <dt>模式</dt>
+                  <dd>{modeLabel}</dd>
+                </div>
+                <div>
+                  <dt>分辨率</dt>
+                  <dd>{resolutionLabel}</dd>
+                </div>
+                <div>
+                  <dt>大小</dt>
+                  <dd>{formatBytes(bytes)}</dd>
+                </div>
+                {providerLabel && (
+                  <div>
+                    <dt>来源</dt>
+                    <dd>{providerLabel}</dd>
+                  </div>
+                )}
+              </dl>
+              <div className="canvas-detail-actions">
+                {onReference && (
+                  <button type="button" onClick={onReference} className="canvas-detail-action canvas-detail-action--primary" aria-label="一键引用：提示词 + 图片">
+                    <ImagePlus className="h-3.5 w-3.5" />
+                    <span>一键引用</span>
+                  </button>
+                )}
+                {onPromptReference && (
+                  <button type="button" onClick={onPromptReference} className="canvas-detail-action" aria-label="只引用提示词">
+                    <FileText className="h-3.5 w-3.5" />
+                    <span>仅提示词</span>
+                  </button>
+                )}
+                {onImageReference && (
+                  <button type="button" onClick={onImageReference} className="canvas-detail-action" aria-label="只引用图片">
+                    <Images className="h-3.5 w-3.5" />
+                    <span>仅图片</span>
+                  </button>
+                )}
+              </div>
+              <div className="canvas-detail-tools" aria-label="图片工具">
+                {onContinueEdit && <button type="button" onClick={onContinueEdit} className="canvas-detail-tool">继续编辑</button>}
+                {onUpscale && <button type="button" onClick={onUpscale} className="canvas-detail-tool">放大</button>}
+                {onRetry && <button type="button" onClick={onRetry} className="canvas-detail-tool">重试</button>}
+                <button type="button" onClick={() => void downloadImage(image, fileName)} className="canvas-detail-tool">导出</button>
+                {onDelete && <button type="button" onClick={onDelete} className="canvas-detail-tool canvas-detail-tool--danger">删除</button>}
+              </div>
+            </aside>
+          </section>
         </DialogContent>
       </Dialog>
     </>

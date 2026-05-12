@@ -15,13 +15,7 @@ interface MainNavigationProps {
 export function MainNavigation({ activePath, onOpenSettings }: MainNavigationProps) {
   return (
     <aside className="flex h-full w-[76px] shrink-0 flex-col items-center border-r border-sidebar-border bg-rail">
-      <div className="titlebar-drag flex h-14 w-full items-center justify-center" style={{ paddingTop: "calc(env(titlebar-area-height, 32px) * 0.5)" }}>
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <ImagePlus className="h-4 w-4" />
-        </div>
-      </div>
-
-      <nav className="titlebar-no-drag flex min-h-0 flex-1 flex-col items-center gap-2 px-2 pt-3">
+      <nav className="titlebar-no-drag flex min-h-0 flex-1 flex-col items-center gap-2 px-2 pt-8">
         {navItems.map((item) => {
           const isActive = item.exact ? activePath === item.to : activePath.startsWith(item.to);
           const Icon = item.icon;

@@ -12,16 +12,17 @@ vi.mock("sonner", () => ({
 import { ExamplesPage } from "@/app/examples/page";
 
 describe("ExamplesPage", () => {
-  it("keeps only the top filter row and topics entry in the page header", () => {
-    render(
+  it("keeps only the header controls needed by the examples workspace", () => {
+    const { container } = render(
       <MemoryRouter>
         <ExamplesPage />
       </MemoryRouter>,
     );
 
-    expect(screen.queryByText("示例库")).toBeNull();
-    expect(screen.queryByText("引用提示词与参照图，快速开始")).toBeNull();
-    expect(screen.queryByText(/348 个案例/)).toBeNull();
+    expect(container.querySelector(".examples-page-app-badge")).toBeNull();
+    expect(container.querySelector(".example-filter-bar--sync-only")).toBeNull();
+    expect(screen.getByRole("group", { name: "示例页主操作" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "示例页筛选与排序" })).toBeTruthy();
     expect(screen.getByRole("tab", { name: "全部" }).getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("searchbox", { name: "搜索示例" })).toBeTruthy();
     expect(screen.getByRole("combobox", { name: "来源筛选" })).toBeTruthy();

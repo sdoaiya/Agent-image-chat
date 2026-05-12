@@ -49,4 +49,20 @@ describe("conversation loading", () => {
     expect(useConversations.getState().conversations).toHaveLength(1);
     consoleErrorSpy.mockRestore();
   });
+
+  it("loads the last active conversation when it still exists", async () => {
+    localforageMocks.getItem.mockImplementation(async (key: string) => {
+      if (key === "gimg-active-conversation") return "conv-2";
+      return [
+        { id: "conv-1", title: "one", turns: [], created_at: 1, updated_at: 1 },
+        { id: "conv-2", title: "two", turns: [], created_at: 2, updated_at: 2 },
+      ];
+    });
+    const { useConversations } = await import("@/store/conversations");
+
+    useConversations.setState({ conversations: [], activeId: null, loaded: false, loadError: null });
+    await useConversations.getState().load();
+
+    expect(useConversations.getState().activeId).toBe("conv-2");
+  });
 });

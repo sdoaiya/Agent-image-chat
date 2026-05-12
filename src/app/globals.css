@@ -88,19 +88,6 @@ body {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.52);
 }
 
-.examples-page-app-badge {
-  display: inline-flex;
-  height: 2rem;
-  width: 2rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.85rem;
-  border: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(248 250 252 / 0.96));
-  color: var(--color-foreground);
-  box-shadow: 0 8px 18px rgb(15 23 42 / 0.07);
-}
-
 .examples-page-status-pill {
   border-radius: 999px;
   border: 1px solid color-mix(in oklab, var(--color-border) 76%, transparent);
@@ -114,13 +101,30 @@ body {
   box-shadow: 0 8px 18px rgb(15 23 42 / 0.05);
 }
 
+.examples-page-titlebar-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.examples-page-titlebar-status {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .examples-page-toolbar-controls {
   display: flex;
-  min-width: 320px;
-  max-width: 680px;
-  flex: 1 1 480px;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  flex: 1 1 auto;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
@@ -330,9 +334,9 @@ a:focus-visible {
 
 .example-search-control {
   display: flex;
-  min-width: 180px;
-  max-width: 320px;
-  flex: 1 1 240px;
+  min-width: min(100%, 260px);
+  max-width: 520px;
+  flex: 1 1 360px;
   align-items: center;
   gap: 0.45rem;
   border-radius: 0.95rem;
@@ -420,19 +424,6 @@ a:focus-visible {
 
 .example-sort-order-button {
   min-width: 5rem;
-}
-
-.example-sync-pill {
-  flex: 0 0 auto;
-  border-radius: 999px;
-  border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
-  background: color-mix(in oklab, var(--color-primary) 8%, white 92%);
-  color: color-mix(in oklab, var(--color-foreground) 78%, var(--color-primary) 22%);
-  font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 1;
-  padding: 0.58rem 0.72rem;
-  white-space: nowrap;
 }
 
 .example-gallery-shell {
@@ -1751,6 +1742,190 @@ a:focus-visible {
   width: 100%;
 }
 
+.canvas-image-loading-card {
+  display: flex;
+  min-height: 16rem;
+  min-width: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px dashed color-mix(in oklab, var(--color-primary) 36%, var(--color-border));
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 8%, transparent), transparent 42%),
+    color-mix(in oklab, var(--color-card) 86%, var(--color-muted));
+  color: var(--color-muted-foreground);
+  font-size: 0.8125rem;
+}
+
+.canvas-detail-dialog > button {
+  background: rgb(255 255 255 / 0.88);
+  border: 1px solid color-mix(in oklab, var(--color-border) 76%, transparent);
+  border-radius: 0.75rem;
+  color: var(--color-foreground);
+  opacity: 1;
+}
+
+.canvas-detail-view {
+  display: grid;
+  min-height: min(760px, 92vh);
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(248 250 252 / 0.86)),
+    linear-gradient(135deg, rgb(255 255 255 / 0.26), transparent 56%);
+}
+
+.canvas-detail-image-panel {
+  display: flex;
+  min-height: 520px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--color-muted) 42%, white 58%);
+  padding: 1.25rem;
+}
+
+.canvas-detail-image {
+  display: block;
+  max-height: calc(92vh - 3rem);
+  max-width: 100%;
+  border-radius: 0.95rem;
+  object-fit: contain;
+}
+
+.canvas-detail-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  border-left: 1px solid color-mix(in oklab, var(--color-border) 72%, transparent);
+  padding: 3.45rem 1.15rem 1.15rem;
+}
+
+.canvas-detail-kicker {
+  color: var(--color-muted-foreground);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.canvas-detail-title {
+  color: var(--color-foreground);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.canvas-detail-prompt,
+.canvas-detail-revised {
+  color: var(--color-foreground);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  word-break: break-word;
+}
+
+.canvas-detail-prompt {
+  max-height: min(34vh, 320px);
+  overflow: auto;
+}
+
+.canvas-detail-revised {
+  display: grid;
+  gap: 0.35rem;
+  border-radius: 0.9rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 75%, transparent);
+  background: color-mix(in oklab, var(--color-muted) 18%, white 82%);
+  padding: 0.75rem;
+}
+
+.canvas-detail-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.canvas-detail-meta div {
+  min-width: 0;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 76%, transparent);
+  background: rgb(255 255 255 / 0.78);
+  padding: 0.6rem 0.68rem;
+}
+
+.canvas-detail-meta dt {
+  color: var(--color-muted-foreground);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.canvas-detail-meta dd {
+  margin: 0.18rem 0 0;
+  overflow: hidden;
+  color: var(--color-foreground);
+  font-size: 0.82rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvas-detail-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.canvas-detail-action,
+.canvas-detail-tool {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.36rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.92), rgb(248 250 252 / 0.96));
+  color: var(--color-foreground);
+  font-size: 0.82rem;
+  font-weight: 800;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.canvas-detail-action {
+  min-height: 2.55rem;
+  padding: 0.62rem 0.52rem;
+}
+
+.canvas-detail-action:hover,
+.canvas-detail-tool:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--color-primary) 30%, var(--color-border));
+  box-shadow: 0 8px 18px rgb(15 23 42 / 0.08);
+}
+
+.canvas-detail-action--primary {
+  border-color: color-mix(in oklab, var(--color-primary) 34%, var(--color-border));
+  color: var(--color-primary);
+}
+
+.canvas-detail-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.canvas-detail-tool {
+  min-height: 2.18rem;
+  padding: 0.45rem 0.7rem;
+  color: var(--color-muted-foreground);
+}
+
+.canvas-detail-tool--danger {
+  color: var(--color-destructive);
+}
+
 .prompt-bar-shell--side .prompt-aspect-grid,
 .prompt-bar-shell--workspace-settings .prompt-aspect-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1889,11 +2064,20 @@ a:focus-visible {
 
 @media (max-width: 1023px) {
   .examples-page-titlebar {
+    gap: 0.75rem;
+  }
+
+  .examples-page-titlebar-main {
     flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .examples-page-titlebar-status {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .examples-page-toolbar-controls {
-    order: 4;
     min-width: 0;
     max-width: none;
     flex: 1 1 100%;
@@ -1922,9 +2106,39 @@ a:focus-visible {
   .prompt-bar-shell--workspace-settings {
     min-height: 0;
   }
+
+  .canvas-detail-view {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-y: auto;
+  }
+
+  .canvas-detail-image-panel {
+    min-height: 46vh;
+  }
+
+  .canvas-detail-copy {
+    overflow: visible;
+    border-left: 0;
+    border-top: 1px solid color-mix(in oklab, var(--color-border) 72%, transparent);
+    padding: 1rem;
+  }
 }
 
 @media (max-width: 639px) {
+  .examples-page-titlebar-main {
+    gap: 0.6rem;
+  }
+
+  .examples-page-titlebar-status {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .examples-page-status-pill {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
   .canvas-turn-head {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -2024,6 +2238,11 @@ a:focus-visible {
   }
 
   .example-detail-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .canvas-detail-actions,
+  .canvas-detail-meta {
     grid-template-columns: minmax(0, 1fr);
   }
 }

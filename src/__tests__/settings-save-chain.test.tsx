@@ -27,7 +27,9 @@ const {
   toastErrorMock: vi.fn(),
   toastInfoMock: vi.fn(),
   mockSettingsState: {
+    provider: "codesonline" as const,
     apiKey: "store-api-key",
+    providerApiKeys: { codesonline: "store-api-key" },
     authKey: "store-auth-key",
     baseUrl: "https://image.codesonline.dev",
     proxyEnabled: false,
@@ -94,8 +96,22 @@ import { SettingsDrawer } from "@/components/settings/settings-drawer";
 describe("settings drawer save chain regression", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
+      configurable: true,
+      value: vi.fn(() => false),
+    });
+    Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
+      configurable: true,
+      value: vi.fn(),
+    });
+    Object.defineProperty(HTMLElement.prototype, "releasePointerCapture", {
+      configurable: true,
+      value: vi.fn(),
+    });
     Object.assign(mockSettingsState, {
+      provider: "codesonline",
       apiKey: "store-api-key",
+      providerApiKeys: { codesonline: "store-api-key" },
       authKey: "store-auth-key",
       baseUrl: "https://image.codesonline.dev",
       proxyEnabled: false,
@@ -112,7 +128,9 @@ describe("settings drawer save chain regression", () => {
     });
     mockGetSettings.mockResolvedValue({
       app: {
+        provider: "codesonline",
         apiKey: "server-api-key",
+        providerApiKeys: { codesonline: "server-api-key" },
         baseUrl: "https://image.codesonline.dev",
         imageFormat: "url",
         authKey: "server-auth-key",
@@ -121,7 +139,7 @@ describe("settings drawer save chain regression", () => {
       chatgpt: {
         model: "gpt-image-2",
         sseTimeout: 300,
-        requestTimeout: 30,
+        requestTimeout: 900,
         availableModels: ["gpt-image-2"],
       },
       proxy: { enabled: false, url: "" },
@@ -130,7 +148,9 @@ describe("settings drawer save chain regression", () => {
     mockHealthCheck.mockResolvedValue({ status: "ok" });
     mockUpdateBackendSettings.mockResolvedValue({
       app: {
+        provider: "codesonline",
         apiKey: "server-api-key",
+        providerApiKeys: { codesonline: "server-api-key" },
         baseUrl: "https://image.codesonline.dev",
         imageFormat: "url",
         authKey: "server-auth-key",
@@ -139,7 +159,7 @@ describe("settings drawer save chain regression", () => {
       chatgpt: {
         model: "gpt-image-2",
         sseTimeout: 300,
-        requestTimeout: 30,
+        requestTimeout: 900,
         availableModels: ["gpt-image-2"],
       },
       proxy: { enabled: false, url: "" },
@@ -147,7 +167,7 @@ describe("settings drawer save chain regression", () => {
     });
   });
 
-  it("设置页不再展示本地鉴权、导入模型、默认张数和默认质量入口", async () => {
+  it("设置页不展示本地鉴权、导入模型、默认张数和默认质量入口", async () => {
     render(<SettingsDrawer open onOpenChange={() => {}} />);
 
     await screen.findByText("应用设置");
@@ -156,6 +176,30 @@ describe("settings drawer save chain regression", () => {
     expect(screen.queryByText("导入模型")).toBeNull();
     expect(screen.queryByText("默认生成张数")).toBeNull();
     expect(screen.queryByText("质量")).toBeNull();
+  });
+
+  it("API Key 默认隐藏，点击按钮后可显示原文并再次隐藏", async () => {
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    expect(screen.getAllByPlaceholderText("sk-...")).toHaveLength(1);
+    const apiKeyInput = screen.getByPlaceholderText("sk-...") as HTMLInputElement;
+    expect(apiKeyInput.type).toBe("password");
+
+    fireEvent.click(screen.getByRole("button", { name: "显示 API Key" }));
+    expect(apiKeyInput.type).toBe("text");
+
+    fireEvent.click(screen.getByRole("button", { name: "隐藏 API Key" }));
+    expect(apiKeyInput.type).toBe("password");
+  });
+
+  it("设置抽屉关闭按钮应比默认弹窗位置更低", async () => {
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    expect(screen.getByRole("button", { name: "Close" }).className).toContain("top-7");
   });
 
   it("保存时应先写入本地 store，再将统一 generations 所需关键字段透传到后端 payload", async () => {
@@ -169,7 +213,9 @@ describe("settings drawer save chain regression", () => {
 
     expect(mockHealthCheck).toHaveBeenCalled();
     expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
+      provider: "codesonline",
       apiKey: "new-api-key",
+      providerApiKeys: expect.objectContaining({ codesonline: "new-api-key" }),
       authKey: "",
       baseUrl: "https://example.gateway.dev",
       defaultModel: "gpt-image-2",
@@ -182,13 +228,15 @@ describe("settings drawer save chain regression", () => {
     const backendPayload = mockUpdateBackendSettings.mock.calls[0]?.[0];
     expect(backendPayload).toEqual(expect.objectContaining({
       app: expect.objectContaining({
+        provider: "codesonline",
         apiKey: "new-api-key",
+        providerApiKeys: expect.objectContaining({ codesonline: "new-api-key" }),
         baseUrl: "https://example.gateway.dev",
         authKey: "",
       }),
       chatgpt: expect.objectContaining({
         model: "gpt-image-2",
-        requestTimeout: 300,
+        requestTimeout: 900,
         availableModels: expect.arrayContaining(["gpt-image-2"]),
       }),
       proxy: expect.objectContaining({
@@ -211,6 +259,7 @@ describe("settings drawer save chain regression", () => {
 
   it("打开设置时若本地已选自定义模型，不应被后端返回的其他模型覆盖", async () => {
     Object.assign(mockSettingsState, {
+      provider: "codesonline",
       defaultModel: "custom-model",
       remoteModels: ["server-model", "custom-model"],
       availableModels: ["gpt-image-2", "server-model", "custom-model"],
@@ -224,8 +273,175 @@ describe("settings drawer save chain regression", () => {
 
     await waitFor(() => expect(updateStoreMock).toHaveBeenCalled());
     expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
+      provider: "codesonline",
       defaultModel: "custom-model",
     }));
+  });
+
+  it("切换到 openrouter 时应自动带出 provider 默认 baseUrl 和默认模型，并保存到本地", async () => {
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    fireEvent.click(screen.getByTestId("settings-provider-openrouter"));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("https://openrouter.ai/api/v1")).toBeTruthy();
+    });
+
+    expect(screen.getByTestId("settings-default-model-trigger").textContent).toContain("openai/gpt-5.4-image-2");
+
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() => expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
+      provider: "openrouter",
+      baseUrl: "https://openrouter.ai/api/v1",
+      defaultModel: "openai/gpt-5.4-image-2",
+    })));
+  });
+
+  it("切换到 BLT 时应自动带出 BLT baseUrl 和 gpt-image-2，并保存到本地", async () => {
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    fireEvent.click(screen.getByTestId("settings-provider-blt"));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("https://api.bltcy.ai")).toBeTruthy();
+    });
+
+    expect(screen.getByTestId("settings-default-model-trigger").textContent).toContain("gpt-image-2");
+
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() => expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
+      provider: "blt",
+      baseUrl: "https://api.bltcy.ai",
+      defaultModel: "gpt-image-2",
+    })));
+  });
+
+  it("设置已保存为 openrouter 时，重新打开应回显 provider、baseUrl 和默认模型", async () => {
+    Object.assign(mockSettingsState, {
+      provider: "openrouter",
+      baseUrl: "https://openrouter.ai/api/v1",
+      defaultModel: "openai/gpt-5.4-image-2",
+      builtinModels: ["gpt-image-2"],
+      remoteModels: ["openai/gpt-5.4-image-2"],
+      availableModels: ["gpt-image-2", "openai/gpt-5.4-image-2"],
+    });
+    mockGetSettings.mockResolvedValueOnce({
+      app: {
+        provider: "openrouter",
+        apiKey: "server-api-key",
+        providerApiKeys: { openrouter: "server-api-key" },
+        baseUrl: "https://openrouter.ai/api/v1",
+        imageFormat: "url",
+        authKey: "server-auth-key",
+      },
+      server: { host: "0.0.0.0", port: 8080 },
+      chatgpt: {
+        model: "openai/gpt-5.4-image-2",
+        sseTimeout: 300,
+        requestTimeout: 900,
+        availableModels: ["openai/gpt-5.4-image-2"],
+      },
+      proxy: { enabled: false, url: "" },
+      capabilities: undefined,
+    });
+
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("settings-provider-openrouter").getAttribute("aria-pressed")).toBe("true");
+      expect((screen.getByPlaceholderText("https://image.codesonline.dev") as HTMLInputElement).value).toBe("https://openrouter.ai/api/v1");
+      expect(screen.getByTestId("settings-default-model-trigger").textContent).toContain("openai/gpt-5.4-image-2");
+    });
+  });
+
+  it("切换 provider 时只显示一个 API Key 输入框，并回填该 provider 已保存的 Key", async () => {
+    Object.assign(mockSettingsState, {
+      provider: "codesonline",
+      apiKey: "codes-key",
+      providerApiKeys: {
+        codesonline: "codes-key",
+        openrouter: "or-key",
+        blt: "blt-key",
+      },
+    });
+    mockGetSettings.mockResolvedValueOnce({
+      app: {
+        provider: "codesonline",
+        apiKey: "codes-key",
+        providerApiKeys: {
+          codesonline: "codes-key",
+          openrouter: "or-key",
+          blt: "blt-key",
+        },
+        baseUrl: "https://image.codesonline.dev",
+        imageFormat: "url",
+        authKey: "server-auth-key",
+      },
+      server: { host: "0.0.0.0", port: 8080 },
+      chatgpt: {
+        model: "gpt-image-2",
+        sseTimeout: 300,
+        requestTimeout: 900,
+        availableModels: ["gpt-image-2"],
+      },
+      proxy: { enabled: false, url: "" },
+      capabilities: undefined,
+    });
+
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+    await waitFor(() => expect((screen.getByPlaceholderText("sk-...") as HTMLInputElement).value).toBe("codes-key"));
+    expect(screen.getAllByPlaceholderText("sk-...")).toHaveLength(1);
+
+    fireEvent.click(screen.getByTestId("settings-provider-openrouter"));
+
+    await waitFor(() => expect((screen.getByPlaceholderText("sk-...") as HTMLInputElement).value).toBe("or-key"));
+    expect(screen.getAllByPlaceholderText("sk-...")).toHaveLength(1);
+  });
+
+  it("后端 provider 字段陈旧但 Base URL 是 BLT 时，重新打开应回显 BLT", async () => {
+    Object.assign(mockSettingsState, {
+      provider: "codesonline",
+      baseUrl: "https://image.codesonline.dev",
+      defaultModel: "gpt-image-2",
+    });
+    mockGetSettings.mockResolvedValueOnce({
+      app: {
+        provider: "codesonline",
+        apiKey: "server-api-key",
+        providerApiKeys: { blt: "server-api-key" },
+        baseUrl: "https://api.bltcy.ai",
+        imageFormat: "url",
+        authKey: "server-auth-key",
+      },
+      server: { host: "0.0.0.0", port: 8080 },
+      chatgpt: {
+        model: "gpt-image-2",
+        sseTimeout: 300,
+        requestTimeout: 900,
+        availableModels: ["gpt-image-2"],
+      },
+      proxy: { enabled: false, url: "" },
+      capabilities: undefined,
+    });
+
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("settings-provider-blt").getAttribute("aria-pressed")).toBe("true");
+      expect((screen.getByPlaceholderText("https://image.codesonline.dev") as HTMLInputElement).value).toBe("https://api.bltcy.ai");
+    });
   });
 
   it("后端短暂未就绪时应先重试 health，再继续同步保存", async () => {

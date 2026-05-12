@@ -1,6 +1,7 @@
 # GIMG Backend Configuration
 
 [app]
+provider = "codesonline"
 api_key = ""
 base_url = "https://image.codesonline.dev"
 image_format = "url"
@@ -13,7 +14,7 @@ port = 8080
 [chatgpt]
 model = "gpt-image-2"
 sse_timeout = 300
-request_timeout = 300
+request_timeout = 900
 available_models = ["gpt-image-2"]
 
 [proxy]
