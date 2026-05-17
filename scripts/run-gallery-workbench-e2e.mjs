@@ -64,6 +64,10 @@ function relativeOutput(filePath) {
   return path.relative(repoRoot, filePath).replace(/\\/g, "/");
 }
 
+function isExpectedConsoleError(text) {
+  return text === "Failed to load resource: net::ERR_CONNECTION_REFUSED";
+}
+
 async function saveJson(filePath, data) {
   await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
@@ -109,6 +113,50 @@ async function clickFirstVisibleAction(page, ariaLabel) {
   throw new Error(`未找到可见动作按钮：${ariaLabel}`);
 }
 
+async function assertEditorialGalleryRhythm(page) {
+  await page.locator(".example-gallery-grid--editorial .example-masonry-card").first().waitFor();
+  const metrics = await page.evaluate(() => {
+    const grid = document.querySelector(".example-gallery-grid--editorial");
+    const cards = Array.from(document.querySelectorAll(".example-gallery-grid--editorial .example-masonry-card"));
+    const gridRect = grid?.getBoundingClientRect();
+    const cardRects = cards.map((card) => {
+      const rect = card.getBoundingClientRect();
+      const overlayRect = card.querySelector(".example-masonry-overlay")?.getBoundingClientRect();
+      return {
+        left: Math.round(rect.left),
+        top: Math.round(rect.top),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        overlayTop: overlayRect ? Math.round(overlayRect.top) : 0,
+        overlayBottom: overlayRect ? Math.round(overlayRect.bottom) : 0,
+      };
+    }).sort((a, b) => a.top - b.top || a.left - b.left).slice(0, 12);
+
+    return {
+      gridWidth: gridRect ? Math.round(gridRect.width) : 0,
+      cardRects,
+    };
+  });
+
+  const firstCard = metrics.cardRects[0];
+  if (!metrics.gridWidth || !firstCard || metrics.cardRects.length < 4) {
+    throw new Error(`Editorial gallery did not render enough cards: ${JSON.stringify(metrics)}`);
+  }
+
+  const firstRowCards = metrics.cardRects.filter((rect) => Math.abs(rect.top - firstCard.top) <= 8);
+  const firstCardWidthRatio = firstCard.width / metrics.gridWidth;
+  if (firstCardWidthRatio > 0.55 || firstRowCards.length < 2) {
+    throw new Error(`Editorial gallery rhythm collapsed: ${JSON.stringify(metrics)}`);
+  }
+
+  const clippedOverlay = metrics.cardRects.find(
+    (rect) => !rect.overlayTop || rect.overlayTop < rect.top || rect.overlayBottom > rect.top + rect.height + 2,
+  );
+  if (clippedOverlay) {
+    throw new Error(`Editorial gallery card copy is clipped: ${JSON.stringify(metrics)}`);
+  }
+}
+
 function startViteServer() {
   const child = spawn(process.execPath, [viteBin, "--host", "127.0.0.1", "--port", "4173", "--strictPort"], {
     cwd: repoRoot,
@@ -144,17 +192,24 @@ async function main() {
     const page = await context.newPage();
 
     const consoleErrors = [];
+    const ignoredConsoleErrors = [];
     page.on("console", (message) => {
       if (message.type() === "error") {
-        consoleErrors.push(message.text());
+        const text = message.text();
+        if (isExpectedConsoleError(text)) {
+          ignoredConsoleErrors.push(text);
+        } else {
+          consoleErrors.push(text);
+        }
       }
     });
 
     await runStep("examples 页面加载", async () => {
-      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "networkidle" });
+      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "domcontentloaded" });
       await page.getByRole("tab", { name: "全部" }).waitFor();
       await page.getByRole("tab", { name: "人像" }).waitFor();
       await page.getByRole("button", { name: "全部专题" }).waitFor();
+      await assertEditorialGalleryRhythm(page);
       const shot = screenshotPath("01-examples-page.png");
       await page.screenshot({ path: shot, fullPage: true });
       return {
@@ -246,7 +301,7 @@ async function main() {
     });
 
     await runStep("仅提示词：gallery -> workbench", async () => {
-      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "networkidle" });
+      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "domcontentloaded" });
       await clickFirstVisibleAction(page, "只引用提示词");
       await page.waitForURL(/#\/$/);
       await page.waitForFunction(() => {
@@ -270,7 +325,7 @@ async function main() {
     });
 
     await runStep("仅参照图：gallery -> workbench", async () => {
-      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "networkidle" });
+      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "domcontentloaded" });
       await page.locator("select.example-filter-select").first().selectOption("local");
       await page.locator(".example-gallery-grid .examples-card").first().waitFor();
       await clickFirstVisibleAction(page, "只引用参照图");
@@ -293,18 +348,15 @@ async function main() {
     });
 
     await runStep("图片失败退化：gallery -> workbench", async () => {
-      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "networkidle" });
-      const firstGalleryImage = page.locator("img").first();
+      await page.goto(`${baseUrl}/#/examples`, { waitUntil: "domcontentloaded" });
+      const firstGalleryCard = page.locator(".example-gallery-grid .examples-card").first();
+      await firstGalleryCard.waitFor();
+      await firstGalleryCard.hover();
+      const firstGalleryImage = firstGalleryCard.locator("button.example-media-open-button img").first();
+      await firstGalleryImage.waitFor();
       await firstGalleryImage.dispatchEvent("error");
-      await page.getByText(/图片暂不可用/).first().waitFor();
-      await page.evaluate(() => {
-        const button = Array.from(document.querySelectorAll("button.example-media-icon-button"))
-          .find((item) => item.getAttribute("aria-label")?.includes("点击后将退化为仅提示词") && item.getClientRects().length > 0);
-        if (!(button instanceof HTMLButtonElement)) {
-          throw new Error("未找到图片不可用退化按钮");
-        }
-        button.click();
-      });
+      await firstGalleryCard.getByText(/图片暂不可用/).first().waitFor();
+      await firstGalleryCard.getByRole("button", { name: /点击后将退化为仅提示词/ }).first().click({ force: true });
       await page.waitForURL(/#\/$/);
       await page.getByText("示例图片加载失败，已退化为仅引用提示词").waitFor();
       const positivePromptInput = page.getByRole("textbox", { name: "正向提示词" });
@@ -331,7 +383,7 @@ async function main() {
       const localImportContext = await browser.newContext({ viewport: { width: 1440, height: 1200 } });
       const localImportPage = await localImportContext.newPage();
       try {
-        await localImportPage.goto(`${baseUrl}/#/`, { waitUntil: "networkidle" });
+        await localImportPage.goto(`${baseUrl}/#/`, { waitUntil: "domcontentloaded" });
         const fileInput = localImportPage.locator('input[type="file"]');
         const previewCount = localImportPage.getByTestId("prompt-attachments-count");
         const previewImage = localImportPage.getByTestId("prompt-attachment-preview").first();
@@ -378,7 +430,7 @@ async function main() {
     });
 
     await runStep("设置页打开与本地保存提示", async () => {
-      await page.goto(`${baseUrl}/#/`, { waitUntil: "networkidle" });
+      await page.goto(`${baseUrl}/#/`, { waitUntil: "domcontentloaded" });
       await page.getByRole("button", { name: "打开设置" }).click();
       await page.getByText("应用设置").waitFor();
       const saveButton = page.getByRole("button", { name: "保存" });
@@ -395,11 +447,15 @@ async function main() {
       };
     });
 
-    results.status = "passed";
     results.consoleErrors = consoleErrors;
+    results.ignoredConsoleErrors = ignoredConsoleErrors;
     if (consoleErrors.length) {
-      results.notes.push(`捕获到 ${consoleErrors.length} 条浏览器 console error，请结合结果复核。`);
+      throw new Error(`Unexpected browser console errors: ${consoleErrors.length}`);
     }
+    if (ignoredConsoleErrors.length) {
+      results.notes.push(`已忽略 ${ignoredConsoleErrors.length} 条本地后端未启动产生的浏览器连接错误。`);
+    }
+    results.status = "passed";
   } catch (error) {
     results.status = "failed";
     results.error = error instanceof Error ? error.message : String(error);

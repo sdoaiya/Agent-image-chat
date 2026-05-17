@@ -1,19 +1,20 @@
 [app]
+  provider = "blt"
   api_key = ""
-  auth_key = ""
-  base_url = "https://image.codesonline.dev"
+  base_url = "https://api.bltcy.ai"
   image_format = "url"
-
-[chatgpt]
-  available_models = ["gpt-image-2"]
-  model = "gpt-image-2"
-  request_timeout = 300
-  sse_timeout = 300
-
-[proxy]
-  enabled = false
-  url = ""
+  auth_key = ""
 
 [server]
   host = "0.0.0.0"
   port = 8080
+
+[chatgpt]
+  model = "gpt-image-2"
+  sse_timeout = 300
+  request_timeout = 900
+  available_models = ["gpt-image-2"]
+
+[proxy]
+  enabled = false
+  url = ""

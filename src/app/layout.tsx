@@ -7,7 +7,10 @@ import { useSettings } from "@/store/settings";
 function ThemeAndToaster() {
   useTheme();
   const theme = useSettings((s) => s.theme);
-  const resolved = theme === "system"
+  const tone = useSettings((s) => s.tone);
+  const resolved = tone === "dark"
+    ? "dark"
+    : theme === "system"
     ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
     : theme;
   return <Toaster theme={resolved as "light" | "dark"} position="bottom-right" />;
@@ -21,7 +24,7 @@ function YouMindBackgroundSync() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <HashRouter>
-      <div className="app-window-drag flex h-screen flex-col bg-background text-foreground">
+      <div className="app-window-drag gimg-shell flex h-screen flex-col bg-background text-foreground">
         {children}
       </div>
       <YouMindBackgroundSync />

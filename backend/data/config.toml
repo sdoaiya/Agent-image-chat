@@ -1,0 +1,20 @@
+[app]
+  provider = "openrouter"
+  api_key = ""
+  base_url = "https://openrouter.ai/api/v1"
+  image_format = "url"
+  auth_key = ""
+
+[server]
+  host = "0.0.0.0"
+  port = 8080
+
+[chatgpt]
+  model = "openai/gpt-5.4-image-2"
+  sse_timeout = 300
+  request_timeout = 900
+  available_models = ["openai/gpt-5.4-image-2"]
+
+[proxy]
+  enabled = false
+  url = ""

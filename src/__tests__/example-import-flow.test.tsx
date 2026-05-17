@@ -84,7 +84,7 @@ describe("ExampleGallery import fallback chain", () => {
   });
 
   function clickActionByIndex(container: HTMLElement, actionIndex: number): void {
-    const actionButtons = Array.from(container.querySelectorAll("button.example-media-icon-button"));
+    const actionButtons = Array.from(container.querySelectorAll("button.example-card-tool-button, button.example-media-icon-button"));
     const target = actionButtons[actionIndex];
     if (!target) {
       throw new Error(`action button index ${actionIndex} not found`);

@@ -152,17 +152,18 @@ describe("PromptBar local image import stability", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("工作台布局应把输入区放入右侧设置面板底部", async () => {
+  it("工作台布局应拆分为右侧设置栏与底部输入区", async () => {
     const { PromptBar } = await import("@/app/canvas/prompt-bar");
     const { container } = render(<PromptBar onSubmit={vi.fn()} layout="workspace" defaultQuality="auto" />);
 
     const panel = container.querySelector('aside.canvas-control-panel[aria-label="图片生成设置"]');
+    const composer = container.querySelector("form.canvas-composer-panel");
     expect(panel).toBeTruthy();
     expect(panel?.querySelector(".prompt-bar-shell--workspace-settings")).toBeTruthy();
-    expect(panel?.querySelector(".prompt-bar-shell--workspace-composer")).toBeTruthy();
+    expect(composer).toBeTruthy();
     expect(screen.getByLabelText("负面提示词")).toBeTruthy();
     expect(screen.getByLabelText("正向提示词")).toBeTruthy();
-    expect(container.querySelector(".canvas-composer-panel")).toBeNull();
+    expect(screen.queryByLabelText("当前草稿状态")).toBeNull();
   });
 
   it("工作台引用图片后应自动滚到生成按钮所在输入区", async () => {

@@ -43,6 +43,7 @@ const {
     defaultN: 1,
     defaultQuality: "auto" as const,
     theme: "system" as const,
+    tone: "warm" as const,
   },
 }));
 
@@ -125,6 +126,7 @@ describe("settings drawer save chain regression", () => {
       defaultN: 1,
       defaultQuality: "auto",
       theme: "system",
+      tone: "warm",
     });
     mockGetSettings.mockResolvedValue({
       app: {
@@ -192,6 +194,21 @@ describe("settings drawer save chain regression", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "隐藏 API Key" }));
     expect(apiKeyInput.type).toBe("password");
+  });
+
+  it("色调切换不移除原有主题模式选择", async () => {
+    render(<SettingsDrawer open onOpenChange={() => {}} />);
+
+    await screen.findByText("应用设置");
+
+    fireEvent.click(screen.getByRole("button", { name: "暗色" }));
+    fireEvent.click(screen.getByRole("button", { name: "跟随系统" }));
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() => expect(updateStoreMock).toHaveBeenCalledWith(expect.objectContaining({
+      tone: "dark",
+      theme: "system",
+    })));
   });
 
   it("设置抽屉关闭按钮应比默认弹窗位置更低", async () => {

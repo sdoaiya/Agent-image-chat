@@ -17,6 +17,13 @@ export interface PromptOptions {
   negativePrompt?: string;
 }
 
+export interface WorkspaceProviderStatus {
+  id: string;
+  label: string;
+  available: boolean;
+  roleLabel: string;
+}
+
 interface PromptBarProps {
   onSubmit: (prompt: string, files?: File[], options?: PromptOptions) => void;
   onCancel?: () => void;
@@ -29,12 +36,14 @@ interface PromptBarProps {
   capabilities?: ModelCapabilities;
   defaultQuality?: string;
   defaultN?: number;
+  providerStatuses?: WorkspaceProviderStatus[];
   layout?: "bottom" | "side" | "workspace";
 }
 
 const DEFAULT_ASPECT_RATIO = "1:1";
 const MIN_IMAGE_COUNT = 1;
 const MAX_IMAGE_COUNT = 4;
+const WORKSPACE_FOCUS_STORAGE_KEY = "gimg-workbench-last-focused-field";
 
 const aspectRatioOptions = [
   { value: "1:1", title: "方形", size: "1:1", preview: "square" },
@@ -116,6 +125,7 @@ export function PromptBar({
   capabilities,
   defaultQuality,
   defaultN = 1,
+  providerStatuses,
   layout = "bottom",
 }: PromptBarProps) {
   const [prompt, setPrompt] = useState("");
@@ -126,12 +136,23 @@ export function PromptBar({
   const [outputScale, setOutputScale] = useState("");
   const [quality, setQuality] = useState(() => normalizeQuality(defaultQuality));
   const [style, setStyle] = useState("");
+  const [negativePromptOpen, setNegativePromptOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const controlPanelScrollRef = useRef<HTMLDivElement | null>(null);
   const positivePromptRef = useRef<HTMLTextAreaElement | null>(null);
   const negativePromptRef = useRef<HTMLTextAreaElement | null>(null);
   const lastFocusedPromptRef = useRef<"positive" | "negative">("positive");
   const maxReferenceImages = Math.max(1, capabilities?.maxReferenceImages ?? 4);
+
+  const setLastFocusedField = (field: "positive" | "negative") => {
+    lastFocusedPromptRef.current = field;
+    if (layout !== "workspace") return;
+    try {
+      window.sessionStorage.setItem(WORKSPACE_FOCUS_STORAGE_KEY, field);
+    } catch {
+      // ignore sessionStorage failures
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -141,6 +162,25 @@ export function PromptBar({
       });
     };
   }, []);
+
+  useEffect(() => {
+    if (layout !== "workspace") return;
+    try {
+      const saved = window.sessionStorage.getItem(WORKSPACE_FOCUS_STORAGE_KEY);
+      if (saved === "positive" || saved === "negative") {
+        lastFocusedPromptRef.current = saved;
+      }
+    } catch {
+      // ignore sessionStorage failures
+    }
+    const frame = window.requestAnimationFrame(() => {
+      if (document.activeElement === document.body) {
+        setNegativePromptOpen(lastFocusedPromptRef.current === "negative");
+        focusLastPromptField();
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [layout]);
 
   useEffect(() => {
     const hasInitialPayload = initialPrompt !== undefined || initialFiles !== undefined;
@@ -299,6 +339,12 @@ export function PromptBar({
   }, [defaultQuality, quality]);
 
   useEffect(() => {
+    if (negativePrompt.trim()) {
+      setNegativePromptOpen(true);
+    }
+  }, [negativePrompt]);
+
+  useEffect(() => {
     setImageCount(clampImageCount(defaultN));
   }, [defaultN]);
 
@@ -316,6 +362,10 @@ export function PromptBar({
   const canSubmit = !disabled && (!!prompt.trim() || files.length > 0);
   const actionDisabled = disabled ? !onCancel : !canSubmit;
   const isWorkspaceLayout = layout === "workspace";
+  const availableProviderCount = providerStatuses?.filter((item) => item.available).length ?? 0;
+  const totalProviderCount = providerStatuses?.length ?? 0;
+  const workspaceMiniReferenceFiles = files.slice(0, 3);
+  const workspaceHiddenReferenceCount = Math.max(0, files.length - workspaceMiniReferenceFiles.length);
 
   const attachmentsPanel = files.length > 0 && (
         <div className="mb-3 rounded-2xl border border-border bg-muted/20 p-2.5" data-testid="prompt-attachments-panel">
@@ -467,7 +517,7 @@ export function PromptBar({
               ref={negativePromptRef}
               value={negativePrompt}
               onChange={(e) => setNegativePrompt(e.target.value)}
-              onFocus={() => { lastFocusedPromptRef.current = "negative"; }}
+              onFocus={() => setLastFocusedField("negative")}
               onKeyDown={handleKeyDown}
               placeholder="不想出现的内容，例如：低清晰度、畸形手指、文字错误..."
               disabled={disabled}
@@ -480,7 +530,7 @@ export function PromptBar({
               ref={positivePromptRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              onFocus={() => { lastFocusedPromptRef.current = "positive"; }}
+              onFocus={() => setLastFocusedField("positive")}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               placeholder="描述你想生成的画面..."
@@ -540,17 +590,238 @@ export function PromptBar({
 
   if (layout === "workspace") {
     return (
-      <aside className="canvas-control-panel" aria-label="图片生成设置">
-        <div className="canvas-control-panel-scroll" ref={controlPanelScrollRef}>
-          <div className="prompt-bar-shell prompt-bar-shell--workspace-settings">
-            {parameterPanel}
+      <>
+        <aside className="canvas-control-panel" aria-label="图片生成设置">
+          <div className="canvas-control-panel-scroll" ref={controlPanelScrollRef}>
+            <section className="canvas-settings-section">
+              <div className="canvas-settings-heading">
+                <h3>比例与输出</h3>
+                <span>{qualityOptions.find((item) => item.value === quality)?.label ?? "默认"}</span>
+              </div>
+              <div className="prompt-bar-shell prompt-bar-shell--workspace-settings">
+                {parameterPanel}
+              </div>
+            </section>
+
+            <section className="canvas-settings-section">
+              <div className="canvas-settings-heading">
+                <h3>引用图片</h3>
+                <span data-testid="prompt-attachments-count">引用图片（{files.length}/{maxReferenceImages}）</span>
+              </div>
+              <div className="canvas-reference-grid" data-testid={files.length > 0 ? "prompt-attachments-panel" : undefined}>
+                {files.map((file, index) => (
+                  <div key={file.id} className="canvas-reference-card">
+                    <img src={file.preview} alt={file.file.name} className="canvas-reference-card-image" data-testid="prompt-attachment-preview" />
+                    <div className="canvas-reference-card-meta">
+                      <strong>{index === 0 ? "主参考图" : file.file.name}</strong>
+                      <span>{file.file.name}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(file.id)}
+                      className="canvas-reference-card-remove"
+                      aria-label={`移除图片 ${file.file.name}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+                {files.length < maxReferenceImages && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="canvas-reference-card canvas-reference-card--placeholder"
+                    aria-label="添加参考图"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                    <span>添加参考图</span>
+                  </button>
+                )}
+              </div>
+            </section>
+
+            {totalProviderCount > 0 && (
+              <section className="canvas-settings-section canvas-settings-section--muted">
+                <div className="canvas-settings-heading">
+                  <h3>来源状态</h3>
+                  <span>{availableProviderCount}/{totalProviderCount} 可用</span>
+                </div>
+                <div className="canvas-provider-matrix">
+                  {(providerStatuses ?? []).map((item) => (
+                    <div
+                      key={item.id}
+                      className={`canvas-provider-card ${item.available ? "canvas-provider-card--available" : "canvas-provider-card--missing"}`}
+                    >
+                      <span className="canvas-provider-card-dot" aria-hidden="true" />
+                      <strong>{item.label}</strong>
+                      <span>{item.roleLabel}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
-          <div className="prompt-bar-shell prompt-bar-shell--workspace-composer">
-            {attachmentsPanel}
-            {inputPanel}
+        </aside>
+
+        <form
+          className="canvas-composer-panel prompt-bar-shell--workspace-composer"
+          aria-label="工作台输入区"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handlePrimaryAction();
+          }}
+        >
+          <div className="canvas-composer-main">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="canvas-composer-tabs" role="tablist" aria-label="生成模式">
+                <button type="button" className="canvas-mode-tab canvas-mode-tab--active" aria-pressed="true" aria-label="生成模式">
+                  生成
+                </button>
+                <button type="button" className="canvas-mode-tab canvas-mode-tab--disabled" disabled aria-label="编辑模式">
+                  编辑
+                </button>
+                <button type="button" className="canvas-mode-tab canvas-mode-tab--disabled" disabled aria-label="放大模式">
+                  放大
+                </button>
+              </div>
+            </div>
+
+            <div className="canvas-composer-editor">
+              <div className="prompt-field-stack">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="prompt-field-label" htmlFor="prompt-positive-input">正向提示词</label>
+                  <button
+                    type="button"
+                    className={cn("canvas-composer-chip canvas-composer-chip--button", negativePromptOpen && "canvas-composer-chip--active")}
+                    onClick={() => {
+                      setNegativePromptOpen((value) => !value);
+                      if (!negativePromptOpen) {
+                        window.requestAnimationFrame(() => {
+                          negativePromptRef.current?.focus();
+                        });
+                      } else {
+                        window.requestAnimationFrame(() => {
+                          positivePromptRef.current?.focus();
+                        });
+                      }
+                    }}
+                    aria-pressed={negativePromptOpen}
+                    aria-controls="prompt-negative-field"
+                  >
+                    {negativePrompt.trim() ? "负面提示词已启用" : "负面提示词"}
+                  </button>
+                </div>
+                <textarea
+                  id="prompt-positive-input"
+                  ref={positivePromptRef}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onFocus={() => setLastFocusedField("positive")}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  placeholder="描述你想生成的画面..."
+                  disabled={disabled}
+                  rows={4}
+                  className="prompt-textarea prompt-textarea--positive"
+                />
+              </div>
+
+              <div
+                id="prompt-negative-field"
+                className={cn("prompt-field-stack canvas-negative-panel", !negativePromptOpen && "canvas-negative-panel--hidden")}
+                aria-hidden={!negativePromptOpen}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <label className="prompt-field-label" htmlFor="prompt-negative-input">负面提示词</label>
+                  <span className="text-[11px] font-medium text-muted-foreground">{negativePrompt.trim() ? "已启用" : "可选"}</span>
+                </div>
+                <textarea
+                  id="prompt-negative-input"
+                  ref={negativePromptRef}
+                  value={negativePrompt}
+                  onChange={(e) => setNegativePrompt(e.target.value)}
+                  onFocus={() => {
+                    setLastFocusedField("negative");
+                    setNegativePromptOpen(true);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="不想出现的内容，例如：低清晰度、畸形手指、遮挡主体..."
+                  disabled={disabled}
+                  rows={3}
+                  className="prompt-textarea prompt-textarea--negative"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </aside>
+
+          <div className="canvas-composer-actions">
+            <div className={`canvas-composer-mini-refs ${files.length === 0 ? "canvas-composer-mini-refs--empty" : ""}`}>
+              {files.length > 0 ? (
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-foreground">引用 {files.length}/{maxReferenceImages}</span>
+                    <span className="text-[11px] text-muted-foreground">首张为主参考图</span>
+                  </div>
+                  <div className="grid gap-2">
+                    {workspaceMiniReferenceFiles.map((file, index) => (
+                      <div key={file.id} className="canvas-composer-mini-ref">
+                        <img src={file.preview} alt="" aria-hidden="true" className="canvas-composer-mini-ref-image" />
+                        <span>{index === 0 ? "主图" : `引用 ${index + 1}`}</span>
+                      </div>
+                    ))}
+                    {workspaceHiddenReferenceCount > 0 && (
+                      <span className="text-[11px] text-muted-foreground">另有 {workspaceHiddenReferenceCount} 张引用图已收起</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-1">
+                  <span className="text-sm font-semibold text-foreground">引用区为空</span>
+                  <span>可直接粘贴图片或添加参考图</span>
+                </div>
+              )}
+            </div>
+
+            <div className="canvas-composer-action-row">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "shrink-0 rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  "prompt-attach-button canvas-composer-attach",
+                )}
+                title="上传图片"
+                aria-label="上传图片"
+              >
+                <Paperclip className="h-4 w-4" />
+                <span>添加参考图</span>
+              </button>
+
+              <Button
+                type="submit"
+                size="lg"
+                variant={disabled ? "destructive" : "default"}
+                disabled={actionDisabled}
+                className="shrink-0 rounded-2xl prompt-generate-button canvas-composer-submit"
+                aria-label={disabled ? "停止生成" : "生成"}
+                title={disabled ? "停止生成" : "生成"}
+              >
+                {disabled ? <Square className="h-4 w-4 fill-current" /> : <Send className="h-4 w-4" />}
+                <span>{disabled ? "停止生成" : `生成 ${imageCount} 张`}</span>
+              </Button>
+            </div>
+          </div>
+        </form>
+
+        <input
+          ref={(node) => { fileInputRef.current = node; }}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </>
     );
   }
 

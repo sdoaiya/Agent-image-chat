@@ -1,7 +1,7 @@
 # Gallery + Workbench E2E Evidence
 
 - 状态：passed
-- 生成时间：2026-05-06T17:20:09.329Z
+- 生成时间：2026-05-16T08:28:33.409Z
 - 基础地址：http://127.0.0.1:4173
 
 ## 步骤结果
@@ -28,7 +28,7 @@
 ### 5. 仅提示词：gallery -> workbench
 - 状态：passed
 - 证据：public/qa-screenshots/gallery-e2e/04-workbench-prompt-only.png
-- 观察：工作台 textarea 已接收提示词，长度 1284；工作台当前引用图片区块数量 0
+- 观察：工作台 textarea 已接收提示词，长度 1904；工作台当前引用图片区块数量 1
 
 ### 6. 仅参照图：gallery -> workbench
 - 状态：passed
@@ -54,3 +54,4 @@
 - 证据仅基于当前仓库真实前端实现。
 - examples -> workbench 导入链路通过 HashRouter 页面联动验证。
 - 未宣称不存在的 markdown 运行时动态加载；示例数据来自仓库内已构建的数据模块。
+- 已忽略 25 条本地后端未启动产生的浏览器连接错误。

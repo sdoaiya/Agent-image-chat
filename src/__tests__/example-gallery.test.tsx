@@ -81,6 +81,41 @@ describe("ExampleGallery", () => {
     expect(container.querySelectorAll(".example-masonry-card").length).toBeGreaterThan(initialCount);
   });
 
+  it("renders the approved immersive gallery structure without topic quicklook and keeps editorial card rhythm", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    expect(container.querySelector(".examples-layout")).toBeTruthy();
+    expect(container.querySelector(".gallery-side")).toBeTruthy();
+    expect(container.querySelector(".examples-canvas")).toBeTruthy();
+    expect(container.querySelector(".example-topic-ribbon")).toBeNull();
+    expect(container.querySelectorAll(".example-topic-ribbon-card")).toHaveLength(0);
+    expect(container.querySelector(".example-gallery-grid--editorial")).toBeTruthy();
+    expect(container.querySelector(".example-masonry-card--hero")).toBeTruthy();
+    expect(container.querySelector(".example-masonry-card--wide")).toBeTruthy();
+    expect(container.querySelector(".example-masonry-card--tall")).toBeTruthy();
+  });
+
+  it("matches the locked prototype card anatomy with metadata, copy and text tools", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    const firstCard = container.querySelector<HTMLElement>(".example-gallery-grid--editorial .example-masonry-card");
+    expect(firstCard).toBeTruthy();
+    expect(firstCard?.querySelector(".example-masonry-meta")?.textContent).toMatch(/Case\s+\d+/);
+    expect(firstCard?.querySelector(".example-masonry-title")?.textContent?.trim().length).toBeGreaterThan(0);
+    expect(firstCard?.querySelector(".example-masonry-summary")?.textContent?.trim().length).toBeGreaterThan(10);
+    expect(firstCard?.querySelector(".example-card-tools")).toBeTruthy();
+    expect(firstCard?.querySelectorAll(".example-card-tools button").length).toBeGreaterThanOrEqual(4);
+    expect(firstCard?.querySelector(".example-media-image--cover")).toBeTruthy();
+  });
+
   it("keeps loading beyond the previous 138-item gallery cap", () => {
     const { container } = render(
       <MemoryRouter>
@@ -112,7 +147,7 @@ describe("ExampleGallery", () => {
     expect(screen.getByText("当前筛选下暂无案例")).toBeTruthy();
   });
 
-  it("opens a standalone image detail view from the image and keeps three reference actions", () => {
+  it("opens a modal image detail view with prompt, metadata and reference actions", () => {
     const { container } = render(
       <MemoryRouter>
         <ExampleGallery mode="gallery" />
@@ -121,14 +156,42 @@ describe("ExampleGallery", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: /查看图片详情：/ })[0]!);
 
-    expect(screen.getAllByRole("region", { name: "图片详情" }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("dialog", { name: "图片详情" })).toBeTruthy();
+    expect(container.querySelector(".detail-overlay")).toBeTruthy();
+    expect(container.querySelector(".detail-modal")).toBeTruthy();
+    expect(container.querySelector(".modal-image-panel")).toBeTruthy();
+    expect(container.querySelector(".modal-side")).toBeTruthy();
+    expect(container.querySelector(".example-gallery-grid--editorial")).toBeTruthy();
     expect(screen.getByRole("button", { name: "关闭图片详情" })).toBeTruthy();
     expect(screen.getByText("图片提示词")).toBeTruthy();
     expect(container.querySelector(".example-detail-image")).toBeTruthy();
     expect(container.querySelectorAll(".example-detail-actions button.example-card-button")).toHaveLength(3);
+    expect(container.querySelector(".example-detail-section--prompt")).toBeTruthy();
+    expect(container.querySelector(".example-detail-section--meta")).toBeTruthy();
+    expect(container.querySelector(".example-detail-secondary-actions")).toBeNull();
+    expect(container.querySelectorAll(".example-detail-copy-card")).toHaveLength(1);
+    expect(screen.getByText("原始提示词")).toBeTruthy();
+    expect(screen.getByText("元信息")).toBeTruthy();
     expect(screen.getByRole("button", { name: "一键引用：提示词 + 参照图" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "只引用提示词" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "只引用参照图" })).toBeTruthy();
+  });
+
+  it("moves focus into the image detail dialog and closes it with Escape", () => {
+    render(
+      <MemoryRouter>
+        <ExampleGallery mode="gallery" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: /查看图片详情：/ })[0]!);
+
+    const closeButton = screen.getByRole("button", { name: "关闭图片详情" });
+    expect(document.activeElement).toBe(closeButton);
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog", { name: "图片详情" })).toBeNull();
   });
 
   it("offers an all examples view switch next to the topics switch", () => {
@@ -202,7 +265,12 @@ describe("ExampleGallery", () => {
 
     const firstTopicImageFrame = container.querySelector<HTMLElement>(".example-gallery-grid--topic-stream .example-media-shell");
     expect(firstTopicImageFrame).toBeTruthy();
-    expect(Number.parseInt(firstTopicImageFrame?.style.minHeight ?? "0", 10)).toBeGreaterThanOrEqual(200);
+    expect(firstTopicImageFrame?.style.minHeight).toBe("");
+    const topicGrid = container.querySelector<HTMLElement>(".example-gallery-grid--topic-stream");
+    expect(topicGrid?.classList.contains("example-gallery-grid--editorial")).toBe(true);
+    expect(topicGrid?.classList.contains("example-gallery-grid--horizontal-waterfall")).toBe(false);
+    expect(topicGrid?.querySelector(".example-masonry-meta")).toBeTruthy();
+    expect(topicGrid?.querySelector(".example-card-tools")).toBeTruthy();
   });
 
   it("filters the topic list by the current category", () => {

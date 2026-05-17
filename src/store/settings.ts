@@ -114,6 +114,7 @@ export interface Settings {
   defaultN: number;
   defaultQuality: ImageQuality;
   theme: "light" | "dark" | "system";
+  tone: "warm" | "dark";
 }
 
 interface SettingsActions {
@@ -142,6 +143,7 @@ const defaults: Settings = {
   defaultN: 1,
   defaultQuality: "auto",
   theme: "system",
+  tone: "warm",
 };
 
 function deriveModelState(state: Pick<Settings, "builtinModels" | "remoteModels" | "importedModels" | "defaultModel"> & Partial<Pick<Settings, "availableModels">>) {
@@ -248,6 +250,7 @@ export const useSettings = create<Settings & SettingsActions>()(
         defaultN: state.defaultN,
         defaultQuality: state.defaultQuality,
         theme: state.theme,
+        tone: state.tone,
       }),
       merge: (persistedState, currentState) => {
         const persisted = persistedState as Partial<Settings>;
@@ -271,7 +274,8 @@ export const useSettings = create<Settings & SettingsActions>()(
           && defaultModelCandidates.some((model) => model.toLowerCase() === persistedDefaultModel.toLowerCase())
           ? persistedDefaultModel
           : providerDefaults.defaultModel;
-        const merged = {
+        const tone: Settings["tone"] = persisted.tone === "dark" ? "dark" : "warm";
+        const merged: Settings & SettingsActions = {
           ...currentState,
           ...persisted,
           provider,
@@ -284,6 +288,7 @@ export const useSettings = create<Settings & SettingsActions>()(
           importedModels: [],
           availableModels: [],
           defaultModel,
+          tone,
         };
         return {
           ...merged,

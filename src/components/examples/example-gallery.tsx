@@ -81,8 +81,6 @@ const PAGE_SIZE_WORKSPACE = 6;
 const PAGE_SIZE_GALLERY = 24;
 const EXAMPLE_IMAGE_MAX_HEIGHT = 600;
 const EXAMPLE_IMAGE_MIN_HEIGHT = 220;
-const GALLERY_COLUMN_COUNT = 4;
-const TOPIC_WATERFALL_COLUMN_COUNT = GALLERY_COLUMN_COUNT;
 const DESKTOP_GALLERY_MIN_WIDTH = 960;
 
 type GalleryImageState = "idle" | "loading" | "loaded" | "failed";
@@ -302,6 +300,44 @@ function getCompactImageFrameStyle(item: Pick<ExamplePromptItem, "width" | "heig
   };
 }
 
+function getEditorialCardClass(index: number, isGallery: boolean) {
+  if (!isGallery) return undefined;
+  const rhythmIndex = index % 8;
+  if (rhythmIndex === 0) return "example-masonry-card--hero";
+  if (rhythmIndex === 1 || rhythmIndex === 6) {
+    return "example-masonry-card--tall";
+  }
+  if (rhythmIndex === 2 || rhythmIndex === 4) {
+    return "example-masonry-card--wide";
+  }
+  return undefined;
+}
+
+function getEditorialCardEstimatedHeight(index: number): number {
+  const rhythmClass = getEditorialCardClass(index, true);
+  return rhythmClass === "example-masonry-card--hero" || rhythmClass === "example-masonry-card--tall"
+    ? 342
+    : 254;
+}
+
+function distributeMasonryColumns(items: ExamplePromptItem[]): Array<Array<{ item: ExamplePromptItem; index: number }>> {
+  const columns: Array<Array<{ item: ExamplePromptItem; index: number }>> = [[], [], []];
+  const heights = [0, 0, 0];
+
+  items.forEach((item, index) => {
+    const targetColumn = Math.max(0, heights.indexOf(Math.min(...heights)));
+    columns[targetColumn]!.push({ item, index });
+    heights[targetColumn] = (heights[targetColumn] ?? 0) + getEditorialCardEstimatedHeight(index) + 10;
+  });
+
+  return columns;
+}
+
+function getGalleryCardMeta(item: ExamplePromptItem) {
+  const sourceLabel = item.sourceOrigin === "youmind" ? "YouMind" : "本地";
+  return `${categoryLabels[item.category]} · Case ${String(item.caseNumber).padStart(3, "0")} · ${sourceLabel}`;
+}
+
 function ExampleActions({
   item,
   compact = false,
@@ -354,6 +390,63 @@ function ExampleActions({
         {!compact && <span>仅参照图</span>}
       </button>
     </>
+  );
+}
+
+function GalleryCardTools({
+  item,
+  disableImageActions,
+  onImportExample,
+  onImportPromptOnly,
+  onImportImageOnly,
+  onOpenDetail,
+}: {
+  item: ExamplePromptItem;
+  disableImageActions: boolean;
+  onImportExample: (example: ExamplePromptItem) => void | Promise<void>;
+  onImportPromptOnly: (example: ExamplePromptItem) => void | Promise<void>;
+  onImportImageOnly: (example: ExamplePromptItem) => void | Promise<void>;
+  onOpenDetail: (example: ExamplePromptItem) => void;
+}) {
+  return (
+    <div className="example-card-tools">
+      <button
+        type="button"
+        className="example-card-tool-button"
+        onClick={() => onImportExample(item)}
+        aria-label={disableImageActions ? "图片不可用，点击后将退化为仅提示词" : "一键引用：提示词 + 参照图"}
+        title={disableImageActions ? "图片不可用，点击后将退化为仅提示词" : "一键引用：提示词 + 参照图"}
+      >
+        引用
+      </button>
+      <button
+        type="button"
+        className="example-card-tool-button"
+        onClick={() => onImportPromptOnly(item)}
+        aria-label="只引用提示词"
+        title="只引用提示词"
+      >
+        提示词
+      </button>
+      <button
+        type="button"
+        className="example-card-tool-button"
+        onClick={() => onImportImageOnly(item)}
+        aria-label={disableImageActions ? "图片不可用，当前将退化为仅提示词" : "只引用参照图"}
+        title={disableImageActions ? "图片不可用，当前将退化为仅提示词" : "只引用参照图"}
+      >
+        图片
+      </button>
+      <button
+        type="button"
+        className="example-card-tool-button"
+        onClick={() => onOpenDetail(item)}
+        aria-label={`查看图片详情：${item.title}`}
+        title="查看详情"
+      >
+        详情
+      </button>
+    </div>
   );
 }
 
@@ -439,11 +532,11 @@ function GalleryExampleCard({
   onOpenDetail: (example: ExamplePromptItem) => void;
 }) {
   const isGallery = mode === "gallery";
-  const imageFrameStyle = layout === "compact" ? getCompactImageFrameStyle(item) : getImageFrameStyle(item);
+  const imageFrameStyle = isGallery ? undefined : layout === "compact" ? getCompactImageFrameStyle(item) : getImageFrameStyle(item);
   const width = Math.max(item.width || 1, 1);
   const height = Math.max(item.height || 1, 1);
   const mediaShellClassName = getCategoryFrameClass(item.category, mode);
-  const mediaImageClassName = getCategoryImageClass(item.category, width, height);
+  const mediaImageClassName = isGallery ? "example-media-image example-media-image--cover" : getCategoryImageClass(item.category, width, height);
   const cardToneClassName = getCategoryCardClass(item.category);
   const ratio = width / height;
   const imageAvailable = imageState !== "failed";
@@ -451,6 +544,7 @@ function GalleryExampleCard({
   const compactOverlay = isGallery && ((item.category === "portrait" && ratio < 0.72) || (item.category === "community" && ratio > 0.72) || index % 5 === 1);
   const editorialOverlay = isGallery && (item.category === "poster" || item.category === "ui" || item.category === "infographic" || index % 4 === 0);
   const disableImageActions = !imageAvailable;
+  const editorialCardClassName = getEditorialCardClass(index, isGallery);
 
   return (
     <article
@@ -463,6 +557,7 @@ function GalleryExampleCard({
         isGallery ? "example-card--gallery" : "example-card--workspace",
         compactOverlay && "example-masonry-card--compact",
         editorialOverlay && "example-masonry-card--editorial",
+        editorialCardClassName,
         cardToneClassName,
       )}
     >
@@ -491,16 +586,27 @@ function GalleryExampleCard({
             ) : null}
             {isImageLoading || !imageAvailable ? <ExampleImageFallback item={item} isLoading={isImageLoading} /> : null}
           </button>
-          <div className="example-media-actions absolute flex gap-1.5 opacity-100 transition-opacity md:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
-            <ExampleActions
+          {isGallery ? (
+            <GalleryCardTools
               item={item}
-              compact
               disableImageActions={disableImageActions}
-              onUseExample={onImportExample}
-              onUsePromptOnly={onImportPromptOnly}
-              onUseImageOnly={onImportImageOnly}
+              onImportExample={onImportExample}
+              onImportPromptOnly={onImportPromptOnly}
+              onImportImageOnly={onImportImageOnly}
+              onOpenDetail={onOpenDetail}
             />
-          </div>
+          ) : (
+            <div className="example-media-actions absolute flex gap-1.5 opacity-100 transition-opacity md:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
+              <ExampleActions
+                item={item}
+                compact
+                disableImageActions={disableImageActions}
+                onUseExample={onImportExample}
+                onUsePromptOnly={onImportPromptOnly}
+                onUseImageOnly={onImportImageOnly}
+              />
+            </div>
+          )}
 
           {isGallery ? (
             <div
@@ -510,8 +616,9 @@ function GalleryExampleCard({
                 editorialOverlay && "example-masonry-overlay--editorial",
               )}
             >
+              <p className="example-masonry-meta">{getGalleryCardMeta(item)}</p>
               <p className="example-masonry-title line-clamp-2">{item.title}</p>
-              {!compactOverlay && <p className="example-masonry-summary line-clamp-2">{item.summary}</p>}
+              <p className="example-masonry-summary line-clamp-2">{item.summary}</p>
             </div>
           ) : null}
         </div>
@@ -563,40 +670,97 @@ function ExampleDetailView({
 }) {
   const imageAvailable = imageState !== "failed";
   const isImageLoading = imageState === "idle" || imageState === "loading";
+  const resolution = `${Math.max(item.width || 1, 1)} × ${Math.max(item.height || 1, 1)}`;
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const handleCopyPrompt = useCallback(() => {
+    if (!navigator.clipboard?.writeText) {
+      toast.error("当前环境不支持自动复制");
+      return;
+    }
+    void navigator.clipboard.writeText(item.prompt)
+      .then(() => toast.success("已复制提示词"))
+      .catch(() => toast.error("复制失败，请手动复制"));
+  }, [item.prompt]);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onBack();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [onBack]);
 
   return (
-    <section className="example-detail-view" aria-label="图片详情">
-      <button type="button" className="example-detail-close" onClick={onBack} aria-label="关闭图片详情">
-        <X className="h-5 w-5" aria-hidden="true" />
-      </button>
-      <div className="example-detail-image-panel">
-        {imageAvailable ? (
-          <img
-            src={item.imageUrl}
-            alt={item.imageAlt || item.title}
-            className="example-detail-image"
-            loading="eager"
-            decoding="async"
-            onLoad={() => onImageStateChange(item.id, "loaded")}
-            onError={() => onImageStateChange(item.id, "failed")}
-          />
-        ) : null}
-        {isImageLoading || !imageAvailable ? <ExampleImageFallback item={item} isLoading={isImageLoading} /> : null}
-      </div>
-      <aside className="example-detail-copy">
-        <p className="example-topic-section-kicker">图片提示词</p>
-        <h3 className="example-detail-title">{item.title}</h3>
-        <p className="example-detail-prompt">{item.prompt}</p>
-        <div className="example-detail-actions">
-          <ExampleActions
-            item={item}
-            disableImageActions={!imageAvailable}
-            onUseExample={onImportExample}
-            onUsePromptOnly={onImportPromptOnly}
-            onUseImageOnly={onImportImageOnly}
-          />
+    <section className="detail-overlay example-detail-overlay" aria-label="图片详情">
+      <div className="detail-modal example-detail-view" role="dialog" aria-modal="true" aria-label="图片详情">
+        <button ref={closeButtonRef} type="button" className="example-detail-close detail-close" onClick={onBack} aria-label="关闭图片详情">
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <div className="modal-image-panel example-detail-image-panel">
+          {imageAvailable ? (
+            <img
+              src={item.imageUrl}
+              alt={item.imageAlt || item.title}
+              className="example-detail-image"
+              loading="eager"
+              decoding="async"
+              onLoad={() => onImageStateChange(item.id, "loaded")}
+              onError={() => onImageStateChange(item.id, "failed")}
+            />
+          ) : null}
+          {isImageLoading || !imageAvailable ? <ExampleImageFallback item={item} isLoading={isImageLoading} /> : null}
         </div>
-      </aside>
+        <aside className="modal-side example-detail-copy">
+          <div className="modal-head example-detail-heading">
+            <p className="example-topic-section-kicker">图片提示词</p>
+            <h3 className="example-detail-title">{item.title}</h3>
+            <p className="example-detail-summary">{item.summary}</p>
+          </div>
+          <section className="panel-section example-detail-section example-detail-section--prompt" aria-label="提示词">
+            <div className="section-head example-detail-section-head">
+              <h4>提示词</h4>
+              <button type="button" className="example-detail-copy-button" onClick={handleCopyPrompt}>
+                复制
+              </button>
+            </div>
+            <div className="copy-card example-detail-copy-card">
+              <label>原始提示词</label>
+              <p>{item.prompt}</p>
+            </div>
+          </section>
+          <section className="panel-section example-detail-section example-detail-section--meta" aria-label="元信息">
+            <div className="section-head example-detail-section-head">
+              <h4>元信息</h4>
+              <span>{item.sourceOrigin === "youmind" ? "YouMind" : "Local"}</span>
+            </div>
+            <dl className="kv-list example-detail-kv-list">
+              <div><dt>模式</dt><dd>示例引用</dd></div>
+              <div><dt>案例</dt><dd>Case {item.caseNumber}</dd></div>
+              <div><dt>分辨率</dt><dd>{resolution}</dd></div>
+              <div><dt>来源</dt><dd>{item.author}</dd></div>
+            </dl>
+          </section>
+          <div className="example-detail-actions">
+            <ExampleActions
+              item={item}
+              disableImageActions={!imageAvailable}
+              onUseExample={onImportExample}
+              onUsePromptOnly={onImportPromptOnly}
+              onUseImageOnly={onImportImageOnly}
+            />
+          </div>
+        </aside>
+      </div>
     </section>
   );
 }
@@ -766,12 +930,21 @@ export function ExampleGallery({
     [activeTopic, page],
   );
 
+  const pagedMasonryColumns = useMemo(
+    () => (isGallery ? distributeMasonryColumns(pagedExamples) : []),
+    [isGallery, pagedExamples],
+  );
+
+  const activeTopicMasonryColumns = useMemo(
+    () => (isGallery ? distributeMasonryColumns(activeTopicPagedEntries) : []),
+    [activeTopicPagedEntries, isGallery],
+  );
+
   const visibleExampleCount = isGallery ? galleryExamples.length : filteredExamples.length;
   const visibleStreamCount = activeTopic ? activeTopic.entries.length : visibleExampleCount;
   const renderedStreamCount = activeTopic ? activeTopicPagedEntries.length : pagedExamples.length;
   const hasMoreExamples = renderedStreamCount < visibleStreamCount;
   const categoryCaseCount = filteredExamples.length;
-  const shouldUseFourColumnGallery = isGallery && galleryView !== "topics";
 
   const setImageState = useCallback((key: string, state: GalleryImageState) => {
     setImageStates((current) => (current[key] === state ? current : { ...current, [key]: state }));
@@ -874,8 +1047,7 @@ export function ExampleGallery({
 
   const openExampleDetail = useCallback((example: ExamplePromptItem) => {
     setSelectedExample(example);
-    scrollResultsToTop();
-  }, [scrollResultsToTop]);
+  }, []);
 
   const closeExampleDetail = useCallback(() => {
     setSelectedExample(null);
@@ -907,9 +1079,6 @@ export function ExampleGallery({
 
   const gallerySectionTitleId = `example-gallery-title-${mode}`;
   const galleryResultsId = `example-gallery-results-${mode}`;
-  const topicGalleryGridStyle = isGallery
-    ? ({ ["--topic-waterfall-columns" as string]: `${TOPIC_WATERFALL_COLUMN_COUNT}` } satisfies CSSProperties)
-    : undefined;
 
   useEffect(() => {
     if (activeTopicId && !filteredTopics.some((topic) => topic.id === activeTopicId)) {
@@ -925,7 +1094,7 @@ export function ExampleGallery({
     const root = resultsRef.current;
     const sentinel = infiniteLoadRef.current;
 
-    if (!sentinel || !hasMoreExamples || showingTopicList || showingExampleDetail || typeof IntersectionObserver === "undefined") {
+    if (!sentinel || !hasMoreExamples || showingTopicList || typeof IntersectionObserver === "undefined") {
       return;
     }
 
@@ -940,17 +1109,25 @@ export function ExampleGallery({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMoreExamples, loadNextPage, showingExampleDetail, showingTopicList, renderedStreamCount]);
+  }, [hasMoreExamples, loadNextPage, showingTopicList, renderedStreamCount]);
 
   return (
     <section
-      className={cn("example-gallery-shell flex h-full flex-col gap-4", isGallery && "example-gallery-shell--desktop")}
+      className={cn(
+        "example-gallery-shell flex h-full flex-col",
+        isGallery && "examples-layout example-gallery-shell--desktop",
+        !isGallery && "gap-4",
+      )}
       aria-labelledby={gallerySectionTitleId}
       style={isGallery ? ({ ["--gallery-desktop-min-width" as string]: `${DESKTOP_GALLERY_MIN_WIDTH}px` } satisfies CSSProperties) : undefined}
     >
       <h2 id={gallerySectionTitleId} className="sr-only">
         {isGallery ? "示例完整画廊" : "示例工作台列表"}
       </h2>
+      <div
+        className={cn("min-h-0 flex flex-1 flex-col", isGallery ? "gallery-side" : "example-gallery-workspace-side gap-4")}
+        aria-hidden={showingExampleDetail ? true : undefined}
+      >
       {!hideToolbar ? (
         <div className="example-filter-bar titlebar-no-drag" aria-label="示例筛选与视图切换工具栏">
           <div className="example-filter-group flex flex-wrap items-center gap-2" role="tablist" aria-label="示例分类筛选">
@@ -1065,25 +1242,16 @@ export function ExampleGallery({
         </div>
       ) : null}
 
+      <div className={cn("min-h-0 flex-1", isGallery && "examples-canvas")}>
       <div
         id={galleryResultsId}
         ref={resultsRef}
         className={cn("example-gallery-results min-h-0 flex-1 overflow-y-auto sidebar-scrollbar", isGallery ? "pr-2" : "pr-1")}
         role="region"
         aria-live="polite"
-        aria-label={showingExampleDetail ? "图片详情" : showingTopicDetail ? "专题详情" : showingTopicList ? "专题列表" : "案例结果列表"}
+        aria-label={showingTopicDetail ? "专题详情" : showingTopicList ? "专题列表" : "案例结果列表"}
       >
-        {showingExampleDetail && selectedExample ? (
-          <ExampleDetailView
-            item={selectedExample}
-            imageState={imageStates[selectedExample.id] ?? "idle"}
-            onBack={closeExampleDetail}
-            onImageStateChange={setImageState}
-            onImportExample={handleImportFull}
-            onImportPromptOnly={handleImportPromptOnly}
-            onImportImageOnly={handleImportImageOnly}
-          />
-        ) : showingTopicList ? (
+        {showingTopicList ? (
           <section className="example-topic-directory">
             <div className="example-topic-section-head example-topic-directory-head">
               <div>
@@ -1135,22 +1303,25 @@ export function ExampleGallery({
               </div>
             </div>
             <div
-              className="example-gallery-grid example-gallery-grid--gallery example-gallery-grid--topic-stream example-gallery-grid--horizontal-waterfall"
-              style={topicGalleryGridStyle}
+              className="example-gallery-grid example-gallery-grid--gallery example-gallery-grid--editorial example-gallery-grid--topic-stream"
             >
-              {activeTopicPagedEntries.map((item, index) => (
-                <MemoGalleryExampleCard
-                  key={`${activeTopic.id}-${item.id}`}
-                  item={item}
-                  mode="gallery"
-                  index={index}
-                  imageState={imageStates[item.id] ?? "idle"}
-                  onImageStateChange={setImageState}
-                  onImportExample={handleImportFull}
-                  onImportPromptOnly={handleImportPromptOnly}
-                  onImportImageOnly={handleImportImageOnly}
-                  onOpenDetail={openExampleDetail}
-                />
+              {activeTopicMasonryColumns.map((column, columnIndex) => (
+                <div key={`${activeTopic.id}-column-${columnIndex}`} className="example-masonry-column">
+                  {column.map(({ item, index }) => (
+                    <MemoGalleryExampleCard
+                      key={`${activeTopic.id}-${item.id}`}
+                      item={item}
+                      mode="gallery"
+                      index={index}
+                      imageState={imageStates[item.id] ?? "idle"}
+                      onImageStateChange={setImageState}
+                      onImportExample={handleImportFull}
+                      onImportPromptOnly={handleImportPromptOnly}
+                      onImportImageOnly={handleImportImageOnly}
+                      onOpenDetail={openExampleDetail}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
           </section>
@@ -1159,24 +1330,45 @@ export function ExampleGallery({
             className={cn(
               "example-gallery-grid",
               isGallery ? "example-gallery-grid--gallery" : "example-gallery-grid--workspace",
-              shouldUseFourColumnGallery && `example-gallery-grid--fixed-${GALLERY_COLUMN_COUNT}`,
+              isGallery && "example-gallery-grid--editorial",
             )}
           >
             {pagedExamples.length ? (
-              pagedExamples.map((item, index) => (
-                <MemoGalleryExampleCard
-                  key={item.id}
-                  item={item}
-                  mode={mode}
-                  index={index}
-                  imageState={imageStates[item.id] ?? "idle"}
-                  onImageStateChange={setImageState}
-                  onImportExample={handleImportFull}
-                  onImportPromptOnly={handleImportPromptOnly}
-                  onImportImageOnly={handleImportImageOnly}
-                  onOpenDetail={openExampleDetail}
-                />
-              ))
+              isGallery ? (
+                pagedMasonryColumns.map((column, columnIndex) => (
+                  <div key={`gallery-column-${columnIndex}`} className="example-masonry-column">
+                    {column.map(({ item, index }) => (
+                      <MemoGalleryExampleCard
+                        key={item.id}
+                        item={item}
+                        mode={mode}
+                        index={index}
+                        imageState={imageStates[item.id] ?? "idle"}
+                        onImageStateChange={setImageState}
+                        onImportExample={handleImportFull}
+                        onImportPromptOnly={handleImportPromptOnly}
+                        onImportImageOnly={handleImportImageOnly}
+                        onOpenDetail={openExampleDetail}
+                      />
+                    ))}
+                  </div>
+                ))
+              ) : (
+                pagedExamples.map((item, index) => (
+                  <MemoGalleryExampleCard
+                    key={item.id}
+                    item={item}
+                    mode={mode}
+                    index={index}
+                    imageState={imageStates[item.id] ?? "idle"}
+                    onImageStateChange={setImageState}
+                    onImportExample={handleImportFull}
+                    onImportPromptOnly={handleImportPromptOnly}
+                    onImportImageOnly={handleImportImageOnly}
+                    onOpenDetail={openExampleDetail}
+                  />
+                ))
+              )
             ) : (
               <div className="example-empty-state">
                 <p className="text-sm font-semibold text-foreground">当前筛选下暂无案例</p>
@@ -1195,11 +1387,24 @@ export function ExampleGallery({
           </div>
         ) : null}
       </div>
+      </div>
 
       {isGallery ? (
         <button type="button" className="example-back-to-top" onClick={scrollToTop} aria-label="回到顶部">
           <ArrowUp className="h-4 w-4" aria-hidden="true" />
         </button>
+      ) : null}
+      </div>
+      {showingExampleDetail && selectedExample ? (
+        <ExampleDetailView
+          item={selectedExample}
+          imageState={imageStates[selectedExample.id] ?? "idle"}
+          onBack={closeExampleDetail}
+          onImageStateChange={setImageState}
+          onImportExample={handleImportFull}
+          onImportPromptOnly={handleImportPromptOnly}
+          onImportImageOnly={handleImportImageOnly}
+        />
       ) : null}
     </section>
   );

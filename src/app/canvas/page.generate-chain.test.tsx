@@ -59,7 +59,21 @@ vi.mock("@/store/conversations", () => ({
     activeId: testConversationState.activeId,
     loaded: testConversationState.loaded,
     load: loadMock,
+    setActive: (id: string) => {
+      testConversationState.activeId = id;
+    },
     create: createMock,
+    remove: (id: string) => {
+      testConversationState.conversations = testConversationState.conversations.filter((conv) => conv.id !== id);
+      if (testConversationState.activeId === id) {
+        testConversationState.activeId = testConversationState.conversations[0]?.id ?? null;
+      }
+    },
+    rename: (id: string, title: string) => {
+      testConversationState.conversations = testConversationState.conversations.map((conv) => (
+        conv.id === id ? { ...conv, title } : conv
+      ));
+    },
     addTurn: addTurnMock,
     updateTurn: updateTurnMock,
     removeTurn: removeTurnMock,
@@ -96,9 +110,7 @@ vi.mock("@/store/example-import", () => ({
   }),
 }));
 
-vi.mock("./conversation-list", () => ({
-  ConversationList: () => null,
-}));
+vi.mock("./conversation-list", async () => await vi.importActual("./conversation-list"));
 
 vi.mock("./image-card", () => ({
   fileFromImage: vi.fn(),
@@ -142,6 +154,10 @@ vi.mock("./prompt-bar", () => ({
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CanvasPage } from "@/app/canvas/page";
+
+function expectTextContent(element: HTMLElement, expected: string) {
+  expect(element.textContent).toContain(expected);
+}
 
 describe("canvas generate request chain", () => {
   beforeEach(() => {
@@ -509,7 +525,7 @@ describe("canvas generate request chain", () => {
     expect(clipboardWriteText).toHaveBeenCalledWith("上游 400 错误");
   });
 
-  it("生成记录按创建时间倒序显示，最新生成排在前面", () => {
+  it("当前 conversation 的工作详情默认选中最新生成记录", () => {
     testConversationState.activeId = "conv-1";
     testConversationState.loaded = true;
     testConversationState.conversations = [{
@@ -545,6 +561,119 @@ describe("canvas generate request chain", () => {
 
     const prompts = screen.getAllByRole("button", { name: /prompt/ });
     expect(prompts.map((button) => button.textContent)).toEqual(["new prompt", "old prompt"]);
+  });
+
+  it("左侧工作列表应常驻显示工作状态，并支持切换当前工作与新建工作", () => {
+    testConversationState.activeId = "conv-live";
+    testConversationState.loaded = true;
+    testConversationState.conversations = [
+      {
+        id: "conv-live",
+        title: "产品海报批次",
+        created_at: 2,
+        updated_at: 2000,
+        turns: [{
+          id: "turn-live",
+          mode: "generate",
+          prompt: "new prompt",
+          status: "generating",
+          images: [{ url: "data:image/png;base64,abc" }],
+          model: "saved-model-x",
+          n: 4,
+          created_at: 2000,
+        }],
+      },
+      {
+        id: "conv-old",
+        title: "角色草图",
+        created_at: 1,
+        updated_at: 1000,
+        turns: [{
+          id: "turn-old",
+          mode: "generate",
+          prompt: "old prompt",
+          status: "error",
+          images: [],
+          model: "saved-model-x",
+          created_at: 1000,
+          error: "old error",
+        }],
+      },
+    ];
+    createMock.mockImplementation(() => {
+      const id = "conv-new";
+      testConversationState.activeId = id;
+      testConversationState.conversations = [{
+        id,
+        title: "新对话",
+        created_at: 3000,
+        updated_at: 3000,
+        turns: [],
+      }, ...testConversationState.conversations];
+      return id;
+    });
+
+    const view = render(<CanvasPage />);
+
+    const workList = screen.getByTestId("workspace-worklist");
+    expectTextContent(workList, "产品海报批次");
+    expectTextContent(workList, "角色草图");
+    expectTextContent(workList, "1 个任务生成中");
+    expectTextContent(workList, "old error");
+    expectTextContent(screen.getByTestId("workspace-turn-stream"), "new prompt");
+
+    fireEvent.click(screen.getByTestId("conversation-item-conv-old"));
+    view.rerender(<CanvasPage />);
+    expectTextContent(screen.getByTestId("workspace-turn-stream"), "old prompt");
+    expect(screen.getAllByText("old error").length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "新建工作" }));
+    view.rerender(<CanvasPage />);
+    expect(createMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("开始创作")).toBeTruthy();
+  });
+
+  it("工作列表头部应支持折叠与展开，折叠后释放更多中间工作区宽度", () => {
+    testConversationState.activeId = "conv-live";
+    testConversationState.loaded = true;
+    testConversationState.conversations = [
+      {
+        id: "conv-live",
+        title: "产品海报批次",
+        created_at: 2,
+        updated_at: 2000,
+        turns: [{
+          id: "turn-live",
+          mode: "generate",
+          prompt: "new prompt",
+          status: "generating",
+          images: [{ url: "data:image/png;base64,abc" }],
+          model: "saved-model-x",
+          n: 1,
+          created_at: 2000,
+        }],
+      },
+    ];
+
+    render(<CanvasPage />);
+
+    const workList = screen.getByTestId("workspace-worklist");
+    expect(screen.getByRole("button", { name: "新建工作" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "收起工作列表" })).toBeTruthy();
+    expectTextContent(workList, "产品海报批次");
+
+    fireEvent.click(screen.getByRole("button", { name: "收起工作列表" }));
+
+    expect(screen.queryByRole("button", { name: "新建工作" })).toBeNull();
+    expect(screen.getByRole("button", { name: "展开工作列表" })).toBeTruthy();
+    expect(workList.className).toContain("canvas-worklist-panel--collapsed");
+    expect(screen.queryByTestId("conversation-item-conv-live")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "展开工作列表" }));
+
+    expect(screen.getByRole("button", { name: "新建工作" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "收起工作列表" })).toBeTruthy();
+    expect(screen.getByTestId("conversation-item-conv-live")).toBeTruthy();
   });
 
   it("生成图片详情应接收提示词和三种引用入口", () => {

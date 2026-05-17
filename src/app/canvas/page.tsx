@@ -1,15 +1,13 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, AlertCircle, Sparkles, Trash2, RefreshCw, Copy, TextQuote } from "lucide-react";
+import { Loader2, Sparkles, Trash2, RefreshCw, Copy, TextQuote } from "lucide-react";
 import { toast } from "sonner";
-import { useConversations, type ImageData as StoreImageData } from "@/store/conversations";
+import { useConversations, type ConversationTurn, type ImageData as StoreImageData } from "@/store/conversations";
 import { useTasks } from "@/store/tasks";
 import { useSettings } from "@/store/settings";
 import { useExampleImport } from "@/store/example-import";
 import { generateImages, getSettings, type ImageGenerationRequest, type ImageResult } from "@/lib/api";
 import { getReadableErrorMessage } from "@/lib/request";
-import { formatRelativeTime, generateId } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { cn, formatRelativeTime, generateId } from "@/lib/utils";
 import { ConversationList } from "./conversation-list";
 import { fileFromImage, ImageCard } from "./image-card";
 import { PromptBar, type AttachedPromptFile, type PromptOptions } from "./prompt-bar";
@@ -155,6 +153,52 @@ async function copyText(text: string): Promise<void> {
   }
 }
 
+function stripStoredPrompt(prompt: string): string {
+  const withoutAspect = prompt.replace(/^make the aspect ratio\s+\S+\s*,\s*/i, "");
+  return withoutAspect.split(/\n\n负面提示词：/)[0]?.trim() ?? "";
+}
+
+function summarizeTurnPrompt(prompt: string): string {
+  return stripStoredPrompt(prompt).slice(0, 44) || "未命名任务";
+}
+
+function getTurnMetaSummary(turn: ConversationTurn): string {
+  const parts = [
+    formatRelativeTime(turn.created_at),
+    turn.aspectRatio || turn.size,
+    turn.upscale ? turn.upscale.toUpperCase() : null,
+    turn.quality ? `画质 ${turn.quality}` : null,
+    turn.source_images?.length ? `参考 ${turn.source_images.length} 张` : null,
+    turn.images[0]?.provider || turn.images[0]?.source || null,
+  ].filter(Boolean);
+  return parts.join(" · ");
+}
+
+function getTurnStatusLabel(turn: ConversationTurn, fallbackCount: number): string {
+  const total = Math.max(1, turn.n ?? fallbackCount);
+  if (turn.status === "generating") return `进行中 ${turn.images.length}/${total}`;
+  if (turn.status === "error") return "失败";
+  if (turn.status === "done") return turn.images.length > 0 ? `完成 ${turn.images.length}/${total}` : "完成";
+  return "待处理";
+}
+
+function getTurnHeadline(turn: ConversationTurn): string {
+  const parts = [summarizeTurnPrompt(turn.prompt)];
+  const requestedCount = Math.max(1, turn.n ?? turn.images.length ?? 1);
+
+  if (turn.source_images?.length) {
+    parts.push(`引用 ${turn.source_images.length} 张`);
+  } else if (requestedCount > 1) {
+    parts.push(`${requestedCount} 张`);
+  }
+
+  if (turn.upscale) {
+    parts.push(turn.upscale.toUpperCase());
+  }
+
+  return parts.join(" · ");
+}
+
 async function generateImagesWithFrontendBatches(
   req: ImageGenerationRequest,
   signal: AbortSignal,
@@ -208,6 +252,7 @@ async function generateImagesWithFrontendBatches(
 }
 
 export function CanvasPage() {
+  const [worklistOpen, setWorklistOpen] = useState(true);
   const conversations = useConversations((s) => s.conversations);
   const activeId = useConversations((s) => s.activeId);
   const loaded = useConversations((s) => s.loaded);
@@ -219,7 +264,9 @@ export function CanvasPage() {
 
   const startTask = useTasks((s) => s.startTask);
   const endTask = useTasks((s) => s.endTask);
+  const activeTaskCount = useTasks((s) => s.activeTaskKeys.size);
 
+  const provider = useSettings((s) => s.provider);
   const defaultModel = useSettings((s) => s.defaultModel);
   const defaultN = useSettings((s) => s.defaultN);
   const defaultQuality = useSettings((s) => s.defaultQuality);
@@ -230,7 +277,6 @@ export function CanvasPage() {
 
   const [pendingPrompt, setPendingPrompt] = useState<{ importKey: string; prompt?: string; files?: AttachedPromptFile[]; replace?: boolean } | null>(null);
   const [capabilities, setCapabilities] = useState<ModelCapabilities>(() => cloneCapabilities());
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [expandedPromptIds, setExpandedPromptIds] = useState<Set<string>>(() => new Set());
   const consumePending = useCallback(() => setPendingPrompt(null), []);
   const mountedRef = useRef(true);
@@ -271,6 +317,7 @@ export function CanvasPage() {
 
   const activeConv = conversations.find((c) => c.id === activeId);
   const activeConversationGenerating = (activeConv?.turns.some((turn) => turn.status === "generating")) ?? false;
+  const orderedTurns = activeConv ? [...activeConv.turns].sort((a, b) => b.created_at - a.created_at) : [];
 
   const [elapsedSeconds, setElapsedSeconds] = useState<Record<string, number>>({});
 
@@ -489,15 +536,36 @@ export function CanvasPage() {
     await handleSubmit(turn.prompt, turn.source_images, { size: turn.size, n: turn.n, quality: turn.quality, style: turn.style, upscale: turn.upscale, aspectRatio: turn.aspectRatio }, turnId);
   };
 
-  const orderedTurns = activeConv ? [...activeConv.turns].sort((a, b) => b.created_at - a.created_at) : [];
+  const providerLabelMap = {
+    codesonline: "CodesOnline",
+    openrouter: "OpenRouter",
+    blt: "BLT",
+  } as const;
+  const providerStatuses = (Object.entries(providerLabelMap) as Array<[keyof typeof providerLabelMap, string]>).map(([id, label]) => {
+    const hasKey = Boolean(providerApiKeys?.[id]?.trim());
+    return {
+      id,
+      label,
+      available: hasKey,
+      roleLabel: id === provider ? "当前" : hasKey ? "候补" : "未配置",
+    };
+  });
+  const queueSummary = activeTaskCount > 0 ? `${activeTaskCount} 个任务生成中` : "当前空闲";
+  const currentConversationLabel = activeConv?.title ?? "未选择工作";
   const renderLoadingSlots = (turn: { n?: number; images: StoreImageData[] }) => {
     const total = Math.max(1, turn.n ?? defaultN ?? 1);
     const remaining = Math.max(0, total - turn.images.length);
     return Array.from({ length: remaining }, (_, index) => {
       const current = turn.images.length + index + 1;
+      const progress = Math.max(12, Math.round((turn.images.length / total) * 100));
       return (
-        <div key={`loading-${current}`} className="canvas-image-loading-card" aria-label={`等待生成第 ${current} 张图片`}>
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <div
+          key={`loading-${current}`}
+          className="canvas-image-loading-card"
+          aria-label={`等待生成第 ${current} 张图片`}
+          style={{ ["--progress" as string]: `${progress}%` }}
+        >
+          <span className="canvas-progress-ring" aria-hidden="true" />
           <span>等待生成 {current}/{total}</span>
         </div>
       );
@@ -505,60 +573,94 @@ export function CanvasPage() {
   };
 
   return (
-    <div className="flex h-full min-w-0">
-      <div className={`${sidebarOpen ? "w-[208px]" : "w-[52px]"} shrink-0 border-r border-sidebar-border bg-sidebar transition-[width] duration-200`}>
-        <ConversationList sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen((v) => !v)} />
-      </div>
-      <div className="canvas-workspace">
-        <div className="canvas-stage">
-          {!activeConv || activeConv.turns.length === 0 ? (
-            <div className="flex h-full min-h-[360px] flex-col items-center justify-center px-5 py-10">
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+    <section className="canvas-page-shell">
+      <header className="canvas-workbench-topbar">
+        <div className="canvas-topbar-copy">
+          <div className="title-block">
+            <h2>工作台</h2>
+            <p>左侧切换工作，中央查看当前工作记录，底部继续输入。</p>
+          </div>
+        </div>
+        <div className="canvas-topbar-actions">
+          <span className="canvas-topbar-chip">
+            <strong>当前工作</strong>
+            <span>{currentConversationLabel}</span>
+          </span>
+          <span className="canvas-topbar-chip">
+            <strong>队列</strong>
+            <span>{queueSummary}</span>
+          </span>
+        </div>
+      </header>
+
+      <div className={cn("canvas-workspace", !worklistOpen && "canvas-workspace--worklist-collapsed")}>
+        <aside
+          className={cn("canvas-worklist-panel", !worklistOpen && "canvas-worklist-panel--collapsed")}
+          aria-label="工作列表"
+          data-testid="workspace-worklist"
+        >
+          <ConversationList sidebarOpen={worklistOpen} onToggleSidebar={() => setWorklistOpen((current) => !current)} />
+        </aside>
+
+        <section className="timeline canvas-stage" aria-label="生成任务时间线">
+          <div className="canvas-queue-list" aria-label="生成任务队列" data-testid="workspace-turn-stream">
+            {!activeConv || activeConv.turns.length === 0 ? (
+              <div className="canvas-empty-state">
+                <div className="canvas-empty-state-icon">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <h2 className="mt-3 text-base font-semibold text-foreground">开始创作</h2>
-                <p className="mt-1 text-sm text-muted-foreground">输入提示词，或添加附件图开始创作</p>
+                <h3>开始创作</h3>
+                <p>输入提示词，或添加附件图开始创作</p>
               </div>
-            </div>
-          ) : (
-            <div className="canvas-stage-content space-y-4">
-              {orderedTurns.map((turn) => (
-                <div key={turn.id} className="space-y-1.5">
-                  <div className="canvas-turn-head">
-                    <Badge variant="default">生成</Badge>
-                    <button
-                      type="button"
-                      className={`canvas-turn-prompt ${expandedPromptIds.has(turn.id) ? "canvas-turn-prompt--expanded" : "canvas-turn-prompt--collapsed"}`}
-                      onClick={() => togglePrompt(turn.id)}
-                      aria-expanded={expandedPromptIds.has(turn.id)}
-                      title={expandedPromptIds.has(turn.id) ? "收起提示词" : "展开提示词"}
-                    >
-                      {turn.prompt}
-                    </button>
-                    <div className="canvas-turn-prompt-actions">
-                      <button type="button" onClick={() => quotePrompt(turn.prompt)} className="canvas-turn-action" title="引用提示词" aria-label="引用提示词">
-                        <TextQuote className="h-3.5 w-3.5" />
-                        <span>引用</span>
-                      </button>
-                      <button type="button" onClick={() => void copyPrompt(turn.prompt)} className="canvas-turn-action" title="复制提示词" aria-label="复制提示词">
+            ) : (
+              orderedTurns.map((turn) => (
+                <article key={turn.id} className="canvas-turn-card canvas-turn-card--active" data-testid={`workspace-turn-card-${turn.id}`}>
+                  <div className="canvas-turn-card-head">
+                    <div className="canvas-turn-card-meta">
+                      <strong>{getTurnHeadline(turn)}</strong>
+                      <span>{getTurnMetaSummary(turn)}</span>
+                    </div>
+                    <div className="canvas-turn-card-actions">
+                      <span className={cn(
+                        "canvas-status-pill",
+                        turn.status === "error" && "canvas-status-pill--error",
+                        turn.status === "generating" && "canvas-status-pill--live",
+                      )}
+                      >
+                        {getTurnStatusLabel(turn, defaultN ?? 1)}
+                      </span>
+                      <button type="button" onClick={() => void copyPrompt(turn.prompt)} className="canvas-turn-action" aria-label="复制提示词">
                         <Copy className="h-3.5 w-3.5" />
-                        <span>复制</span>
                       </button>
                     </div>
-                    <span className="text-xs text-muted-foreground">{formatRelativeTime(turn.created_at)}</span>
-                    {turn.status === "generating" && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
-                    {turn.status === "error" && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
-                    {turn.status === "done" && turn.error && <span className="text-xs text-muted-foreground">{turn.error}</span>}
                   </div>
+
+                  <button
+                    type="button"
+                    className={`canvas-turn-prompt ${expandedPromptIds.has(turn.id) ? "canvas-turn-prompt--expanded" : "canvas-turn-prompt--collapsed"}`}
+                    onClick={() => togglePrompt(turn.id)}
+                    aria-expanded={expandedPromptIds.has(turn.id)}
+                    title={expandedPromptIds.has(turn.id) ? "收起提示词" : "展开提示词"}
+                  >
+                    {turn.prompt}
+                  </button>
+
+                  <div className="canvas-turn-prompt-actions">
+                    <button type="button" onClick={() => quotePrompt(turn.prompt)} className="canvas-turn-action" aria-label="引用提示词">
+                      <TextQuote className="h-3.5 w-3.5" />
+                      <span>引用提示词</span>
+                    </button>
+                  </div>
+
                   {turn.status === "generating" && (
-                    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-1.5 text-xs text-muted-foreground">
+                    <div className="canvas-turn-progress">
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                       <span>处理中 · 已完成 {turn.images.length}/{turn.n ?? defaultN ?? 1} · 已用时 {elapsedSeconds[turn.id] ?? 0}s</span>
                     </div>
                   )}
+
                   {((turn.status === "done" && turn.images.length > 0) || turn.status === "generating") && (
-                    <div className="canvas-image-grid">
+                    <div className="canvas-turn-result-grid">
                       {turn.images.map((img, idx) => (
                         <ImageCard
                           key={idx}
@@ -570,42 +672,46 @@ export function CanvasPage() {
                             model: turn.model || defaultModel,
                             mode: "generate",
                             size: turn.size,
+                            scale: turn.upscale ? turn.upscale.toUpperCase() : undefined,
                             provider: img.provider || img.source,
                           }}
                           onReference={() => void pushImageToPrompt(img, turn.prompt)}
                           onPromptReference={() => quotePrompt(turn.prompt)}
                           onImageReference={() => void pushImageToPrompt(img)}
                           onRetry={() => void retryTurn(turn.id)}
-                          onDelete={() => removeTurn(activeConv.id, turn.id)}
+                          onDelete={() => activeConv && removeTurn(activeConv.id, turn.id)}
                         />
                       ))}
                       {turn.status === "generating" && renderLoadingSlots(turn)}
                     </div>
                   )}
+
                   {turn.status === "error" && turn.error && (
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
-                      <p className="text-sm text-destructive">{turn.error}</p>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => void copyError(turn.error || "")} className="text-foreground">
-                          <Copy className="mr-1 h-3.5 w-3.5" />
-                          复制错误
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => void retryTurn(turn.id)} className="text-foreground">
-                          <RefreshCw className="mr-1 h-3.5 w-3.5" />
-                          重试
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => removeTurn(activeConv.id, turn.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="mr-1 h-3.5 w-3.5" />
-                          删除
-                        </Button>
+                    <div className="canvas-error-box">
+                      <code>{turn.error}</code>
+                      <div className="canvas-error-actions">
+                        <button type="button" className="canvas-turn-action" aria-label="复制错误" onClick={() => void copyError(turn.error || "")}>
+                          <Copy className="h-3.5 w-3.5" />
+                          <span>复制错误</span>
+                        </button>
+                        <button type="button" className="canvas-turn-action" onClick={() => void retryTurn(turn.id)}>
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          <span>重试</span>
+                        </button>
+                        {activeConv && (
+                          <button type="button" className="canvas-turn-action canvas-turn-action--danger" onClick={() => removeTurn(activeConv.id, turn.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span>删除</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
 
         <PromptBar
           layout="workspace"
@@ -620,8 +726,9 @@ export function CanvasPage() {
           capabilities={capabilities}
           defaultQuality={defaultQuality}
           defaultN={defaultN}
+          providerStatuses={providerStatuses}
         />
       </div>
-    </div>
+    </section>
   );
 }

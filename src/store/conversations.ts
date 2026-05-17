@@ -159,7 +159,7 @@ export const useConversations = create<ConversationsState & ConversationsActions
         set({ conversations, loaded: true, loadError: null, activeId });
       } catch (err) {
         console.error("[gimg] Failed to load conversations:", err);
-        set({ conversations: [], loaded: true, loadError: "对话读取失败，可新建对话继续使用。", activeId: null });
+        set({ conversations: [], loaded: true, loadError: "工作读取失败，可新建工作继续使用。", activeId: null });
       }
     },
 

@@ -8,11 +8,13 @@ function getSystemTheme(): "light" | "dark" {
 
 export function useTheme() {
   const theme = useSettings((s) => s.theme);
+  const tone = useSettings((s) => s.tone);
 
   useEffect(() => {
-    const resolved = theme === "system" ? getSystemTheme() : theme;
+    const resolved = tone === "dark" ? "dark" : theme === "system" ? getSystemTheme() : theme;
     const root = document.documentElement;
     root.setAttribute("data-theme", resolved);
+    root.setAttribute("data-tone", tone);
 
     if (resolved === "dark") {
       root.style.colorScheme = "dark";
@@ -23,14 +25,15 @@ export function useTheme() {
     if (window.electronAPI?.updateTheme) {
       window.electronAPI.updateTheme(resolved);
     }
-  }, [theme]);
+  }, [theme, tone]);
 
   useEffect(() => {
-    if (theme !== "system") return;
+    if (theme !== "system" || tone === "dark") return;
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = () => {
       const resolved = getSystemTheme();
       document.documentElement.setAttribute("data-theme", resolved);
+      document.documentElement.setAttribute("data-tone", tone);
       document.documentElement.style.colorScheme = resolved;
       if (window.electronAPI?.updateTheme) {
         window.electronAPI.updateTheme(resolved);
@@ -38,5 +41,5 @@ export function useTheme() {
     };
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
-  }, [theme]);
+  }, [theme, tone]);
 }

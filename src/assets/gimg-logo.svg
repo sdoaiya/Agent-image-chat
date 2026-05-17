@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="GIMG logo">
+  <defs>
+    <linearGradient id="base" x1="18" y1="12" x2="110" y2="116" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#142326"/>
+      <stop offset="0.55" stop-color="#071113"/>
+      <stop offset="1" stop-color="#24130d"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="18" y1="24" x2="102" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#64fff0"/>
+      <stop offset="1" stop-color="#13c8b9"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="26" y1="112" x2="106" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff6844"/>
+      <stop offset="1" stop-color="#f5bd4d"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#061013" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#base)"/>
+  <path d="M26 32c0-7 5-12 12-12h35L54 42H26V32Z" fill="url(#cyan)"/>
+  <path d="M102 32c0-7-5-12-12-12H58l19 22h25V32Z" fill="url(#warm)"/>
+  <path d="M26 96c0 7 5 12 12 12h32L51 86H26v10Z" fill="url(#warm)"/>
+  <path d="M102 96c0 7-5 12-12 12H55l19-22h28v10Z" fill="url(#cyan)"/>
+  <g filter="url(#shadow)">
+    <rect x="34" y="34" width="60" height="60" rx="17" fill="#f6fffb"/>
+    <text x="64" y="77" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="900" fill="#071113">G</text>
+  </g>
+  <rect x="92" y="50" width="11" height="11" rx="3" fill="#64fff0"/>
+  <rect x="92" y="67" width="11" height="11" rx="3" fill="#f5bd4d"/>
+</svg>

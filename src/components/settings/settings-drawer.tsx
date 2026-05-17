@@ -1,8 +1,9 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  Copy,
   Eye,
   EyeOff,
   Key,
@@ -13,7 +14,6 @@ import {
   RefreshCw,
   RotateCcw,
   Settings2,
-  SlidersHorizontal,
   Sun,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ import {
   withTimeout,
   type ConfigPayload,
 } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import {
   DEFAULT_IMAGE_MODEL,
   CODESONLINE_BASE_URL,
@@ -43,11 +44,17 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const themeIcons: Record<string, React.ReactNode> = {
-  light: <Sun className="h-4 w-4" />,
-  dark: <Moon className="h-4 w-4" />,
-  system: <Monitor className="h-4 w-4" />,
-};
+const themeOptions = [
+  { value: "light", label: "浅色模式", Icon: Sun },
+  { value: "dark", label: "暗色模式", Icon: Moon },
+  { value: "system", label: "跟随系统", Icon: Monitor },
+] as const;
+
+const providerOptions = [
+  { value: "codesonline", label: "CodesOnline" },
+  { value: "openrouter", label: "OpenRouter" },
+  { value: "blt", label: "BLT" },
+] as const;
 
 const BACKEND_REQUEST_TIMEOUT_SECONDS = 900;
 
@@ -160,6 +167,7 @@ interface SettingsDraftSnapshot {
   proxyUrl: string;
   defaultModel: string;
   theme: "light" | "dark" | "system";
+  tone: "warm" | "dark";
 }
 
 function hasMeaningfulDraftChanges(args: {
@@ -172,6 +180,7 @@ function hasMeaningfulDraftChanges(args: {
   proxyUrl: string;
   defaultModel: string;
   theme: "light" | "dark" | "system";
+  tone: "warm" | "dark";
   settings: SettingsDraftSnapshot;
 }): boolean {
   if (!args.open) return false;
@@ -182,7 +191,8 @@ function hasMeaningfulDraftChanges(args: {
     || args.proxyEnabled !== args.settings.proxyEnabled
     || args.proxyUrl !== args.settings.proxyUrl
     || args.defaultModel !== args.settings.defaultModel
-    || args.theme !== args.settings.theme;
+    || args.theme !== args.settings.theme
+    || args.tone !== args.settings.tone;
 }
 
 function providerApiKeysEqual(a: ProviderApiKeys, b: ProviderApiKeys): boolean {
@@ -194,6 +204,30 @@ function setProviderApiKeysIfChanged(
   next: ProviderApiKeys,
 ): void {
   setter((current) => (providerApiKeysEqual(current, next) ? current : next));
+}
+
+function providerSummary(provider: ImageProvider): string {
+  const defaults = getProviderDefaults(provider);
+  if (provider === "openrouter") {
+    return `${defaults.defaultModel} · 备用中转源 · ${defaults.baseUrl}`;
+  }
+  if (provider === "blt") {
+    return `${defaults.defaultModel} · 2K 优先 · ${defaults.baseUrl}`;
+  }
+  return `${defaults.defaultModel} · 默认网关 · ${defaults.baseUrl}`;
+}
+
+function yesNo(value: boolean | undefined): string {
+  if (value === undefined) return "读取中";
+  return value ? "是" : "否";
+}
+
+function segmentedButtonClass(active: boolean) {
+  return cn("settings-demo-segment", active && "settings-demo-segment--active");
+}
+
+function providerLabel(provider: ImageProvider): string {
+  return providerOptions.find((item) => item.value === provider)?.label ?? provider;
 }
 
 interface SettingsDrawerProps {
@@ -215,6 +249,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
   const [proxyUrl, setProxyUrl] = useState(settings.proxyUrl);
   const [defaultModel, setDefaultModel] = useState(settings.defaultModel);
   const [theme, setTheme] = useState(settings.theme);
+  const [tone, setTone] = useState<"warm" | "dark">(settings.tone ?? "warm");
   const [refreshingModels, setRefreshingModels] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
@@ -235,6 +270,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     setProxyUrl(settings.proxyUrl);
     setDefaultModel(settings.defaultModel);
     setTheme(settings.theme);
+    setTone(settings.tone ?? "warm");
   }, [
     settings.provider,
     settings.apiKey,
@@ -244,6 +280,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     settings.proxyEnabled,
     settings.proxyUrl,
     settings.theme,
+    settings.tone,
   ]);
 
   useEffect(() => {
@@ -258,6 +295,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
       proxyUrl,
       defaultModel,
       theme,
+      tone,
       settings,
     })) {
       return;
@@ -275,6 +313,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     refreshDraftFromStore,
     settings,
     theme,
+    tone,
   ]);
 
   useEffect(() => {
@@ -339,6 +378,22 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
   }, [baseUrl, defaultModel, provider, settings.remoteModels]);
 
   const capabilities = backendConfig?.capabilities;
+  const configuredProviderCount = providerOptions.filter((item) => {
+    const key = item.value === provider ? apiKey : providerApiKeys[item.value];
+    return Boolean(key?.trim());
+  }).length;
+  const activeProviderLabel = providerLabel(provider);
+  const providerKeyStatus = (itemProvider: ImageProvider) => {
+    const key = itemProvider === provider ? apiKey : providerApiKeys[itemProvider];
+    return key?.trim() ? "已配置" : "未启用";
+  };
+  const saveStateText = saving
+    ? "保存中"
+    : saveStatus === "success"
+      ? "成功"
+      : saveStatus === "error"
+        ? "失败"
+        : "待保存";
 
   const availableModels = useMemo(() => {
     return normalizeModelState({
@@ -349,6 +404,19 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
       selected: defaultModel,
     }).availableModels;
   }, [backendConfig, defaultModel, settings.builtinModels, settings.remoteModels]);
+
+  const handleProviderChange = (nextProvider: ImageProvider) => {
+    const defaults = getProviderDefaults(nextProvider);
+    const currentKeys = { ...providerApiKeys, [provider]: apiKey };
+    setProvider(nextProvider);
+    setProviderApiKeys(currentKeys);
+    setApiKey(currentKeys[nextProvider] || "");
+    setBaseUrl(defaults.baseUrl);
+    setDefaultModel(defaults.defaultModel);
+    setShowApiKey(false);
+    setSaveStatus("idle");
+    setSaveMessage("");
+  };
 
   const refreshModels = async () => {
     setRefreshingModels(true);
@@ -424,6 +492,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
       importedModels: [],
       availableModels: normalized.availableModels,
       theme,
+      tone,
     });
 
     const payload: BackendSettingsPayload = {
@@ -501,165 +570,412 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
     setProxyUrl("");
     setDefaultModel(DEFAULT_IMAGE_MODEL);
     setTheme("system");
+    setTone("warm");
+    setShowApiKey(false);
+    setSaveStatus("idle");
+    setSaveMessage("");
     toast.success("设置已重置");
   };
 
+  const copyCurrentApiKey = async () => {
+    if (!apiKey.trim()) {
+      toast.info("当前 provider 尚未填写 API Key");
+      return;
+    }
+    if (!globalThis.navigator?.clipboard?.writeText) {
+      toast.error("当前环境不支持复制");
+      return;
+    }
+    try {
+      await globalThis.navigator.clipboard.writeText(apiKey);
+      toast.success("API Key 已复制");
+    } catch {
+      toast.error("API Key 复制失败");
+    }
+  };
+
+  const previewProviders = providerOptions.map((item) => {
+    const itemProvider = item.value;
+    const configured = providerKeyStatus(itemProvider) === "已配置";
+    return {
+      ...item,
+      configured,
+      active: itemProvider === provider,
+      summary: providerSummary(itemProvider),
+      status: providerKeyStatus(itemProvider),
+    };
+  });
+
+  const stateCards = [
+    {
+      label: "读取配置",
+      value: backendConfig ? "已完成" : "读取中",
+      tone: backendConfig ? "ok" : "pending",
+    },
+    {
+      label: "刷新模型",
+      value: refreshingModels ? "刷新中" : formatRefreshTime(settings.lastModelRefreshAt),
+      tone: refreshingModels ? "pending" : settings.lastModelRefreshAt ? "ok" : "idle",
+    },
+    {
+      label: "本地保存",
+      value: saveStatus === "error" ? "失败" : saveStatus === "success" || saving ? saveStateText : "待保存",
+      tone: saveStatus === "error" ? "danger" : saveStatus === "success" || saving ? "ok" : "idle",
+    },
+    {
+      label: "后端同步",
+      value: saveMessage.includes("后端未连通")
+        ? "未连通"
+        : saveStatus === "error"
+          ? "失败"
+          : saveStatus === "success"
+            ? "已同步"
+            : "待同步",
+      tone: saveMessage.includes("后端未连通")
+        ? "danger"
+        : saveStatus === "error"
+          ? "danger"
+          : saveStatus === "success"
+            ? "ok"
+            : "idle",
+    },
+  ] as const;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent modal={false} closeClassName="top-7" className="right-0 left-auto top-0 h-[100vh] w-full max-w-[520px] translate-x-0 translate-y-0 rounded-none border-l border-border p-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=closed]:slide-out-to-top-0 data-[state=open]:slide-in-from-top-0">
-        <DialogHeader className="border-b border-border px-6 py-5 text-left">
-          <DialogTitle className="flex items-center gap-2"><Settings2 className="h-5 w-5 text-primary" /> 应用设置</DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            当前仅保留统一生图链路配置：保存后先写本地，再尝试同步到本地后端。
+      <DialogContent
+        modal={false}
+        closeClassName="top-7 right-7"
+        style={{ width: "min(100vw, 1080px)" }}
+        className="settings-demo-shell right-0 left-auto top-0 h-[100vh] max-w-[1080px] translate-x-0 translate-y-0 rounded-none border-l border-border p-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=closed]:slide-out-to-top-0 data-[state=open]:slide-in-from-top-0"
+      >
+        <DialogHeader className="settings-demo-header border-b border-border px-7 py-6 text-left">
+          <DialogTitle className="flex items-center gap-3 text-xl font-semibold">
+            <Settings2 className="h-5 w-5 text-primary" />
+            应用设置
+          </DialogTitle>
+          <DialogDescription className="max-w-[72ch] text-sm text-muted-foreground">
+            对齐最终 UI Demo，保留统一的 provider 切换、单输入框 API Key、色调切换和本地优先保存逻辑。
           </DialogDescription>
         </DialogHeader>
-        <div className="flex h-full flex-col overflow-hidden">
-          <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
-            <section className="space-y-4 rounded-2xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold"><Key className="h-4 w-4 text-primary" /> API 配置</div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Provider</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    { value: "codesonline", label: "CodesOnline" },
-                    { value: "openrouter", label: "OpenRouter" },
-                    { value: "blt", label: "BLT" },
-                  ] as const).map((item) => (
-                    <button
-                      key={item.value}
-                      type="button"
-                      data-testid={`settings-provider-${item.value}`}
-                      aria-pressed={provider === item.value}
-                      onClick={() => {
-                        const nextProvider = item.value as ImageProvider;
-                        const defaults = getProviderDefaults(nextProvider);
-                        const currentKeys = { ...providerApiKeys, [provider]: apiKey };
-                        setProvider(nextProvider);
-                        setProviderApiKeys(currentKeys);
-                        setApiKey(currentKeys[nextProvider] || "");
-                        setBaseUrl(defaults.baseUrl);
-                        setDefaultModel(defaults.defaultModel);
-                      }}
-                      className={`rounded-xl border px-3 py-2 text-sm ${provider === item.value ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:text-foreground"}`}
-                    >
-                      {item.label}
-                    </button>
+
+        <div className="flex h-full min-h-0 flex-col overflow-hidden">
+          <div className="settings-demo-layout flex-1 overflow-y-auto px-6 py-5">
+            <section className="settings-demo-preview">
+              <div className="settings-demo-preview-head">
+                <div className="space-y-2">
+                  <p className="settings-demo-kicker">Provider 健康状态</p>
+                  <h3>当前链路总览</h3>
+                  <p>
+                    左侧只读显示当前链路、能力和保存状态；右侧只编辑当前 provider，
+                    切换时自动带出本机保存的 Key、Base URL 和默认模型。
+                  </p>
+                </div>
+                <span className="settings-demo-pill">{configuredProviderCount} 个可用</span>
+              </div>
+
+              <div className="settings-demo-provider-list">
+                {previewProviders.map((item) => (
+                  <article
+                    key={item.value}
+                    className={cn(
+                      "settings-demo-provider-card",
+                      item.active && "settings-demo-provider-card--active",
+                      !item.configured && "settings-demo-provider-card--missing",
+                    )}
+                  >
+                    <div className="settings-demo-provider-card-head">
+                      <strong>{item.label}</strong>
+                      <span className="settings-demo-mini-pill">{item.status}</span>
+                    </div>
+                    <p>{item.summary}</p>
+                  </article>
+                ))}
+              </div>
+
+              <section className="settings-demo-panel">
+                <div className="settings-demo-panel-head">
+                  <div>
+                    <h4>设置链路状态</h4>
+                    <p>保存、刷新与同步的即时反馈。</p>
+                  </div>
+                  <span>{activeProviderLabel}</span>
+                </div>
+                <div className="settings-demo-state-grid">
+                  {stateCards.map((card) => (
+                    <div key={card.label} className="settings-demo-state-card">
+                      <span className={cn("settings-demo-state-dot", `settings-demo-state-dot--${card.tone}`)} />
+                      <strong>{card.label}</strong>
+                      <span>{card.value}</span>
+                    </div>
                   ))}
                 </div>
-                <p className="text-[11px] text-muted-foreground">切换 provider 时会自动带出推荐的 Base URL、默认模型和本机保存的对应 API Key。</p>
+              </section>
+
+              <section className="settings-demo-panel">
+                <div className="settings-demo-panel-head">
+                  <div>
+                    <h4>当前能力摘要</h4>
+                    <p>基于当前 provider 与后端能力回显。</p>
+                  </div>
+                  <span>{providerSummary(provider)}</span>
+                </div>
+                <div className="settings-demo-summary-grid">
+                  <div className="settings-demo-summary-card">
+                    <span>支持生成</span>
+                    <strong>{yesNo(capabilities?.supportsGenerate)}</strong>
+                  </div>
+                  <div className="settings-demo-summary-card">
+                    <span>多图参考</span>
+                    <strong>{yesNo(capabilities?.supportsMultiImageReference)}</strong>
+                  </div>
+                  <div className="settings-demo-summary-card settings-demo-summary-card--wide">
+                    <span>支持分辨率</span>
+                    <strong>{capabilities?.resolutions?.join("、") || "读取中"}</strong>
+                  </div>
+                  <div className="settings-demo-summary-card settings-demo-summary-card--wide">
+                    <span>当前色调 / 主题</span>
+                    <strong>{tone === "dark" ? "暗色" : "暖色"} / {themeOptions.find((item) => item.value === theme)?.label ?? theme}</strong>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <aside className="settings-demo-drawer">
+              <div className="settings-demo-drawer-head">
+                <div className="space-y-1">
+                  <p className="settings-demo-kicker">当前编辑</p>
+                  <h3>{activeProviderLabel} 配置</h3>
+                </div>
+                <span className="settings-demo-pill">{saveStateText}</span>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Base URL</label>
-                <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder={CODESONLINE_BASE_URL} />
-                <p className="text-[11px] text-muted-foreground">
-                  {provider === "openrouter"
-                    ? `OpenRouter 默认地址：${OPENROUTER_BASE_URL}`
-                    : provider === "blt"
-                      ? `BLT 默认地址：${BLT_BASE_URL}`
-                    : "默认使用 CodesOnline 网关地址，也可替换为自建兼容服务。"}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">API Key</label>
-                <div className="flex gap-2">
+
+              <div className="settings-demo-form-stack">
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>界面色调</span>
+                    <span>全局预览</span>
+                  </label>
+                  <div className="settings-demo-segmented">
+                    <button type="button" aria-pressed={tone === "dark"} onClick={() => setTone("dark")} className={segmentedButtonClass(tone === "dark")}>
+                      <Moon className="h-4 w-4" />
+                      暗色
+                    </button>
+                    <button type="button" aria-pressed={tone === "warm"} onClick={() => setTone("warm")} className={segmentedButtonClass(tone === "warm")}>
+                      <Sun className="h-4 w-4" />
+                      暖色
+                    </button>
+                  </div>
+                  <p className="settings-demo-help">暖色使用浅米白网格，暗色使用科技控制台。</p>
+                </section>
+
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>Provider</span>
+                    <span>切换会自动带出本机保存的对应 Key</span>
+                  </label>
+                  <div className="settings-demo-segmented settings-demo-segmented--triple">
+                    {providerOptions.map((item) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        data-testid={`settings-provider-${item.value}`}
+                        aria-pressed={provider === item.value}
+                        onClick={() => handleProviderChange(item.value)}
+                        className={segmentedButtonClass(provider === item.value)}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>API Key</span>
+                    <div className="settings-demo-inline-actions">
+                      <button
+                        type="button"
+                        aria-label={showApiKey ? "隐藏 API Key" : "显示 API Key"}
+                        className="settings-demo-ghost-button"
+                        onClick={() => setShowApiKey((current) => !current)}
+                      >
+                        {showApiKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        {showApiKey ? "隐藏" : "显示原文"}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="复制 API Key"
+                        className="settings-demo-ghost-button"
+                        onClick={() => void copyCurrentApiKey()}
+                        disabled={!apiKey.trim()}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                        复制
+                      </button>
+                    </div>
+                  </label>
                   <Input
                     type={showApiKey ? "text" : "password"}
                     value={apiKey}
-                    onChange={(e) => {
-                      const value = e.target.value;
+                    onChange={(event) => {
+                      const value = event.target.value;
                       setApiKey(value);
                       setProviderApiKeys((current) => ({ ...current, [provider]: value }));
                     }}
+                    className="settings-demo-input"
                     placeholder="sk-..."
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    aria-label={showApiKey ? "隐藏 API Key" : "显示 API Key"}
-                    onClick={() => setShowApiKey((current) => !current)}
-                  >
-                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  这里只编辑当前 provider 的 Key；切换 provider 后会显示该 provider 已保存在本机的 Key，保存后后端会使用这些 Key 做顺序轮询。
-                </p>
-              </div>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium">
-                  <input type="checkbox" checked={proxyEnabled} onChange={(e) => setProxyEnabled(e.target.checked)} className="rounded accent-primary" /> 启用代理
-                </label>
-                {proxyEnabled && <Input value={proxyUrl} onChange={(e) => setProxyUrl(e.target.value)} placeholder="http://127.0.0.1:7890" />}
-              </div>
-            </section>
+                  <p className="settings-demo-help">
+                    只展示一个输入框。切换 provider 后会自动显示该 provider 已保存在本机的 Key。
+                  </p>
+                </section>
 
-            <section className="space-y-4 rounded-2xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold"><SlidersHorizontal className="h-4 w-4 text-primary" /> 生成偏好</div>
-              <div className="space-y-3 rounded-xl border border-border bg-background px-3 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <label className="text-sm font-medium">默认模型</label>
-                  <Button type="button" size="sm" variant="outline" onClick={() => void refreshModels()} disabled={refreshingModels}>
-                    {refreshingModels ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} 刷新模型
-                  </Button>
-                </div>
-                <Select value={defaultModel} onValueChange={(value) => {
-                  setDefaultModel(value);
-                }}>
-                  <SelectTrigger data-testid="settings-default-model-trigger">
-                    <SelectValue placeholder="请选择默认模型" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableModels.map((model) => (
-                      <SelectItem key={model} value={model}>{model}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span>内置 {settings.builtinModels.length}</span>
-                  <span>·</span>
-                  <span>刷新 {settings.remoteModels.length}</span>
-                  <span>·</span>
-                  <span>最近刷新：{formatRefreshTime(settings.lastModelRefreshAt)}</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">主题</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["light", "dark", "system"] as const).map((value) => (
-                    <button key={value} type="button" onClick={() => setTheme(value)} className={`rounded-xl border px-3 py-2 text-sm ${theme === value ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:text-foreground"}`}>
-                      <span className="inline-flex items-center gap-2">{themeIcons[value]} {value}</span>
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>Base URL</span>
+                    <span>{provider === "openrouter" ? "备用中转源" : provider === "blt" ? "BLT 专用源" : "默认网关"}</span>
+                  </label>
+                  <Input
+                    value={baseUrl}
+                    onChange={(event) => setBaseUrl(event.target.value)}
+                    className="settings-demo-input"
+                    placeholder={CODESONLINE_BASE_URL}
+                  />
+                  <p className="settings-demo-help">
+                    {provider === "openrouter"
+                      ? `OpenRouter 默认地址：${OPENROUTER_BASE_URL}`
+                      : provider === "blt"
+                        ? `BLT 默认地址：${BLT_BASE_URL}`
+                        : "默认使用 CodesOnline 网关地址，也可替换为自建兼容服务。"}
+                  </p>
+                </section>
+
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>模型</span>
+                    <button
+                      type="button"
+                      className="settings-demo-ghost-button"
+                      onClick={() => void refreshModels()}
+                      disabled={refreshingModels}
+                    >
+                      {refreshingModels ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                      刷新模型
                     </button>
-                  ))}
-                </div>
-              </div>
-            </section>
+                  </label>
+                  <Select value={defaultModel} onValueChange={(value) => setDefaultModel(value)}>
+                    <SelectTrigger data-testid="settings-default-model-trigger" className="settings-demo-input">
+                      <SelectValue placeholder="请选择默认模型" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableModels.map((model) => (
+                        <SelectItem key={model} value={model}>{model}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="settings-demo-caption-row">
+                    <span>内置 {settings.builtinModels.length}</span>
+                    <span>刷新 {settings.remoteModels.length}</span>
+                    <span>最近刷新：{formatRefreshTime(settings.lastModelRefreshAt)}</span>
+                  </div>
+                </section>
 
-            <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
-              <div className="flex items-center gap-2 font-semibold text-foreground"><Palette className="h-4 w-4 text-primary" /> 当前能力摘要</div>
-              <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
-                <div className="rounded-xl border border-border bg-background px-3 py-3">支持生成：<span className="text-foreground">{capabilities?.supportsGenerate ? "是" : "读取中"}</span></div>
-                <div className="rounded-xl border border-border bg-background px-3 py-3">多图参考：<span className="text-foreground">{capabilities?.supportsMultiImageReference ? "是" : "否"}</span></div>
-                <div className="col-span-2 rounded-xl border border-border bg-background px-3 py-3">支持分辨率：<span className="text-foreground">{capabilities?.resolutions?.join("、") || "读取中"}</span></div>
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>主题模式</span>
+                    <span>不影响色调，只影响系统跟随策略</span>
+                  </label>
+                  <div className="settings-demo-segmented settings-demo-segmented--triple">
+                    {themeOptions.map(({ value, label, Icon }) => (
+                      <button key={value} type="button" aria-pressed={theme === value} onClick={() => setTheme(value)} className={segmentedButtonClass(theme === value)}>
+                        <Icon className="h-4 w-4" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>网络代理</span>
+                    <span>按需开启</span>
+                  </label>
+                  <button
+                    type="button"
+                    aria-pressed={proxyEnabled}
+                    onClick={() => setProxyEnabled((current) => !current)}
+                    className={segmentedButtonClass(proxyEnabled)}
+                  >
+                    <Palette className="h-4 w-4" />
+                    {proxyEnabled ? "代理已启用" : "代理未启用"}
+                  </button>
+                  {proxyEnabled ? (
+                    <Input
+                      value={proxyUrl}
+                      onChange={(event) => setProxyUrl(event.target.value)}
+                      className="settings-demo-input"
+                      placeholder="http://127.0.0.1:7890"
+                    />
+                  ) : null}
+                </section>
+
+                <section className="settings-demo-field">
+                  <label className="settings-demo-field-label">
+                    <span>能力摘要</span>
+                    <span>当前 provider</span>
+                  </label>
+                  <div className="settings-demo-summary-grid">
+                    <div className="settings-demo-summary-card">
+                      <span>生成</span>
+                      <strong>{yesNo(capabilities?.supportsGenerate)}</strong>
+                    </div>
+                    <div className="settings-demo-summary-card">
+                      <span>多图参考</span>
+                      <strong>{yesNo(capabilities?.supportsMultiImageReference)}</strong>
+                    </div>
+                    <div className="settings-demo-summary-card settings-demo-summary-card--wide">
+                      <span>分辨率</span>
+                      <strong>{capabilities?.resolutions?.join("、") || "读取中"}</strong>
+                    </div>
+                  </div>
+                </section>
               </div>
-            </section>
+            </aside>
           </div>
 
-          <div className="border-t border-border bg-card/80 px-6 py-4">
-            <div className="mb-3 flex items-center gap-2 text-sm">
+          <div className="settings-demo-savebar">
+            <div className="settings-demo-savecopy">
               {saving ? (
-                <><Loader2 className="h-4 w-4 animate-spin text-primary" /><span>保存中...</span></>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span>正在保存当前设置...</span>
+                </>
               ) : saveStatus === "success" ? (
-                <><CheckCircle2 className="h-4 w-4 text-emerald-500" /><span>{saveMessage || "设置已保存"}</span></>
+                <>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <span>{saveMessage || "设置已保存"}</span>
+                </>
               ) : saveStatus === "error" ? (
-                <><AlertCircle className="h-4 w-4 text-destructive" /><span className="text-destructive">{saveMessage}</span></>
+                <>
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <span className="text-destructive">{saveMessage}</span>
+                </>
               ) : (
-                <span className="text-muted-foreground">修改后点击保存，会立即反馈结果。</span>
+                <>
+                  <Key className="h-4 w-4 text-muted-foreground" />
+                  <span>保存会先写入本机，再尝试同步到后端；失败信息会直接保留在这里。</span>
+                </>
               )}
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <Button variant="outline" onClick={handleReset}><RotateCcw className="h-4 w-4" /> 重置</Button>
-              <Button onClick={() => void save()} disabled={saving}>{saving ? "保存中..." : "保存"}</Button>
+            <div className="settings-demo-saveactions">
+              <Button variant="outline" onClick={handleReset}>
+                <RotateCcw className="h-4 w-4" />
+                重置
+              </Button>
+              <Button onClick={() => void save()} disabled={saving}>
+                {saving ? "保存中..." : "保存"}
+              </Button>
             </div>
           </div>
         </div>
