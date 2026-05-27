@@ -9,9 +9,15 @@ release/
 # local automation/runtime artifacts
 .async/
 .omx/
+*.log
+*.pid
 .codex-vite.log
 .codex-vite.err.log
 .codex-vite-*.log
+.codex-inapp-vite*.log
+backend-dev.*
+dev-vite.out.log
+vite-*.log
 public/qa-screenshots/
 
 # temporary asar work folders
