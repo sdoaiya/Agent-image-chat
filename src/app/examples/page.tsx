@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { ArrowDown10, ArrowUp10, FolderOpen, Images, Search } from "lucide-react";
+import { ArrowDown10, ArrowUp10, FolderOpen, Images, RefreshCw, Search } from "lucide-react";
 import { type ExamplePromptItem } from "@/data/example-prompts";
 import type { ExampleSortField, ExampleSortOrder, ExampleSourceFilter } from "@/data/example-library";
 import { ExampleGallery } from "@/components/examples/example-gallery";
+import { useYouMindPromptSync } from "@/hooks/use-youmind-prompt-sync";
+import { cn } from "@/lib/utils";
 
 export function ExamplesPage() {
   const [category, setCategory] = useState<ExamplePromptItem["category"] | "all">("all");
@@ -12,6 +14,7 @@ export function ExamplesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<ExampleSortField>("time");
   const [sortOrder, setSortOrder] = useState<ExampleSortOrder>("desc");
+  const youMindSync = useYouMindPromptSync({ enabled: true });
 
   const headerCategories: Array<{ value: ExamplePromptItem["category"] | "all"; label: string }> = [
     { value: "all", label: "全部" },
@@ -81,6 +84,17 @@ export function ExamplesPage() {
             >
               <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
               全部专题
+            </button>
+            <button
+              type="button"
+              className="titlebar-no-drag examples-page-status-pill inline-flex items-center gap-2"
+              onClick={youMindSync.refreshNow}
+              disabled={!youMindSync.canSync || youMindSync.status === "syncing"}
+              aria-label="立即刷新"
+              title="立即刷新"
+            >
+              <RefreshCw className={cn("h-3.5 w-3.5", youMindSync.status === "syncing" && "animate-spin")} aria-hidden="true" />
+              {youMindSync.status === "syncing" ? "同步中" : "刷新"}
             </button>
           </div>
         </div>
@@ -154,6 +168,7 @@ export function ExamplesPage() {
             onSortFieldChange={setSortField}
             sortOrder={sortOrder}
             onSortOrderChange={setSortOrder}
+            youMindSyncState={youMindSync}
             hideToolbar
           />
         </div>

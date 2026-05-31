@@ -26,25 +26,21 @@ vi.mock("@/hooks/use-youmind-prompt-sync", () => ({
 
 import { ExampleGallery } from "@/components/examples/example-gallery";
 
-describe("ExampleGallery sync panel", () => {
-  it("shows the upstream source, sync status, totals, and last sync time in gallery mode", () => {
+describe("ExampleGallery sync refresh control", () => {
+  it("keeps the YouMind refresh action in the gallery toolbar without rendering the old status panel", () => {
     render(
       <MemoryRouter>
         <ExampleGallery mode="gallery" />
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("\u516c\u5f00\u793a\u4f8b\u540c\u6b65")).toBeTruthy();
-    expect(screen.getByText("YouMind README")).toBeTruthy();
-    expect(screen.getByText("\u7f13\u5b58\u53ef\u7528")).toBeTruthy();
-    expect(screen.getByText("8,273")).toBeTruthy();
-    expect(screen.getByText((content) => /^2026-05-31 \d{2}:30$/.test(content))).toBeTruthy();
-    expect(screen.getByText("\u5426\uff0cREADME \u5df2\u4e3a\u4e3b\u8def\u5f84")).toBeTruthy();
-    expect(screen.getByText("HTTP 504")).toBeTruthy();
+    expect(screen.queryByLabelText("YouMind \u540c\u6b65\u72b6\u6001")).toBeNull();
+    expect(screen.queryByText("\u516c\u5f00\u793a\u4f8b\u540c\u6b65")).toBeNull();
+    expect(screen.queryByText("YouMind README")).toBeNull();
     expect(screen.getByRole("button", { name: "\u7acb\u5373\u5237\u65b0" })).toBeTruthy();
   });
 
-  it("triggers a manual refresh from the sync panel", () => {
+  it("triggers a manual refresh from the toolbar", () => {
     render(
       <MemoryRouter>
         <ExampleGallery mode="gallery" />

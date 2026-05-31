@@ -2,6 +2,8 @@ import { NavLink } from "react-router-dom";
 import { Compass, ImagePlus, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const logoSrc = `${import.meta.env.BASE_URL}logo.png`;
+
 const navItems = [
   { to: "/", label: "工作台", shortLabel: "工作", icon: ImagePlus, exact: true },
   { to: "/examples", label: "示例库", shortLabel: "示例", icon: Compass },
@@ -17,7 +19,7 @@ export function MainNavigation({ activePath, onOpenSettings }: MainNavigationPro
     <aside className="main-rail flex h-full w-[76px] shrink-0 flex-col items-center border-r border-sidebar-border bg-rail">
       <nav className="main-rail-nav titlebar-no-drag flex min-h-0 flex-1 flex-col items-center gap-2 px-2 pt-8">
         <NavLink to="/" title="GIMG 工作台" aria-label="GIMG 工作台" className="main-rail-brand">
-          <img src="/logo.png" alt="" draggable={false} />
+          <img src={logoSrc} alt="" draggable={false} />
         </NavLink>
         {navItems.map((item) => {
           const isActive = item.exact ? activePath === item.to : activePath.startsWith(item.to);

@@ -1,12 +1,12 @@
-# Graph Report - .  (2026-05-12)
+# Graph Report - .  (2026-05-31)
 
 ## Corpus Check
-- 90 files · ~4,942,656 words
+- 91 files · ~4,926,121 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 540 nodes · 822 edges · 80 communities detected
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 40 edges (avg confidence: 0.8)
+- 544 nodes · 827 edges · 80 communities detected
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 41 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -134,20 +134,20 @@ Cohesion: 0.06
 Nodes (3): assertConfigSchemaOmitsLegacyFields(), TestBuildConfigPayloadUsesSingleModelSchema(), TestHandleUpdateConfigAcceptsLegacyInputButRespondsWithNewSchema()
 
 ### Community 4 - "Community 4"
-Cohesion: 0.13
-Nodes (23): fetchYouMindPromptLibrarySnapshot(), getBrowserYouMindPromptTransport(), getElectronYouMindPromptTransport(), getPromptCacheStore(), getYouMindPromptTransport(), hasDisplayableItems(), loadYouMindPromptCache(), mergeIncrementalSnapshotWithCache() (+15 more)
+Cohesion: 0.14
+Nodes (18): extractGalleryImageRelativePath(), getGalleryImageContentType(), isInsideDirectory(), resolveGalleryImageFilePath(), assertFetchableImageUrl(), createWindow(), readLimitedResponseBytes(), registerGalleryImageProtocol() (+10 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.16
 Nodes (18): extractAvailableModels(), getSettings(), healthCheck(), listModels(), normalizeModelState(), normalizeModelValue(), uniqueModels(), updateSettings() (+10 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.27
-Nodes (18): canReuseExternalBackend(), findAvailablePort(), getBackendBinaryName(), getBackendDataRoot(), getBackendHost(), getBackendPath(), getBackendPort(), getBackendResourceRoot() (+10 more)
+Cohesion: 0.16
+Nodes (21): buildSummary(), buildTags(), buildYouMindPromptUrl(), classifyYouMindCategory(), dedupeStrings(), extractMarkdownField(), extractReadmePromptSections(), getBestImageUrl() (+13 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.22
-Nodes (14): extractGalleryImageRelativePath(), getGalleryImageContentType(), isInsideDirectory(), resolveGalleryImageFilePath(), assertFetchableImageUrl(), createWindow(), normalizeYouMindPromptsPayload(), readLimitedResponseBytes() (+6 more)
+Cohesion: 0.27
+Nodes (18): canReuseExternalBackend(), findAvailablePort(), getBackendBinaryName(), getBackendDataRoot(), getBackendHost(), getBackendPath(), getBackendPort(), getBackendResourceRoot() (+10 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.24
@@ -178,32 +178,32 @@ Cohesion: 0.27
 Nodes (10): collectDedupeKeys(), compareExamples(), getPromptDedupeKey(), getSortValue(), getSourceDedupeKey(), getTitleAuthorDedupeKey(), matchesQuery(), mergeExamplePromptLibraries() (+2 more)
 
 ### Community 15 - "Community 15"
+Cohesion: 0.22
+Nodes (10): createReadmePromptTransport(), fetchYouMindPromptLibrarySnapshot(), getPromptCacheStore(), getYouMindPromptTransport(), hasDisplayableItems(), loadYouMindPromptCache(), mergeIncrementalSnapshotWithCache(), normalizePageLimit() (+2 more)
+
+### Community 16 - "Community 16"
 Cohesion: 0.28
 Nodes (11): deriveModelState(), getProviderDefaults(), getQualityOptionsByApiMode(), mergeModelPools(), normalizeDefaultModel(), normalizeModelValue(), normalizeProvider(), normalizeProviderApiKeys() (+3 more)
 
-### Community 16 - "Community 16"
+### Community 17 - "Community 17"
+Cohesion: 0.17
+Nodes (5): ThemeAndToaster(), YouMindBackgroundSync(), ExamplesPage(), useTheme(), useYouMindPromptSync()
+
+### Community 18 - "Community 18"
 Cohesion: 0.2
 Nodes (2): buildSummary(), truncate()
 
-### Community 17 - "Community 17"
+### Community 19 - "Community 19"
 Cohesion: 0.27
 Nodes (6): fetchExampleImageBlob(), getCompactImageFrameStyle(), getImageFrameStyle(), inferImageMimeType(), shouldUseElectronImageFetch(), toAttachedPromptFile()
 
-### Community 18 - "Community 18"
+### Community 20 - "Community 20"
 Cohesion: 0.36
 Nodes (8): buildPoWConfig(), bytesLE(), easternTimeLabel(), formatBrowserParseTime(), formatGMTOffset(), generateRequirementsToken(), getBrowserParseTime(), solvePoW()
 
-### Community 19 - "Community 19"
-Cohesion: 0.31
-Nodes (7): bufferedConn, bindConnToContext(), buildConnectRequest(), dialHTTPProxyTunnel(), NewHTTPTransport(), newSOCKSContextDialer(), NewTunnelDialContext()
-
-### Community 20 - "Community 20"
+### Community 21 - "Community 21"
 Cohesion: 0.31
 Nodes (5): downloadImage(), estimateBytes(), fileFromImage(), imageSrc(), normalizeBase64Image()
-
-### Community 21 - "Community 21"
-Cohesion: 0.2
-Nodes (4): ThemeAndToaster(), YouMindBackgroundSync(), useTheme(), useYouMindPromptSync()
 
 ### Community 22 - "Community 22"
 Cohesion: 0.46
@@ -214,28 +214,28 @@ Cohesion: 0.54
 Nodes (7): ensureDir(), exists(), main(), relative(), resolveExePath(), wait(), waitForEndpoint()
 
 ### Community 24 - "Community 24"
-Cohesion: 0.4
-Nodes (0): 
-
-### Community 25 - "Community 25"
 Cohesion: 0.6
 Nodes (3): cancelRename(), commitRename(), handleRenameKeyDown()
 
-### Community 26 - "Community 26"
+### Community 25 - "Community 25"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 27 - "Community 27"
+### Community 26 - "Community 26"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 28 - "Community 28"
+### Community 27 - "Community 27"
 Cohesion: 1.0
 Nodes (2): resolveGalleryImageUrl(), toExamplePromptItem()
 
-### Community 29 - "Community 29"
+### Community 28 - "Community 28"
 Cohesion: 1.0
 Nodes (2): getCategoryExamples(), makeTopic()
+
+### Community 29 - "Community 29"
+Cohesion: 0.67
+Nodes (0): 
 
 ### Community 30 - "Community 30"
 Cohesion: 0.67
@@ -250,7 +250,7 @@ Cohesion: 0.67
 Nodes (0): 
 
 ### Community 33 - "Community 33"
-Cohesion: 0.67
+Cohesion: 1.0
 Nodes (0): 
 
 ### Community 34 - "Community 34"
@@ -440,71 +440,73 @@ Nodes (0):
 ## Knowledge Gaps
 - **10 isolated node(s):** `ImageGenerationResponse`, `ImageData`, `providerAttempt`, `providerFailure`, `configUpdatePayload` (+5 more)
   These have ≤1 connection - possible missing edges or undocumented components.
+- **Thin community `Community 33`** (2 nodes): `removeCrossorigin()`, `vite.config.ts`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 34`** (2 nodes): `workbench-layout.tsx`, `WorkbenchLayout()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 35`** (2 nodes): `ExamplesPage()`, `page.tsx`
+- **Thin community `Community 35`** (2 nodes): `SettingsPage()`, `page.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 36`** (2 nodes): `SettingsPage()`, `page.tsx`
+- **Thin community `Community 36`** (2 nodes): `Badge()`, `badge.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 37`** (2 nodes): `Badge()`, `badge.tsx`
+- **Thin community `Community 37`** (2 nodes): `cn()`, `dialog.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 38`** (2 nodes): `cn()`, `dialog.tsx`
+- **Thin community `Community 38`** (2 nodes): `tasks.ts`, `taskKey()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 39`** (2 nodes): `tasks.ts`, `taskKey()`
+- **Thin community `Community 39`** (2 nodes): `createTurn()`, `conversations.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 40`** (2 nodes): `createTurn()`, `conversations.test.ts`
+- **Thin community `Community 40`** (2 nodes): `clickActionByIndex()`, `example-import-flow.test.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 41`** (2 nodes): `clickActionByIndex()`, `example-import-flow.test.tsx`
+- **Thin community `Community 41`** (2 nodes): `youmind-hook.test.tsx`, `makeSnapshot()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 42`** (2 nodes): `youmind-hook.test.tsx`, `makeSnapshot()`
+- **Thin community `Community 42`** (1 nodes): `vitest.config.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 43`** (1 nodes): `vitest.config.ts`
+- **Thin community `Community 43`** (1 nodes): `codex_client.go`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 44`** (1 nodes): `codex_client.go`
+- **Thin community `Community 44`** (1 nodes): `build-electron.mjs`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 45`** (1 nodes): `build-electron.mjs`
+- **Thin community `Community 45`** (1 nodes): `dev.ps1`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 46`** (1 nodes): `dev.ps1`
+- **Thin community `Community 46`** (1 nodes): `App.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 47`** (1 nodes): `App.tsx`
+- **Thin community `Community 47`** (1 nodes): `main.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 48`** (1 nodes): `main.tsx`
+- **Thin community `Community 48`** (1 nodes): `vite-env.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 49`** (1 nodes): `vite-env.d.ts`
+- **Thin community `Community 49`** (1 nodes): `edit-modal.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 50`** (1 nodes): `edit-modal.tsx`
+- **Thin community `Community 50`** (1 nodes): `page.generate-chain.test.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 51`** (1 nodes): `page.generate-chain.test.tsx`
+- **Thin community `Community 51`** (1 nodes): `main-navigation.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 52`** (1 nodes): `main-navigation.tsx`
+- **Thin community `Community 52`** (1 nodes): `button.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 53`** (1 nodes): `button.tsx`
+- **Thin community `Community 53`** (1 nodes): `card.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 54`** (1 nodes): `card.tsx`
+- **Thin community `Community 54`** (1 nodes): `input.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 55`** (1 nodes): `input.tsx`
+- **Thin community `Community 55`** (1 nodes): `select.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 56`** (1 nodes): `select.tsx`
+- **Thin community `Community 56`** (1 nodes): `textarea.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 57`** (1 nodes): `textarea.tsx`
+- **Thin community `Community 57`** (1 nodes): `gallery.generated.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 58`** (1 nodes): `gallery.generated.ts`
+- **Thin community `Community 58`** (1 nodes): `example-import.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 59`** (1 nodes): `example-import.ts`
+- **Thin community `Community 59`** (1 nodes): `electron.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 60`** (1 nodes): `electron.d.ts`
+- **Thin community `Community 60`** (1 nodes): `image-workflow.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 61`** (1 nodes): `image-workflow.ts`
+- **Thin community `Community 61`** (1 nodes): `api-request-layer.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 62`** (1 nodes): `api-request-layer.test.ts`
+- **Thin community `Community 62`** (1 nodes): `app-routing.test.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 63`** (1 nodes): `app-routing.test.tsx`
+- **Thin community `Community 63`** (1 nodes): `canvas-titlebar-drag.test.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 64`** (1 nodes): `canvas-titlebar-drag.test.tsx`
+- **Thin community `Community 64`** (1 nodes): `conversations-load.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 65`** (1 nodes): `conversations-load.test.ts`
+- **Thin community `Community 65`** (1 nodes): `electron-packaging-config.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 66`** (1 nodes): `electron-packaging-config.test.ts`
+- **Thin community `Community 66`** (1 nodes): `example-gallery-sync-panel.test.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 67`** (1 nodes): `example-gallery.test.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -536,12 +538,12 @@ Nodes (0):
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `relative()` connect `Community 10` to `Community 2`, `Community 13`, `Community 7`?**
-  _High betweenness centrality (0.065) - this node is a cross-community bridge._
+- **Why does `relative()` connect `Community 10` to `Community 2`, `Community 4`, `Community 13`?**
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Why does `main()` connect `Community 2` to `Community 10`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Why does `handleSubmit()` connect `Community 2` to `Community 11`?**
-  _High betweenness centrality (0.041) - this node is a cross-community bridge._
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `save()` (e.g. with `updateSettings()` and `withTimeout()`) actually correct?**
   _`save()` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `handleSubmit()` (e.g. with `generateId()` and `.Error()`) actually correct?**

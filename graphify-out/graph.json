@@ -9,44 +9,17 @@
       "source_file": "vite.config.ts",
       "source_location": "L1",
       "id": "vite_config_ts",
-      "community": 24,
+      "community": 33,
       "norm_label": "vite.config.ts"
     },
     {
       "label": "removeCrossorigin()",
       "file_type": "code",
       "source_file": "vite.config.ts",
-      "source_location": "L11",
+      "source_location": "L6",
       "id": "vite_config_removecrossorigin",
-      "community": 24,
+      "community": 33,
       "norm_label": "removecrossorigin()"
-    },
-    {
-      "label": "readRequestBody()",
-      "file_type": "code",
-      "source_file": "vite.config.ts",
-      "source_location": "L20",
-      "id": "vite_config_readrequestbody",
-      "community": 24,
-      "norm_label": "readrequestbody()"
-    },
-    {
-      "label": "sendJson()",
-      "file_type": "code",
-      "source_file": "vite.config.ts",
-      "source_location": "L28",
-      "id": "vite_config_sendjson",
-      "community": 24,
-      "norm_label": "sendjson()"
-    },
-    {
-      "label": "youMindPromptProxy()",
-      "file_type": "code",
-      "source_file": "vite.config.ts",
-      "source_location": "L34",
-      "id": "vite_config_youmindpromptproxy",
-      "community": 24,
-      "norm_label": "youmindpromptproxy()"
     },
     {
       "label": "vitest.config.ts",
@@ -54,7 +27,7 @@
       "source_file": "vitest.config.ts",
       "source_location": "L1",
       "id": "vitest_config_ts",
-      "community": 43,
+      "community": 42,
       "norm_label": "vitest.config.ts"
     },
     {
@@ -135,7 +108,7 @@
       "source_file": "backend\\api\\codex_client.go",
       "source_location": "L1",
       "id": "backend_api_codex_client_go",
-      "community": 44,
+      "community": 43,
       "norm_label": "codex_client.go"
     },
     {
@@ -657,7 +630,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L1",
       "id": "backend_api_pow_go",
-      "community": 18,
+      "community": 20,
       "norm_label": "pow.go"
     },
     {
@@ -666,7 +639,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L63",
       "id": "pow_solvepow",
-      "community": 18,
+      "community": 20,
       "norm_label": "solvepow()"
     },
     {
@@ -675,7 +648,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L116",
       "id": "pow_generaterequirementstoken",
-      "community": 18,
+      "community": 20,
       "norm_label": "generaterequirementstoken()"
     },
     {
@@ -684,7 +657,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L145",
       "id": "pow_buildpowconfig",
-      "community": 18,
+      "community": 20,
       "norm_label": "buildpowconfig()"
     },
     {
@@ -693,7 +666,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L172",
       "id": "pow_getbrowserparsetime",
-      "community": 18,
+      "community": 20,
       "norm_label": "getbrowserparsetime()"
     },
     {
@@ -702,7 +675,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L180",
       "id": "pow_formatbrowserparsetime",
-      "community": 18,
+      "community": 20,
       "norm_label": "formatbrowserparsetime()"
     },
     {
@@ -711,7 +684,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L191",
       "id": "pow_formatgmtoffset",
-      "community": 18,
+      "community": 20,
       "norm_label": "formatgmtoffset()"
     },
     {
@@ -720,7 +693,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L202",
       "id": "pow_easterntimelabel",
-      "community": 18,
+      "community": 20,
       "norm_label": "easterntimelabel()"
     },
     {
@@ -729,7 +702,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L209",
       "id": "pow_bytesle",
-      "community": 18,
+      "community": 20,
       "norm_label": "bytesle()"
     },
     {
@@ -738,7 +711,7 @@
       "source_file": "backend\\api\\pow.go",
       "source_location": "L221",
       "id": "pow_randomfloat",
-      "community": 18,
+      "community": 20,
       "norm_label": "randomfloat()"
     },
     {
@@ -1692,7 +1665,7 @@
       "source_file": "backend\\internal\\config\\config_test.go",
       "source_location": "L1",
       "id": "backend_internal_config_config_test_go",
-      "community": 27,
+      "community": 26,
       "norm_label": "config_test.go"
     },
     {
@@ -1701,7 +1674,7 @@
       "source_file": "backend\\internal\\config\\config_test.go",
       "source_location": "L9",
       "id": "config_test_testloadinfersbltproviderfrombaseurl",
-      "community": 27,
+      "community": 26,
       "norm_label": "testloadinfersbltproviderfrombaseurl()"
     },
     {
@@ -1710,7 +1683,7 @@
       "source_file": "backend\\internal\\config\\config_test.go",
       "source_location": "L48",
       "id": "config_test_testloadmigrateslegacyapikeyintoproviderapikeys",
-      "community": 27,
+      "community": 26,
       "norm_label": "testloadmigrateslegacyapikeyintoproviderapikeys()"
     },
     {
@@ -1719,7 +1692,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L1",
       "id": "backend_internal_outboundproxy_proxy_go",
-      "community": 19,
+      "community": 4,
       "norm_label": "proxy.go"
     },
     {
@@ -1728,7 +1701,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L26",
       "id": "proxy_validate",
-      "community": 19,
+      "community": 4,
       "norm_label": "validate()"
     },
     {
@@ -1737,7 +1710,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L46",
       "id": "proxy_newhttptransport",
-      "community": 19,
+      "community": 4,
       "norm_label": "newhttptransport()"
     },
     {
@@ -1746,7 +1719,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L73",
       "id": "proxy_newtunneldialcontext",
-      "community": 19,
+      "community": 4,
       "norm_label": "newtunneldialcontext()"
     },
     {
@@ -1755,7 +1728,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L99",
       "id": "proxy_newsockscontextdialer",
-      "community": 19,
+      "community": 4,
       "norm_label": "newsockscontextdialer()"
     },
     {
@@ -1764,7 +1737,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L111",
       "id": "proxy_dialhttpproxytunnel",
-      "community": 19,
+      "community": 4,
       "norm_label": "dialhttpproxytunnel()"
     },
     {
@@ -1773,7 +1746,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L163",
       "id": "proxy_bindconntocontext",
-      "community": 19,
+      "community": 4,
       "norm_label": "bindconntocontext()"
     },
     {
@@ -1782,7 +1755,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L187",
       "id": "proxy_buildconnectrequest",
-      "community": 19,
+      "community": 4,
       "norm_label": "buildconnectrequest()"
     },
     {
@@ -1791,7 +1764,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L202",
       "id": "outboundproxy_bufferedconn",
-      "community": 19,
+      "community": 4,
       "norm_label": "bufferedconn"
     },
     {
@@ -1800,7 +1773,7 @@
       "source_file": "backend\\internal\\outboundproxy\\proxy.go",
       "source_location": "L207",
       "id": "outboundproxy_bufferedconn_read",
-      "community": 19,
+      "community": 4,
       "norm_label": ".read()"
     },
     {
@@ -1809,7 +1782,7 @@
       "source_file": "dist-electron\\gallery-image.js",
       "source_location": "L1",
       "id": "dist_electron_gallery_image_js",
-      "community": 7,
+      "community": 4,
       "norm_label": "gallery-image.js"
     },
     {
@@ -1818,7 +1791,7 @@
       "source_file": "electron\\gallery-image.ts",
       "source_location": "L13",
       "id": "gallery_image_isinsidedirectory",
-      "community": 7,
+      "community": 4,
       "norm_label": "isinsidedirectory()"
     },
     {
@@ -1827,7 +1800,7 @@
       "source_file": "electron\\gallery-image.ts",
       "source_location": "L18",
       "id": "gallery_image_extractgalleryimagerelativepath",
-      "community": 7,
+      "community": 4,
       "norm_label": "extractgalleryimagerelativepath()"
     },
     {
@@ -1836,7 +1809,7 @@
       "source_file": "electron\\gallery-image.ts",
       "source_location": "L31",
       "id": "gallery_image_resolvegalleryimagefilepath",
-      "community": 7,
+      "community": 4,
       "norm_label": "resolvegalleryimagefilepath()"
     },
     {
@@ -1845,7 +1818,7 @@
       "source_file": "electron\\gallery-image.ts",
       "source_location": "L50",
       "id": "gallery_image_getgalleryimagecontenttype",
-      "community": 7,
+      "community": 4,
       "norm_label": "getgalleryimagecontenttype()"
     },
     {
@@ -1854,7 +1827,7 @@
       "source_file": "dist-electron\\go-process.js",
       "source_location": "L1",
       "id": "dist_electron_go_process_js",
-      "community": 6,
+      "community": 7,
       "norm_label": "go-process.js"
     },
     {
@@ -1863,7 +1836,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L14",
       "id": "go_process_getbackendport",
-      "community": 6,
+      "community": 7,
       "norm_label": "getbackendport()"
     },
     {
@@ -1872,7 +1845,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L18",
       "id": "go_process_getbackendhost",
-      "community": 6,
+      "community": 7,
       "norm_label": "getbackendhost()"
     },
     {
@@ -1881,7 +1854,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L22",
       "id": "go_process_ismanagedbackend",
-      "community": 6,
+      "community": 7,
       "norm_label": "ismanagedbackend()"
     },
     {
@@ -1890,7 +1863,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L26",
       "id": "go_process_iswindows",
-      "community": 6,
+      "community": 7,
       "norm_label": "iswindows()"
     },
     {
@@ -1899,7 +1872,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L30",
       "id": "go_process_getbackendbinaryname",
-      "community": 6,
+      "community": 7,
       "norm_label": "getbackendbinaryname()"
     },
     {
@@ -1908,7 +1881,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L34",
       "id": "go_process_getbackendresourceroot",
-      "community": 6,
+      "community": 7,
       "norm_label": "getbackendresourceroot()"
     },
     {
@@ -1917,7 +1890,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L42",
       "id": "go_process_getbackenddataroot",
-      "community": 6,
+      "community": 7,
       "norm_label": "getbackenddataroot()"
     },
     {
@@ -1926,7 +1899,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L46",
       "id": "go_process_getbackendpath",
-      "community": 6,
+      "community": 7,
       "norm_label": "getbackendpath()"
     },
     {
@@ -1935,7 +1908,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L64",
       "id": "go_process_findavailableport",
-      "community": 6,
+      "community": 7,
       "norm_label": "findavailableport()"
     },
     {
@@ -1944,7 +1917,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L80",
       "id": "go_process_isloopbackaddress",
-      "community": 6,
+      "community": 7,
       "norm_label": "isloopbackaddress()"
     },
     {
@@ -1953,7 +1926,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L85",
       "id": "go_process_normalizebackendhost",
-      "community": 6,
+      "community": 7,
       "norm_label": "normalizebackendhost()"
     },
     {
@@ -1962,7 +1935,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L98",
       "id": "go_process_normalizebackendport",
-      "community": 6,
+      "community": 7,
       "norm_label": "normalizebackendport()"
     },
     {
@@ -1971,7 +1944,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L111",
       "id": "go_process_canreuseexternalbackend",
-      "community": 6,
+      "community": 7,
       "norm_label": "canreuseexternalbackend()"
     },
     {
@@ -1980,7 +1953,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L120",
       "id": "go_process_getconfiguredexternalbackend",
-      "community": 6,
+      "community": 7,
       "norm_label": "getconfiguredexternalbackend()"
     },
     {
@@ -1989,7 +1962,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L152",
       "id": "go_process_reuseexternalbackend",
-      "community": 6,
+      "community": 7,
       "norm_label": "reuseexternalbackend()"
     },
     {
@@ -1998,7 +1971,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L162",
       "id": "go_process_startbackend",
-      "community": 6,
+      "community": 7,
       "norm_label": "startbackend()"
     },
     {
@@ -2007,7 +1980,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L241",
       "id": "go_process_stopbackend",
-      "community": 6,
+      "community": 7,
       "norm_label": "stopbackend()"
     },
     {
@@ -2016,7 +1989,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L281",
       "id": "go_process_waitforbackend",
-      "community": 6,
+      "community": 7,
       "norm_label": "waitforbackend()"
     },
     {
@@ -2025,97 +1998,70 @@
       "source_file": "dist-electron\\main.js",
       "source_location": "L1",
       "id": "dist_electron_main_js",
-      "community": 7,
+      "community": 4,
       "norm_label": "main.js"
     },
     {
       "label": "resolvePreloadPath()",
       "file_type": "code",
       "source_file": "electron\\main.ts",
-      "source_location": "L54",
+      "source_location": "L37",
       "id": "main_resolvepreloadpath",
-      "community": 7,
+      "community": 4,
       "norm_label": "resolvepreloadpath()"
     },
     {
       "label": "resolveAppIconPath()",
       "file_type": "code",
       "source_file": "electron\\main.ts",
-      "source_location": "L70",
+      "source_location": "L53",
       "id": "main_resolveappiconpath",
-      "community": 7,
+      "community": 4,
       "norm_label": "resolveappiconpath()"
     },
     {
       "label": "resolveGalleryImagesDir()",
       "file_type": "code",
       "source_file": "electron\\main.ts",
-      "source_location": "L81",
+      "source_location": "L64",
       "id": "main_resolvegalleryimagesdir",
-      "community": 7,
+      "community": 4,
       "norm_label": "resolvegalleryimagesdir()"
     },
     {
       "label": "registerGalleryImageProtocol()",
       "file_type": "code",
       "source_file": "electron\\main.ts",
-      "source_location": "L85",
+      "source_location": "L68",
       "id": "main_registergalleryimageprotocol",
-      "community": 7,
+      "community": 4,
       "norm_label": "registergalleryimageprotocol()"
-    },
-    {
-      "label": "readStringField()",
-      "file_type": "code",
-      "source_file": "electron\\main.ts",
-      "source_location": "L119",
-      "id": "main_readstringfield",
-      "community": 7,
-      "norm_label": "readstringfield()"
-    },
-    {
-      "label": "readPositiveIntegerField()",
-      "file_type": "code",
-      "source_file": "electron\\main.ts",
-      "source_location": "L124",
-      "id": "main_readpositiveintegerfield",
-      "community": 7,
-      "norm_label": "readpositiveintegerfield()"
-    },
-    {
-      "label": "normalizeYouMindPromptsPayload()",
-      "file_type": "code",
-      "source_file": "electron\\main.ts",
-      "source_location": "L129",
-      "id": "main_normalizeyoumindpromptspayload",
-      "community": 7,
-      "norm_label": "normalizeyoumindpromptspayload()"
     },
     {
       "label": "assertFetchableImageUrl()",
       "file_type": "code",
       "source_file": "electron\\main.ts",
-      "source_location": "L152",
+      "source_location": "L102",
       "id": "main_assertfetchableimageurl",
-      "community": 7,
+      "community": 4,
       "norm_label": "assertfetchableimageurl()"
     },
     {
       "label": "readLimitedResponseBytes()",
       "file_type": "code",
       "source_file": "electron\\main.ts",
-      "source_location": "L168",
+      "source_location": "L118",
       "id": "main_readlimitedresponsebytes",
-      "community": 7,
+      "community": 4,
       "norm_label": "readlimitedresponsebytes()"
     },
     {
       "label": "createWindow()",
       "file_type": "code",
       "source_file": "electron\\main.ts",
-      "source_location": "L206",
+      "source_location": "L156",
       "id": "main_createwindow",
-      "community": 7,
+      "community": 4,
       "norm_label": "createwindow()"
     },
     {
@@ -2124,7 +2070,7 @@
       "source_file": "electron\\gallery-image.ts",
       "source_location": "L1",
       "id": "electron_gallery_image_ts",
-      "community": 7,
+      "community": 4,
       "norm_label": "gallery-image.ts"
     },
     {
@@ -2133,7 +2079,7 @@
       "source_file": "electron\\go-process.ts",
       "source_location": "L1",
       "id": "electron_go_process_ts",
-      "community": 6,
+      "community": 7,
       "norm_label": "go-process.ts"
     },
     {
@@ -2142,7 +2088,7 @@
       "source_file": "electron\\main.ts",
       "source_location": "L1",
       "id": "electron_main_ts",
-      "community": 7,
+      "community": 4,
       "norm_label": "main.ts"
     },
     {
@@ -2151,7 +2097,7 @@
       "source_file": "scripts\\build-electron.mjs",
       "source_location": "L1",
       "id": "scripts_build_electron_mjs",
-      "community": 45,
+      "community": 44,
       "norm_label": "build-electron.mjs"
     },
     {
@@ -2232,7 +2178,7 @@
       "source_file": "scripts\\dev.ps1",
       "source_location": "L1",
       "id": "scripts_dev_ps1",
-      "community": 46,
+      "community": 45,
       "norm_label": "dev.ps1"
     },
     {
@@ -2394,7 +2340,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L1",
       "id": "scripts_sync_gallery_data_mjs",
-      "community": 16,
+      "community": 18,
       "norm_label": "sync-gallery-data.mjs"
     },
     {
@@ -2403,7 +2349,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L12",
       "id": "sync_gallery_data_escapestring",
-      "community": 16,
+      "community": 18,
       "norm_label": "escapestring()"
     },
     {
@@ -2412,7 +2358,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L16",
       "id": "sync_gallery_data_slugifytitle",
-      "community": 16,
+      "community": 18,
       "norm_label": "slugifytitle()"
     },
     {
@@ -2421,7 +2367,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L24",
       "id": "sync_gallery_data_truncate",
-      "community": 16,
+      "community": 18,
       "norm_label": "truncate()"
     },
     {
@@ -2430,7 +2376,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L28",
       "id": "sync_gallery_data_detectlanguage",
-      "community": 16,
+      "community": 18,
       "norm_label": "detectlanguage()"
     },
     {
@@ -2439,7 +2385,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L41",
       "id": "sync_gallery_data_collecttags",
-      "community": 16,
+      "community": 18,
       "norm_label": "collecttags()"
     },
     {
@@ -2448,7 +2394,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L67",
       "id": "sync_gallery_data_classifycategory",
-      "community": 16,
+      "community": 18,
       "norm_label": "classifycategory()"
     },
     {
@@ -2457,7 +2403,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L90",
       "id": "sync_gallery_data_buildsummary",
-      "community": 16,
+      "community": 18,
       "norm_label": "buildsummary()"
     },
     {
@@ -2466,7 +2412,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L96",
       "id": "sync_gallery_data_parsesource",
-      "community": 16,
+      "community": 18,
       "norm_label": "parsesource()"
     },
     {
@@ -2475,7 +2421,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L122",
       "id": "sync_gallery_data_getimagesize",
-      "community": 16,
+      "community": 18,
       "norm_label": "getimagesize()"
     },
     {
@@ -2484,7 +2430,7 @@
       "source_file": "scripts\\sync-gallery-data.mjs",
       "source_location": "L190",
       "id": "sync_gallery_data_parsedocument",
-      "community": 16,
+      "community": 18,
       "norm_label": "parsedocument()"
     },
     {
@@ -2628,7 +2574,7 @@
       "source_file": "src\\App.tsx",
       "source_location": "L1",
       "id": "src_app_tsx",
-      "community": 47,
+      "community": 46,
       "norm_label": "app.tsx"
     },
     {
@@ -2637,7 +2583,7 @@
       "source_file": "src\\main.tsx",
       "source_location": "L1",
       "id": "src_main_tsx",
-      "community": 48,
+      "community": 47,
       "norm_label": "main.tsx"
     },
     {
@@ -2646,7 +2592,7 @@
       "source_file": "src\\vite-env.d.ts",
       "source_location": "L1",
       "id": "src_vite_env_d_ts",
-      "community": 49,
+      "community": 48,
       "norm_label": "vite-env.d.ts"
     },
     {
@@ -2655,7 +2601,7 @@
       "source_file": "src\\app\\layout.tsx",
       "source_location": "L1",
       "id": "src_app_layout_tsx",
-      "community": 21,
+      "community": 17,
       "norm_label": "layout.tsx"
     },
     {
@@ -2664,7 +2610,7 @@
       "source_file": "src\\app\\layout.tsx",
       "source_location": "L7",
       "id": "layout_themeandtoaster",
-      "community": 21,
+      "community": 17,
       "norm_label": "themeandtoaster()"
     },
     {
@@ -2673,7 +2619,7 @@
       "source_file": "src\\app\\layout.tsx",
       "source_location": "L16",
       "id": "layout_youmindbackgroundsync",
-      "community": 21,
+      "community": 17,
       "norm_label": "youmindbackgroundsync()"
     },
     {
@@ -2682,7 +2628,7 @@
       "source_file": "src\\app\\layout.tsx",
       "source_location": "L21",
       "id": "layout_appshell",
-      "community": 21,
+      "community": 17,
       "norm_label": "appshell()"
     },
     {
@@ -2709,7 +2655,7 @@
       "source_file": "src\\app\\canvas\\conversation-list.tsx",
       "source_location": "L1",
       "id": "src_app_canvas_conversation_list_tsx",
-      "community": 25,
+      "community": 24,
       "norm_label": "conversation-list.tsx"
     },
     {
@@ -2718,7 +2664,7 @@
       "source_file": "src\\app\\canvas\\conversation-list.tsx",
       "source_location": "L23",
       "id": "conversation_list_startrename",
-      "community": 25,
+      "community": 24,
       "norm_label": "startrename()"
     },
     {
@@ -2727,7 +2673,7 @@
       "source_file": "src\\app\\canvas\\conversation-list.tsx",
       "source_location": "L28",
       "id": "conversation_list_commitrename",
-      "community": 25,
+      "community": 24,
       "norm_label": "commitrename()"
     },
     {
@@ -2736,7 +2682,7 @@
       "source_file": "src\\app\\canvas\\conversation-list.tsx",
       "source_location": "L34",
       "id": "conversation_list_cancelrename",
-      "community": 25,
+      "community": 24,
       "norm_label": "cancelrename()"
     },
     {
@@ -2745,7 +2691,7 @@
       "source_file": "src\\app\\canvas\\conversation-list.tsx",
       "source_location": "L39",
       "id": "conversation_list_handlerenamekeydown",
-      "community": 25,
+      "community": 24,
       "norm_label": "handlerenamekeydown()"
     },
     {
@@ -2754,7 +2700,7 @@
       "source_file": "src\\app\\canvas\\edit-modal.tsx",
       "source_location": "L1",
       "id": "src_app_canvas_edit_modal_tsx",
-      "community": 50,
+      "community": 49,
       "norm_label": "edit-modal.tsx"
     },
     {
@@ -2763,7 +2709,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L1",
       "id": "src_app_canvas_image_card_tsx",
-      "community": 20,
+      "community": 21,
       "norm_label": "image-card.tsx"
     },
     {
@@ -2772,7 +2718,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L27",
       "id": "image_card_normalizebase64image",
-      "community": 20,
+      "community": 21,
       "norm_label": "normalizebase64image()"
     },
     {
@@ -2781,7 +2727,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L36",
       "id": "image_card_imagesrc",
-      "community": 20,
+      "community": 21,
       "norm_label": "imagesrc()"
     },
     {
@@ -2790,7 +2736,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L43",
       "id": "image_card_downloadimage",
-      "community": 20,
+      "community": 21,
       "norm_label": "downloadimage()"
     },
     {
@@ -2799,7 +2745,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L87",
       "id": "image_card_estimatebytes",
-      "community": 20,
+      "community": 21,
       "norm_label": "estimatebytes()"
     },
     {
@@ -2808,7 +2754,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L94",
       "id": "image_card_formatbytes",
-      "community": 20,
+      "community": 21,
       "norm_label": "formatbytes()"
     },
     {
@@ -2817,7 +2763,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L100",
       "id": "image_card_formatdate",
-      "community": 20,
+      "community": 21,
       "norm_label": "formatdate()"
     },
     {
@@ -2826,7 +2772,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L104",
       "id": "image_card_readimagemeta",
-      "community": 20,
+      "community": 21,
       "norm_label": "readimagemeta()"
     },
     {
@@ -2835,7 +2781,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L113",
       "id": "image_card_filefromimage",
-      "community": 20,
+      "community": 21,
       "norm_label": "filefromimage()"
     },
     {
@@ -2844,7 +2790,7 @@
       "source_file": "src\\app\\canvas\\image-card.tsx",
       "source_location": "L170",
       "id": "image_card_stopaction",
-      "community": 20,
+      "community": 21,
       "norm_label": "stopaction()"
     },
     {
@@ -2853,7 +2799,7 @@
       "source_file": "src\\app\\canvas\\page.generate-chain.test.tsx",
       "source_location": "L1",
       "id": "src_app_canvas_page_generate_chain_test_tsx",
-      "community": 51,
+      "community": 50,
       "norm_label": "page.generate-chain.test.tsx"
     },
     {
@@ -2869,7 +2815,7 @@
       "label": "imageDataFromApi()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L18",
+      "source_location": "L20",
       "id": "page_imagedatafromapi",
       "community": 2,
       "norm_label": "imagedatafromapi()"
@@ -2878,7 +2824,7 @@
       "label": "cloneCapabilities()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L46",
+      "source_location": "L48",
       "id": "page_clonecapabilities",
       "community": 2,
       "norm_label": "clonecapabilities()"
@@ -2887,7 +2833,7 @@
       "label": "buildPartialGenerationMessage()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L57",
+      "source_location": "L59",
       "id": "page_buildpartialgenerationmessage",
       "community": 2,
       "norm_label": "buildpartialgenerationmessage()"
@@ -2896,7 +2842,7 @@
       "label": "hasGenerationCredentials()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L62",
+      "source_location": "L64",
       "id": "page_hasgenerationcredentials",
       "community": 2,
       "norm_label": "hasgenerationcredentials()"
@@ -2905,7 +2851,7 @@
       "label": "fileToBase64()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L79",
+      "source_location": "L81",
       "id": "page_filetobase64",
       "community": 2,
       "norm_label": "filetobase64()"
@@ -2914,7 +2860,7 @@
       "label": "buildPromptForReferenceImages()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L94",
+      "source_location": "L96",
       "id": "page_buildpromptforreferenceimages",
       "community": 2,
       "norm_label": "buildpromptforreferenceimages()"
@@ -2923,7 +2869,7 @@
       "label": "isAbortGenerationError()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L105",
+      "source_location": "L107",
       "id": "page_isabortgenerationerror",
       "community": 2,
       "norm_label": "isabortgenerationerror()"
@@ -2932,7 +2878,7 @@
       "label": "normalizeImageQualityParam()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L116",
+      "source_location": "L118",
       "id": "page_normalizeimagequalityparam",
       "community": 2,
       "norm_label": "normalizeimagequalityparam()"
@@ -2941,7 +2887,7 @@
       "label": "normalizeImageStyleParam()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L120",
+      "source_location": "L122",
       "id": "page_normalizeimagestyleparam",
       "community": 2,
       "norm_label": "normalizeimagestyleparam()"
@@ -2950,7 +2896,7 @@
       "label": "normalizeImageUpscaleParam()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L124",
+      "source_location": "L126",
       "id": "page_normalizeimageupscaleparam",
       "community": 2,
       "norm_label": "normalizeimageupscaleparam()"
@@ -2959,7 +2905,7 @@
       "label": "copyText()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L128",
+      "source_location": "L130",
       "id": "page_copytext",
       "community": 2,
       "norm_label": "copytext()"
@@ -2968,7 +2914,7 @@
       "label": "generateImagesWithFrontendBatches()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L158",
+      "source_location": "L160",
       "id": "page_generateimageswithfrontendbatches",
       "community": 2,
       "norm_label": "generateimageswithfrontendbatches()"
@@ -2977,7 +2923,7 @@
       "label": "computeElapsed()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L284",
+      "source_location": "L286",
       "id": "page_computeelapsed",
       "community": 2,
       "norm_label": "computeelapsed()"
@@ -2986,7 +2932,7 @@
       "label": "makePromptFiles()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L309",
+      "source_location": "L311",
       "id": "page_makepromptfiles",
       "community": 2,
       "norm_label": "makepromptfiles()"
@@ -2995,7 +2941,7 @@
       "label": "handleSubmit()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L325",
+      "source_location": "L327",
       "id": "page_handlesubmit",
       "community": 2,
       "norm_label": "handlesubmit()"
@@ -3004,7 +2950,7 @@
       "label": "pushImageToPrompt()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L440",
+      "source_location": "L442",
       "id": "page_pushimagetoprompt",
       "community": 2,
       "norm_label": "pushimagetoprompt()"
@@ -3013,7 +2959,7 @@
       "label": "quotePrompt()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L450",
+      "source_location": "L452",
       "id": "page_quoteprompt",
       "community": 2,
       "norm_label": "quoteprompt()"
@@ -3022,7 +2968,7 @@
       "label": "copyPrompt()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L455",
+      "source_location": "L457",
       "id": "page_copyprompt",
       "community": 2,
       "norm_label": "copyprompt()"
@@ -3031,7 +2977,7 @@
       "label": "copyError()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L464",
+      "source_location": "L466",
       "id": "page_copyerror",
       "community": 2,
       "norm_label": "copyerror()"
@@ -3040,7 +2986,7 @@
       "label": "togglePrompt()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L473",
+      "source_location": "L475",
       "id": "page_toggleprompt",
       "community": 2,
       "norm_label": "toggleprompt()"
@@ -3049,7 +2995,7 @@
       "label": "retryTurn()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L485",
+      "source_location": "L487",
       "id": "page_retryturn",
       "community": 2,
       "norm_label": "retryturn()"
@@ -3058,7 +3004,7 @@
       "label": "renderLoadingSlots()",
       "file_type": "code",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L493",
+      "source_location": "L495",
       "id": "page_renderloadingslots",
       "community": 2,
       "norm_label": "renderloadingslots()"
@@ -3213,16 +3159,16 @@
       "source_file": "src\\app\\examples\\page.tsx",
       "source_location": "L1",
       "id": "src_app_examples_page_tsx",
-      "community": 35,
+      "community": 17,
       "norm_label": "page.tsx"
     },
     {
       "label": "ExamplesPage()",
       "file_type": "code",
       "source_file": "src\\app\\examples\\page.tsx",
-      "source_location": "L7",
+      "source_location": "L9",
       "id": "page_examplespage",
-      "community": 35,
+      "community": 17,
       "norm_label": "examplespage()"
     },
     {
@@ -3231,7 +3177,7 @@
       "source_file": "src\\app\\settings\\page.tsx",
       "source_location": "L1",
       "id": "src_app_settings_page_tsx",
-      "community": 36,
+      "community": 35,
       "norm_label": "page.tsx"
     },
     {
@@ -3240,7 +3186,7 @@
       "source_file": "src\\app\\settings\\page.tsx",
       "source_location": "L3",
       "id": "page_settingspage",
-      "community": 36,
+      "community": 35,
       "norm_label": "settingspage()"
     },
     {
@@ -3249,97 +3195,97 @@
       "source_file": "src\\components\\examples\\example-gallery.tsx",
       "source_location": "L1",
       "id": "src_components_examples_example_gallery_tsx",
-      "community": 17,
+      "community": 19,
       "norm_label": "example-gallery.tsx"
     },
     {
       "label": "inferImageMimeType()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L98",
+      "source_location": "L99",
       "id": "example_gallery_inferimagemimetype",
-      "community": 17,
+      "community": 19,
       "norm_label": "inferimagemimetype()"
     },
     {
       "label": "shouldUseElectronImageFetch()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L103",
+      "source_location": "L104",
       "id": "example_gallery_shoulduseelectronimagefetch",
-      "community": 17,
+      "community": 19,
       "norm_label": "shoulduseelectronimagefetch()"
     },
     {
       "label": "fetchExampleImageBlob()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L107",
+      "source_location": "L108",
       "id": "example_gallery_fetchexampleimageblob",
-      "community": 17,
+      "community": 19,
       "norm_label": "fetchexampleimageblob()"
     },
     {
       "label": "toAttachedPromptFile()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L131",
+      "source_location": "L132",
       "id": "example_gallery_toattachedpromptfile",
-      "community": 17,
+      "community": 19,
       "norm_label": "toattachedpromptfile()"
     },
     {
       "label": "getImageFallbackMessage()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L146",
+      "source_location": "L147",
       "id": "example_gallery_getimagefallbackmessage",
-      "community": 17,
+      "community": 19,
       "norm_label": "getimagefallbackmessage()"
     },
     {
       "label": "ExampleImageFallback()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L150",
+      "source_location": "L151",
       "id": "example_gallery_exampleimagefallback",
-      "community": 17,
+      "community": 19,
       "norm_label": "exampleimagefallback()"
     },
     {
       "label": "getCategoryFrameClass()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L185",
+      "source_location": "L186",
       "id": "example_gallery_getcategoryframeclass",
-      "community": 17,
+      "community": 19,
       "norm_label": "getcategoryframeclass()"
     },
     {
       "label": "getCategoryImageClass()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L206",
+      "source_location": "L207",
       "id": "example_gallery_getcategoryimageclass",
-      "community": 17,
+      "community": 19,
       "norm_label": "getcategoryimageclass()"
     },
     {
       "label": "getImageFrameStyle()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L237",
+      "source_location": "L238",
       "id": "example_gallery_getimageframestyle",
-      "community": 17,
+      "community": 19,
       "norm_label": "getimageframestyle()"
     },
     {
       "label": "getCompactImageFrameStyle()",
       "file_type": "code",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L291",
+      "source_location": "L292",
       "id": "example_gallery_getcompactimageframestyle",
-      "community": 17,
+      "community": 19,
       "norm_label": "getcompactimageframestyle()"
     },
     {
@@ -3348,7 +3294,7 @@
       "source_file": "src\\components\\navigation\\main-navigation.tsx",
       "source_location": "L1",
       "id": "src_components_navigation_main_navigation_tsx",
-      "community": 52,
+      "community": 51,
       "norm_label": "main-navigation.tsx"
     },
     {
@@ -3492,7 +3438,7 @@
       "source_file": "src\\components\\ui\\badge.tsx",
       "source_location": "L1",
       "id": "src_components_ui_badge_tsx",
-      "community": 37,
+      "community": 36,
       "norm_label": "badge.tsx"
     },
     {
@@ -3501,7 +3447,7 @@
       "source_file": "src\\components\\ui\\badge.tsx",
       "source_location": "L26",
       "id": "badge_badge",
-      "community": 37,
+      "community": 36,
       "norm_label": "badge()"
     },
     {
@@ -3510,7 +3456,7 @@
       "source_file": "src\\components\\ui\\button.tsx",
       "source_location": "L1",
       "id": "src_components_ui_button_tsx",
-      "community": 53,
+      "community": 52,
       "norm_label": "button.tsx"
     },
     {
@@ -3519,7 +3465,7 @@
       "source_file": "src\\components\\ui\\card.tsx",
       "source_location": "L1",
       "id": "src_components_ui_card_tsx",
-      "community": 54,
+      "community": 53,
       "norm_label": "card.tsx"
     },
     {
@@ -3528,7 +3474,7 @@
       "source_file": "src\\components\\ui\\dialog.tsx",
       "source_location": "L1",
       "id": "src_components_ui_dialog_tsx",
-      "community": 38,
+      "community": 37,
       "norm_label": "dialog.tsx"
     },
     {
@@ -3537,7 +3483,7 @@
       "source_file": "src\\components\\ui\\dialog.tsx",
       "source_location": "L34",
       "id": "dialog_cn",
-      "community": 38,
+      "community": 37,
       "norm_label": "cn()"
     },
     {
@@ -3546,7 +3492,7 @@
       "source_file": "src\\components\\ui\\input.tsx",
       "source_location": "L1",
       "id": "src_components_ui_input_tsx",
-      "community": 55,
+      "community": 54,
       "norm_label": "input.tsx"
     },
     {
@@ -3555,7 +3501,7 @@
       "source_file": "src\\components\\ui\\select.tsx",
       "source_location": "L1",
       "id": "src_components_ui_select_tsx",
-      "community": 56,
+      "community": 55,
       "norm_label": "select.tsx"
     },
     {
@@ -3564,7 +3510,7 @@
       "source_file": "src\\components\\ui\\textarea.tsx",
       "source_location": "L1",
       "id": "src_components_ui_textarea_tsx",
-      "community": 57,
+      "community": 56,
       "norm_label": "textarea.tsx"
     },
     {
@@ -3690,7 +3636,7 @@
       "source_file": "src\\data\\example-prompts.ts",
       "source_location": "L1",
       "id": "src_data_example_prompts_ts",
-      "community": 28,
+      "community": 27,
       "norm_label": "example-prompts.ts"
     },
     {
@@ -3699,7 +3645,7 @@
       "source_file": "src\\data\\example-prompts.ts",
       "source_location": "L61",
       "id": "example_prompts_resolvegalleryimageurl",
-      "community": 28,
+      "community": 27,
       "norm_label": "resolvegalleryimageurl()"
     },
     {
@@ -3708,7 +3654,7 @@
       "source_file": "src\\data\\example-prompts.ts",
       "source_location": "L69",
       "id": "example_prompts_toexamplepromptitem",
-      "community": 28,
+      "community": 27,
       "norm_label": "toexamplepromptitem()"
     },
     {
@@ -3717,7 +3663,7 @@
       "source_file": "src\\data\\gallery-topics.ts",
       "source_location": "L1",
       "id": "src_data_gallery_topics_ts",
-      "community": 29,
+      "community": 28,
       "norm_label": "gallery-topics.ts"
     },
     {
@@ -3726,7 +3672,7 @@
       "source_file": "src\\data\\gallery-topics.ts",
       "source_location": "L50",
       "id": "gallery_topics_getcategoryexamples",
-      "community": 29,
+      "community": 28,
       "norm_label": "getcategoryexamples()"
     },
     {
@@ -3735,7 +3681,7 @@
       "source_file": "src\\data\\gallery-topics.ts",
       "source_location": "L54",
       "id": "gallery_topics_maketopic",
-      "community": 29,
+      "community": 28,
       "norm_label": "maketopic()"
     },
     {
@@ -3744,7 +3690,7 @@
       "source_file": "src\\data\\gallery.generated.ts",
       "source_location": "L1",
       "id": "src_data_gallery_generated_ts",
-      "community": 58,
+      "community": 57,
       "norm_label": "gallery.generated.ts"
     },
     {
@@ -3753,124 +3699,214 @@
       "source_file": "src\\data\\youmind-prompts.ts",
       "source_location": "L1",
       "id": "src_data_youmind_prompts_ts",
-      "community": 4,
+      "community": 6,
       "norm_label": "youmind-prompts.ts"
     },
     {
       "label": "hasAny()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L77",
+      "source_location": "L153",
       "id": "youmind_prompts_hasany",
-      "community": 4,
+      "community": 6,
       "norm_label": "hasany()"
     },
     {
       "label": "classifyYouMindCategory()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L81",
+      "source_location": "L157",
       "id": "youmind_prompts_classifyyoumindcategory",
-      "community": 4,
+      "community": 6,
       "norm_label": "classifyyoumindcategory()"
     },
     {
       "label": "normalizeAuthorName()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L110",
+      "source_location": "L186",
       "id": "youmind_prompts_normalizeauthorname",
-      "community": 4,
+      "community": 6,
       "norm_label": "normalizeauthorname()"
     },
     {
       "label": "buildYouMindPromptUrl()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L119",
+      "source_location": "L195",
       "id": "youmind_prompts_buildyoumindprompturl",
-      "community": 4,
+      "community": 6,
       "norm_label": "buildyoumindprompturl()"
     },
     {
       "label": "getBestImageUrl()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L123",
+      "source_location": "L199",
       "id": "youmind_prompts_getbestimageurl",
-      "community": 4,
+      "community": 6,
       "norm_label": "getbestimageurl()"
     },
     {
       "label": "getBestReferenceImageUrl()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L127",
+      "source_location": "L203",
       "id": "youmind_prompts_getbestreferenceimageurl",
-      "community": 4,
+      "community": 6,
       "norm_label": "getbestreferenceimageurl()"
     },
     {
       "label": "getImagePathFromUrl()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L131",
+      "source_location": "L207",
       "id": "youmind_prompts_getimagepathfromurl",
-      "community": 4,
+      "community": 6,
       "norm_label": "getimagepathfromurl()"
     },
     {
       "label": "getDimensionsFromImageUrl()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L141",
+      "source_location": "L217",
       "id": "youmind_prompts_getdimensionsfromimageurl",
-      "community": 4,
+      "community": 6,
       "norm_label": "getdimensionsfromimageurl()"
     },
     {
       "label": "truncate()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L163",
+      "source_location": "L237",
       "id": "youmind_prompts_truncate",
-      "community": 4,
+      "community": 6,
       "norm_label": "truncate()"
     },
     {
       "label": "buildSummary()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L168",
+      "source_location": "L242",
       "id": "youmind_prompts_buildsummary",
-      "community": 4,
+      "community": 6,
       "norm_label": "buildsummary()"
     },
     {
       "label": "buildTags()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L173",
+      "source_location": "L247",
       "id": "youmind_prompts_buildtags",
-      "community": 4,
+      "community": 6,
       "norm_label": "buildtags()"
+    },
+    {
+      "label": "extractMarkdownField()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L266",
+      "id": "youmind_prompts_extractmarkdownfield",
+      "community": 6,
+      "norm_label": "extractmarkdownfield()"
+    },
+    {
+      "label": "parseMarkdownLink()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L271",
+      "id": "youmind_prompts_parsemarkdownlink",
+      "community": 6,
+      "norm_label": "parsemarkdownlink()"
+    },
+    {
+      "label": "parseChineseDate()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L291",
+      "id": "youmind_prompts_parsechinesedate",
+      "community": 6,
+      "norm_label": "parsechinesedate()"
+    },
+    {
+      "label": "slugifyPromptTitle()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L316",
+      "id": "youmind_prompts_slugifyprompttitle",
+      "community": 6,
+      "norm_label": "slugifyprompttitle()"
+    },
+    {
+      "label": "inferSourcePlatform()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L335",
+      "id": "youmind_prompts_infersourceplatform",
+      "community": 6,
+      "norm_label": "infersourceplatform()"
+    },
+    {
+      "label": "dedupeStrings()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L361",
+      "id": "youmind_prompts_dedupestrings",
+      "community": 6,
+      "norm_label": "dedupestrings()"
+    },
+    {
+      "label": "extractReadmePromptSections()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L365",
+      "id": "youmind_prompts_extractreadmepromptsections",
+      "community": 6,
+      "norm_label": "extractreadmepromptsections()"
+    },
+    {
+      "label": "parseReadmePromptSection()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L381",
+      "id": "youmind_prompts_parsereadmepromptsection",
+      "community": 6,
+      "norm_label": "parsereadmepromptsection()"
+    },
+    {
+      "label": "getYouMindPromptReadmeUrl()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L423",
+      "id": "youmind_prompts_getyoumindpromptreadmeurl",
+      "community": 6,
+      "norm_label": "getyoumindpromptreadmeurl()"
+    },
+    {
+      "label": "parseYouMindPromptReadme()",
+      "file_type": "code",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L461",
+      "id": "youmind_prompts_parseyoumindpromptreadme",
+      "community": 6,
+      "norm_label": "parseyoumindpromptreadme()"
     },
     {
       "label": "mapYouMindPromptToExamplePromptItem()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L192",
+      "source_location": "L477",
       "id": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
-      "community": 4,
+      "community": 6,
       "norm_label": "mapyoumindprompttoexamplepromptitem()"
     },
     {
       "label": "mapYouMindPromptsToExamplePromptItems()",
       "file_type": "code",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L233",
+      "source_location": "L518",
       "id": "youmind_prompts_mapyoumindpromptstoexamplepromptitems",
-      "community": 4,
+      "community": 15,
       "norm_label": "mapyoumindpromptstoexamplepromptitems()"
     },
     {
@@ -3879,7 +3915,7 @@
       "source_file": "src\\hooks\\use-theme.ts",
       "source_location": "L1",
       "id": "src_hooks_use_theme_ts",
-      "community": 21,
+      "community": 17,
       "norm_label": "use-theme.ts"
     },
     {
@@ -3888,7 +3924,7 @@
       "source_file": "src\\hooks\\use-theme.ts",
       "source_location": "L4",
       "id": "use_theme_getsystemtheme",
-      "community": 21,
+      "community": 17,
       "norm_label": "getsystemtheme()"
     },
     {
@@ -3897,7 +3933,7 @@
       "source_file": "src\\hooks\\use-theme.ts",
       "source_location": "L9",
       "id": "use_theme_usetheme",
-      "community": 21,
+      "community": 17,
       "norm_label": "usetheme()"
     },
     {
@@ -3906,7 +3942,7 @@
       "source_file": "src\\hooks\\use-youmind-prompt-sync.ts",
       "source_location": "L1",
       "id": "src_hooks_use_youmind_prompt_sync_ts",
-      "community": 21,
+      "community": 17,
       "norm_label": "use-youmind-prompt-sync.ts"
     },
     {
@@ -3915,7 +3951,7 @@
       "source_file": "src\\hooks\\use-youmind-prompt-sync.ts",
       "source_location": "L30",
       "id": "use_youmind_prompt_sync_getsnapshotstate",
-      "community": 21,
+      "community": 17,
       "norm_label": "getsnapshotstate()"
     },
     {
@@ -3924,7 +3960,7 @@
       "source_file": "src\\hooks\\use-youmind-prompt-sync.ts",
       "source_location": "L39",
       "id": "use_youmind_prompt_sync_useyoumindpromptsync",
-      "community": 21,
+      "community": 17,
       "norm_label": "useyoumindpromptsync()"
     },
     {
@@ -4221,115 +4257,106 @@
       "source_file": "src\\services\\youmind-prompt-sync.ts",
       "source_location": "L1",
       "id": "src_services_youmind_prompt_sync_ts",
-      "community": 4,
+      "community": 15,
       "norm_label": "youmind-prompt-sync.ts"
     },
     {
       "label": "getPromptCacheStore()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L42",
+      "source_location": "L44",
       "id": "youmind_prompt_sync_getpromptcachestore",
-      "community": 4,
+      "community": 15,
       "norm_label": "getpromptcachestore()"
     },
     {
       "label": "normalizePageLimit()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L52",
+      "source_location": "L54",
       "id": "youmind_prompt_sync_normalizepagelimit",
-      "community": 4,
+      "community": 15,
       "norm_label": "normalizepagelimit()"
     },
     {
-      "label": "getElectronYouMindPromptTransport()",
+      "label": "createReadmePromptTransport()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L60",
-      "id": "youmind_prompt_sync_getelectronyoumindprompttransport",
-      "community": 4,
-      "norm_label": "getelectronyoumindprompttransport()"
-    },
-    {
-      "label": "getBrowserYouMindPromptTransport()",
-      "file_type": "code",
-      "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L68",
-      "id": "youmind_prompt_sync_getbrowseryoumindprompttransport",
-      "community": 4,
-      "norm_label": "getbrowseryoumindprompttransport()"
+      "source_location": "L62",
+      "id": "youmind_prompt_sync_createreadmeprompttransport",
+      "community": 15,
+      "norm_label": "createreadmeprompttransport()"
     },
     {
       "label": "getYouMindPromptTransport()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L90",
+      "source_location": "L116",
       "id": "youmind_prompt_sync_getyoumindprompttransport",
-      "community": 4,
+      "community": 15,
       "norm_label": "getyoumindprompttransport()"
     },
     {
       "label": "fetchYouMindPromptLibrarySnapshot()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L94",
+      "source_location": "L124",
       "id": "youmind_prompt_sync_fetchyoumindpromptlibrarysnapshot",
-      "community": 4,
+      "community": 15,
       "norm_label": "fetchyoumindpromptlibrarysnapshot()"
     },
     {
       "label": "loadYouMindPromptCache()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L143",
+      "source_location": "L173",
       "id": "youmind_prompt_sync_loadyoumindpromptcache",
-      "community": 4,
+      "community": 15,
       "norm_label": "loadyoumindpromptcache()"
     },
     {
       "label": "saveYouMindPromptCache()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L156",
+      "source_location": "L186",
       "id": "youmind_prompt_sync_saveyoumindpromptcache",
-      "community": 4,
+      "community": 15,
       "norm_label": "saveyoumindpromptcache()"
     },
     {
       "label": "isYouMindPromptCacheFresh()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L165",
+      "source_location": "L195",
       "id": "youmind_prompt_sync_isyoumindpromptcachefresh",
-      "community": 4,
+      "community": 15,
       "norm_label": "isyoumindpromptcachefresh()"
     },
     {
       "label": "hasDisplayableItems()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L178",
+      "source_location": "L208",
       "id": "youmind_prompt_sync_hasdisplayableitems",
-      "community": 4,
+      "community": 15,
       "norm_label": "hasdisplayableitems()"
     },
     {
       "label": "mergeIncrementalSnapshotWithCache()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L182",
+      "source_location": "L212",
       "id": "youmind_prompt_sync_mergeincrementalsnapshotwithcache",
-      "community": 4,
+      "community": 15,
       "norm_label": "mergeincrementalsnapshotwithcache()"
     },
     {
       "label": "refreshYouMindPromptCache()",
       "file_type": "code",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L214",
+      "source_location": "L244",
       "id": "youmind_prompt_sync_refreshyoumindpromptcache",
-      "community": 4,
+      "community": 15,
       "norm_label": "refreshyoumindpromptcache()"
     },
     {
@@ -4338,7 +4365,7 @@
       "source_file": "src\\store\\conversations.ts",
       "source_location": "L1",
       "id": "src_store_conversations_ts",
-      "community": 26,
+      "community": 25,
       "norm_label": "conversations.ts"
     },
     {
@@ -4347,7 +4374,7 @@
       "source_file": "src\\store\\conversations.ts",
       "source_location": "L88",
       "id": "conversations_normalizeturns",
-      "community": 26,
+      "community": 25,
       "norm_label": "normalizeturns()"
     },
     {
@@ -4356,7 +4383,7 @@
       "source_file": "src\\store\\conversations.ts",
       "source_location": "L103",
       "id": "conversations_persistconversations",
-      "community": 26,
+      "community": 25,
       "norm_label": "persistconversations()"
     },
     {
@@ -4365,7 +4392,7 @@
       "source_file": "src\\store\\conversations.ts",
       "source_location": "L120",
       "id": "conversations_persistactiveconversation",
-      "community": 26,
+      "community": 25,
       "norm_label": "persistactiveconversation()"
     },
     {
@@ -4374,7 +4401,7 @@
       "source_file": "src\\store\\conversations.ts",
       "source_location": "L128",
       "id": "conversations_normalizestoredconversations",
-      "community": 26,
+      "community": 25,
       "norm_label": "normalizestoredconversations()"
     },
     {
@@ -4383,7 +4410,7 @@
       "source_file": "src\\store\\example-import.ts",
       "source_location": "L1",
       "id": "src_store_example_import_ts",
-      "community": 59,
+      "community": 58,
       "norm_label": "example-import.ts"
     },
     {
@@ -4392,7 +4419,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L1",
       "id": "src_store_settings_ts",
-      "community": 15,
+      "community": 16,
       "norm_label": "settings.ts"
     },
     {
@@ -4401,7 +4428,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L14",
       "id": "settings_normalizeprovider",
-      "community": 15,
+      "community": 16,
       "norm_label": "normalizeprovider()"
     },
     {
@@ -4410,7 +4437,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L19",
       "id": "settings_inferproviderfromsettings",
-      "community": 15,
+      "community": 16,
       "norm_label": "inferproviderfromsettings()"
     },
     {
@@ -4419,7 +4446,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L36",
       "id": "settings_getproviderdefaults",
-      "community": 15,
+      "community": 16,
       "norm_label": "getproviderdefaults()"
     },
     {
@@ -4428,7 +4455,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L59",
       "id": "settings_normalizemodelvalue",
-      "community": 15,
+      "community": 16,
       "norm_label": "normalizemodelvalue()"
     },
     {
@@ -4437,7 +4464,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L63",
       "id": "settings_uniquemodels",
-      "community": 15,
+      "community": 16,
       "norm_label": "uniquemodels()"
     },
     {
@@ -4446,7 +4473,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L76",
       "id": "settings_normalizedefaultmodel",
-      "community": 15,
+      "community": 16,
       "norm_label": "normalizedefaultmodel()"
     },
     {
@@ -4455,7 +4482,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L84",
       "id": "settings_mergemodelpools",
-      "community": 15,
+      "community": 16,
       "norm_label": "mergemodelpools()"
     },
     {
@@ -4464,7 +4491,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L90",
       "id": "settings_getqualityoptionsbyapimode",
-      "community": 15,
+      "community": 16,
       "norm_label": "getqualityoptionsbyapimode()"
     },
     {
@@ -4473,7 +4500,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L94",
       "id": "settings_normalizequalityforapimode",
-      "community": 15,
+      "community": 16,
       "norm_label": "normalizequalityforapimode()"
     },
     {
@@ -4482,7 +4509,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L147",
       "id": "settings_derivemodelstate",
-      "community": 15,
+      "community": 16,
       "norm_label": "derivemodelstate()"
     },
     {
@@ -4491,7 +4518,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L163",
       "id": "settings_normalizeproviderapikeys",
-      "community": 15,
+      "community": 16,
       "norm_label": "normalizeproviderapikeys()"
     },
     {
@@ -4500,7 +4527,7 @@
       "source_file": "src\\store\\settings.ts",
       "source_location": "L173",
       "id": "settings_syncproviderapikeys",
-      "community": 15,
+      "community": 16,
       "norm_label": "syncproviderapikeys()"
     },
     {
@@ -4509,7 +4536,7 @@
       "source_file": "src\\store\\tasks.ts",
       "source_location": "L1",
       "id": "src_store_tasks_ts",
-      "community": 39,
+      "community": 38,
       "norm_label": "tasks.ts"
     },
     {
@@ -4518,7 +4545,7 @@
       "source_file": "src\\store\\tasks.ts",
       "source_location": "L11",
       "id": "tasks_taskkey",
-      "community": 39,
+      "community": 38,
       "norm_label": "taskkey()"
     },
     {
@@ -4527,7 +4554,7 @@
       "source_file": "src\\types\\electron.d.ts",
       "source_location": "L1",
       "id": "src_types_electron_d_ts",
-      "community": 60,
+      "community": 59,
       "norm_label": "electron.d.ts"
     },
     {
@@ -4536,7 +4563,7 @@
       "source_file": "src\\types\\image-workflow.ts",
       "source_location": "L1",
       "id": "src_types_image_workflow_ts",
-      "community": 61,
+      "community": 60,
       "norm_label": "image-workflow.ts"
     },
     {
@@ -4545,7 +4572,7 @@
       "source_file": "src\\__tests__\\api-request-layer.test.ts",
       "source_location": "L1",
       "id": "src_tests_api_request_layer_test_ts",
-      "community": 62,
+      "community": 61,
       "norm_label": "api-request-layer.test.ts"
     },
     {
@@ -4554,7 +4581,7 @@
       "source_file": "src\\__tests__\\app-routing.test.tsx",
       "source_location": "L1",
       "id": "src_tests_app_routing_test_tsx",
-      "community": 63,
+      "community": 62,
       "norm_label": "app-routing.test.tsx"
     },
     {
@@ -4563,7 +4590,7 @@
       "source_file": "src\\__tests__\\canvas-titlebar-drag.test.tsx",
       "source_location": "L1",
       "id": "src_tests_canvas_titlebar_drag_test_tsx",
-      "community": 64,
+      "community": 63,
       "norm_label": "canvas-titlebar-drag.test.tsx"
     },
     {
@@ -4572,7 +4599,7 @@
       "source_file": "src\\__tests__\\conversations-load.test.ts",
       "source_location": "L1",
       "id": "src_tests_conversations_load_test_ts",
-      "community": 65,
+      "community": 64,
       "norm_label": "conversations-load.test.ts"
     },
     {
@@ -4581,7 +4608,7 @@
       "source_file": "src\\__tests__\\conversations.test.ts",
       "source_location": "L1",
       "id": "src_tests_conversations_test_ts",
-      "community": 40,
+      "community": 39,
       "norm_label": "conversations.test.ts"
     },
     {
@@ -4590,7 +4617,7 @@
       "source_file": "src\\__tests__\\conversations.test.ts",
       "source_location": "L4",
       "id": "conversations_test_createturn",
-      "community": 40,
+      "community": 39,
       "norm_label": "createturn()"
     },
     {
@@ -4599,8 +4626,17 @@
       "source_file": "src\\__tests__\\electron-packaging-config.test.ts",
       "source_location": "L1",
       "id": "src_tests_electron_packaging_config_test_ts",
-      "community": 66,
+      "community": 65,
       "norm_label": "electron-packaging-config.test.ts"
+    },
+    {
+      "label": "example-gallery-sync-panel.test.tsx",
+      "file_type": "code",
+      "source_file": "src\\__tests__\\example-gallery-sync-panel.test.tsx",
+      "source_location": "L1",
+      "id": "src_tests_example_gallery_sync_panel_test_tsx",
+      "community": 66,
+      "norm_label": "example-gallery-sync-panel.test.tsx"
     },
     {
       "label": "example-gallery.test.tsx",
@@ -4617,7 +4653,7 @@
       "source_file": "src\\__tests__\\example-import-flow.test.tsx",
       "source_location": "L1",
       "id": "src_tests_example_import_flow_test_tsx",
-      "community": 41,
+      "community": 40,
       "norm_label": "example-import-flow.test.tsx"
     },
     {
@@ -4626,7 +4662,7 @@
       "source_file": "src\\__tests__\\example-import-flow.test.tsx",
       "source_location": "L86",
       "id": "example_import_flow_test_clickactionbyindex",
-      "community": 41,
+      "community": 40,
       "norm_label": "clickactionbyindex()"
     },
     {
@@ -4671,7 +4707,7 @@
       "source_file": "src\\__tests__\\misc-bugs.test.ts",
       "source_location": "L1",
       "id": "src_tests_misc_bugs_test_ts",
-      "community": 30,
+      "community": 29,
       "norm_label": "misc-bugs.test.ts"
     },
     {
@@ -4680,7 +4716,7 @@
       "source_file": "src\\__tests__\\misc-bugs.test.ts",
       "source_location": "L50",
       "id": "misc_bugs_test_handlesrcchange",
-      "community": 30,
+      "community": 29,
       "norm_label": "handlesrcchange()"
     },
     {
@@ -4689,7 +4725,7 @@
       "source_file": "src\\__tests__\\misc-bugs.test.ts",
       "source_location": "L122",
       "id": "misc_bugs_test_mocksetitem",
-      "community": 30,
+      "community": 29,
       "norm_label": "mocksetitem()"
     },
     {
@@ -4743,7 +4779,7 @@
       "source_file": "src\\__tests__\\retry-and-normalize.test.ts",
       "source_location": "L1",
       "id": "src_tests_retry_and_normalize_test_ts",
-      "community": 31,
+      "community": 30,
       "norm_label": "retry-and-normalize.test.ts"
     },
     {
@@ -4752,7 +4788,7 @@
       "source_file": "src\\__tests__\\retry-and-normalize.test.ts",
       "source_location": "L4",
       "id": "retry_and_normalize_test_canretry",
-      "community": 31,
+      "community": 30,
       "norm_label": "canretry()"
     },
     {
@@ -4761,7 +4797,7 @@
       "source_file": "src\\__tests__\\retry-and-normalize.test.ts",
       "source_location": "L50",
       "id": "retry_and_normalize_test_normalizeturn",
-      "community": 31,
+      "community": 30,
       "norm_label": "normalizeturn()"
     },
     {
@@ -4797,16 +4833,16 @@
       "source_file": "src\\__tests__\\youmind-hook.test.tsx",
       "source_location": "L1",
       "id": "src_tests_youmind_hook_test_tsx",
-      "community": 42,
+      "community": 41,
       "norm_label": "youmind-hook.test.tsx"
     },
     {
       "label": "makeSnapshot()",
       "file_type": "code",
       "source_file": "src\\__tests__\\youmind-hook.test.tsx",
-      "source_location": "L27",
+      "source_location": "L25",
       "id": "youmind_hook_test_makesnapshot",
-      "community": 42,
+      "community": 41,
       "norm_label": "makesnapshot()"
     },
     {
@@ -4815,25 +4851,25 @@
       "source_file": "src\\__tests__\\youmind-prompts.test.ts",
       "source_location": "L1",
       "id": "src_tests_youmind_prompts_test_ts",
-      "community": 32,
+      "community": 31,
       "norm_label": "youmind-prompts.test.ts"
     },
     {
       "label": "makeLocalExample()",
       "file_type": "code",
       "source_file": "src\\__tests__\\youmind-prompts.test.ts",
-      "source_location": "L6",
+      "source_location": "L10",
       "id": "youmind_prompts_test_makelocalexample",
-      "community": 32,
+      "community": 31,
       "norm_label": "makelocalexample()"
     },
     {
       "label": "makeYouMindPrompt()",
       "file_type": "code",
       "source_file": "src\\__tests__\\youmind-prompts.test.ts",
-      "source_location": "L31",
+      "source_location": "L35",
       "id": "youmind_prompts_test_makeyoumindprompt",
-      "community": 32,
+      "community": 31,
       "norm_label": "makeyoumindprompt()"
     },
     {
@@ -4842,25 +4878,25 @@
       "source_file": "src\\__tests__\\youmind-sync.test.ts",
       "source_location": "L1",
       "id": "src_tests_youmind_sync_test_ts",
-      "community": 33,
+      "community": 32,
       "norm_label": "youmind-sync.test.ts"
     },
     {
       "label": "makeResponse()",
       "file_type": "code",
       "source_file": "src\\__tests__\\youmind-sync.test.ts",
-      "source_location": "L30",
+      "source_location": "L64",
       "id": "youmind_sync_test_makeresponse",
-      "community": 33,
+      "community": 32,
       "norm_label": "makeresponse()"
     },
     {
       "label": "makeCachedSnapshot()",
       "file_type": "code",
       "source_file": "src\\__tests__\\youmind-sync.test.ts",
-      "source_location": "L57",
+      "source_location": "L91",
       "id": "youmind_sync_test_makecachedsnapshot",
-      "community": 33,
+      "community": 32,
       "norm_label": "makecachedsnapshot()"
     }
   ],
@@ -4869,48 +4905,12 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "vite.config.ts",
-      "source_location": "L11",
+      "source_location": "L6",
       "weight": 1.0,
       "_src": "vite_config_ts",
       "_tgt": "vite_config_removecrossorigin",
       "source": "vite_config_ts",
       "target": "vite_config_removecrossorigin",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "vite.config.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "_src": "vite_config_ts",
-      "_tgt": "vite_config_readrequestbody",
-      "source": "vite_config_ts",
-      "target": "vite_config_readrequestbody",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "vite.config.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "_src": "vite_config_ts",
-      "_tgt": "vite_config_sendjson",
-      "source": "vite_config_ts",
-      "target": "vite_config_sendjson",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "vite.config.ts",
-      "source_location": "L34",
-      "weight": 1.0,
-      "_src": "vite_config_ts",
-      "_tgt": "vite_config_youmindpromptproxy",
-      "source": "vite_config_ts",
-      "target": "vite_config_youmindpromptproxy",
       "confidence_score": 1.0
     },
     {
@@ -9789,7 +9789,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "dist-electron\\main.js",
-      "source_location": "L35",
+      "source_location": "L32",
       "weight": 1.0,
       "_src": "dist_electron_main_js",
       "_tgt": "main_resolvepreloadpath",
@@ -9801,7 +9801,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "dist-electron\\main.js",
-      "source_location": "L47",
+      "source_location": "L44",
       "weight": 1.0,
       "_src": "dist_electron_main_js",
       "_tgt": "main_resolveappiconpath",
@@ -9813,7 +9813,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "dist-electron\\main.js",
-      "source_location": "L56",
+      "source_location": "L53",
       "weight": 1.0,
       "_src": "dist_electron_main_js",
       "_tgt": "main_resolvegalleryimagesdir",
@@ -9825,7 +9825,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "dist-electron\\main.js",
-      "source_location": "L59",
+      "source_location": "L56",
       "weight": 1.0,
       "_src": "dist_electron_main_js",
       "_tgt": "main_registergalleryimageprotocol",
@@ -9837,43 +9837,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "dist-electron\\main.js",
-      "source_location": "L90",
-      "weight": 1.0,
-      "_src": "dist_electron_main_js",
-      "_tgt": "main_readstringfield",
-      "source": "dist_electron_main_js",
-      "target": "main_readstringfield",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "dist-electron\\main.js",
-      "source_location": "L94",
-      "weight": 1.0,
-      "_src": "dist_electron_main_js",
-      "_tgt": "main_readpositiveintegerfield",
-      "source": "dist_electron_main_js",
-      "target": "main_readpositiveintegerfield",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "dist-electron\\main.js",
-      "source_location": "L98",
-      "weight": 1.0,
-      "_src": "dist_electron_main_js",
-      "_tgt": "main_normalizeyoumindpromptspayload",
-      "source": "dist_electron_main_js",
-      "target": "main_normalizeyoumindpromptspayload",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "dist-electron\\main.js",
-      "source_location": "L119",
+      "source_location": "L87",
       "weight": 1.0,
       "_src": "dist_electron_main_js",
       "_tgt": "main_assertfetchableimageurl",
@@ -9885,7 +9849,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "dist-electron\\main.js",
-      "source_location": "L132",
+      "source_location": "L100",
       "weight": 1.0,
       "_src": "dist_electron_main_js",
       "_tgt": "main_readlimitedresponsebytes",
@@ -9897,7 +9861,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "dist-electron\\main.js",
-      "source_location": "L166",
+      "source_location": "L134",
       "weight": 1.0,
       "_src": "dist_electron_main_js",
       "_tgt": "main_createwindow",
@@ -9909,7 +9873,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L221",
+      "source_location": "L171",
       "weight": 1.0,
       "_src": "main_createwindow",
       "_tgt": "main_resolvepreloadpath",
@@ -9921,7 +9885,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L54",
+      "source_location": "L37",
       "weight": 1.0,
       "_src": "electron_main_ts",
       "_tgt": "main_resolvepreloadpath",
@@ -9933,7 +9897,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L219",
+      "source_location": "L169",
       "weight": 1.0,
       "_src": "main_createwindow",
       "_tgt": "main_resolveappiconpath",
@@ -9945,7 +9909,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L70",
+      "source_location": "L53",
       "weight": 1.0,
       "_src": "electron_main_ts",
       "_tgt": "main_resolveappiconpath",
@@ -9957,7 +9921,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L81",
+      "source_location": "L64",
       "weight": 1.0,
       "_src": "electron_main_ts",
       "_tgt": "main_resolvegalleryimagesdir",
@@ -9969,7 +9933,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L85",
+      "source_location": "L68",
       "weight": 1.0,
       "_src": "electron_main_ts",
       "_tgt": "main_registergalleryimageprotocol",
@@ -9978,70 +9942,10 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "electron\\main.ts",
-      "source_location": "L138",
-      "weight": 1.0,
-      "_src": "main_normalizeyoumindpromptspayload",
-      "_tgt": "main_readstringfield",
-      "source": "main_readstringfield",
-      "target": "main_normalizeyoumindpromptspayload",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L119",
-      "weight": 1.0,
-      "_src": "electron_main_ts",
-      "_tgt": "main_readstringfield",
-      "source": "main_readstringfield",
-      "target": "electron_main_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "electron\\main.ts",
-      "source_location": "L131",
-      "weight": 1.0,
-      "_src": "main_normalizeyoumindpromptspayload",
-      "_tgt": "main_readpositiveintegerfield",
-      "source": "main_readpositiveintegerfield",
-      "target": "main_normalizeyoumindpromptspayload",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "electron\\main.ts",
-      "source_location": "L124",
-      "weight": 1.0,
-      "_src": "electron_main_ts",
-      "_tgt": "main_readpositiveintegerfield",
-      "source": "main_readpositiveintegerfield",
-      "target": "electron_main_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "electron\\main.ts",
-      "source_location": "L129",
-      "weight": 1.0,
-      "_src": "electron_main_ts",
-      "_tgt": "main_normalizeyoumindpromptspayload",
-      "source": "main_normalizeyoumindpromptspayload",
-      "target": "electron_main_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "electron\\main.ts",
-      "source_location": "L152",
+      "source_location": "L102",
       "weight": 1.0,
       "_src": "electron_main_ts",
       "_tgt": "main_assertfetchableimageurl",
@@ -10053,7 +9957,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L168",
+      "source_location": "L118",
       "weight": 1.0,
       "_src": "electron_main_ts",
       "_tgt": "main_readlimitedresponsebytes",
@@ -10065,7 +9969,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "electron\\main.ts",
-      "source_location": "L206",
+      "source_location": "L156",
       "weight": 1.0,
       "_src": "electron_main_ts",
       "_tgt": "main_createwindow",
@@ -11421,7 +11325,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L18",
+      "source_location": "L20",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_imagedatafromapi",
@@ -11433,7 +11337,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L46",
+      "source_location": "L48",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_clonecapabilities",
@@ -11445,7 +11349,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L57",
+      "source_location": "L59",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_buildpartialgenerationmessage",
@@ -11457,7 +11361,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L62",
+      "source_location": "L64",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_hasgenerationcredentials",
@@ -11469,7 +11373,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L79",
+      "source_location": "L81",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_filetobase64",
@@ -11481,7 +11385,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L94",
+      "source_location": "L96",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_buildpromptforreferenceimages",
@@ -11493,7 +11397,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L105",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_isabortgenerationerror",
@@ -11505,7 +11409,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L116",
+      "source_location": "L118",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_normalizeimagequalityparam",
@@ -11517,7 +11421,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L120",
+      "source_location": "L122",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_normalizeimagestyleparam",
@@ -11529,7 +11433,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L124",
+      "source_location": "L126",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_normalizeimageupscaleparam",
@@ -11541,7 +11445,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L128",
+      "source_location": "L130",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_copytext",
@@ -11553,7 +11457,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L158",
+      "source_location": "L160",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_generateimageswithfrontendbatches",
@@ -11565,7 +11469,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L284",
+      "source_location": "L286",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_computeelapsed",
@@ -11577,7 +11481,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L309",
+      "source_location": "L311",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_makepromptfiles",
@@ -11589,7 +11493,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L325",
+      "source_location": "L327",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_handlesubmit",
@@ -11601,7 +11505,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L440",
+      "source_location": "L442",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_pushimagetoprompt",
@@ -11613,7 +11517,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L450",
+      "source_location": "L452",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_quoteprompt",
@@ -11625,7 +11529,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L455",
+      "source_location": "L457",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_copyprompt",
@@ -11637,7 +11541,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L464",
+      "source_location": "L466",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_copyerror",
@@ -11649,7 +11553,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L473",
+      "source_location": "L475",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_toggleprompt",
@@ -11661,7 +11565,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L485",
+      "source_location": "L487",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_retryturn",
@@ -11673,7 +11577,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L493",
+      "source_location": "L495",
       "weight": 1.0,
       "_src": "src_app_canvas_page_tsx",
       "_tgt": "page_renderloadingslots",
@@ -11685,7 +11589,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L190",
+      "source_location": "L192",
       "weight": 1.0,
       "_src": "page_generateimageswithfrontendbatches",
       "_tgt": "page_buildpartialgenerationmessage",
@@ -11709,7 +11613,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L332",
+      "source_location": "L334",
       "weight": 1.0,
       "_src": "page_handlesubmit",
       "_tgt": "page_hasgenerationcredentials",
@@ -11721,7 +11625,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L400",
+      "source_location": "L402",
       "weight": 1.0,
       "_src": "page_handlesubmit",
       "_tgt": "page_buildpromptforreferenceimages",
@@ -11733,7 +11637,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L429",
+      "source_location": "L431",
       "weight": 1.0,
       "_src": "page_handlesubmit",
       "_tgt": "page_isabortgenerationerror",
@@ -11745,7 +11649,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L407",
+      "source_location": "L409",
       "weight": 1.0,
       "_src": "page_handlesubmit",
       "_tgt": "page_normalizeimagequalityparam",
@@ -11757,7 +11661,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L408",
+      "source_location": "L410",
       "weight": 1.0,
       "_src": "page_handlesubmit",
       "_tgt": "page_normalizeimagestyleparam",
@@ -11769,7 +11673,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L409",
+      "source_location": "L411",
       "weight": 1.0,
       "_src": "page_handlesubmit",
       "_tgt": "page_normalizeimageupscaleparam",
@@ -11781,7 +11685,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L457",
+      "source_location": "L459",
       "weight": 1.0,
       "_src": "page_copyprompt",
       "_tgt": "page_copytext",
@@ -11793,7 +11697,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L466",
+      "source_location": "L468",
       "weight": 1.0,
       "_src": "page_copyerror",
       "_tgt": "page_copytext",
@@ -11805,7 +11709,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L401",
+      "source_location": "L403",
       "weight": 1.0,
       "_src": "page_handlesubmit",
       "_tgt": "page_generateimageswithfrontendbatches",
@@ -11829,7 +11733,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L442",
+      "source_location": "L444",
       "weight": 1.0,
       "_src": "page_pushimagetoprompt",
       "_tgt": "page_makepromptfiles",
@@ -11841,7 +11745,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\canvas\\page.tsx",
-      "source_location": "L489",
+      "source_location": "L491",
       "weight": 1.0,
       "_src": "page_retryturn",
       "_tgt": "page_handlesubmit",
@@ -12177,13 +12081,25 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\app\\examples\\page.tsx",
-      "source_location": "L7",
+      "source_location": "L9",
       "weight": 1.0,
       "_src": "src_app_examples_page_tsx",
       "_tgt": "page_examplespage",
       "source": "src_app_examples_page_tsx",
       "target": "page_examplespage",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src\\app\\examples\\page.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_src": "page_examplespage",
+      "_tgt": "use_youmind_prompt_sync_useyoumindpromptsync",
+      "source": "page_examplespage",
+      "target": "use_youmind_prompt_sync_useyoumindpromptsync"
     },
     {
       "relation": "contains",
@@ -12201,7 +12117,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L98",
+      "source_location": "L99",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_inferimagemimetype",
@@ -12213,7 +12129,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L103",
+      "source_location": "L104",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_shoulduseelectronimagefetch",
@@ -12225,7 +12141,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L107",
+      "source_location": "L108",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_fetchexampleimageblob",
@@ -12237,7 +12153,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L131",
+      "source_location": "L132",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_toattachedpromptfile",
@@ -12249,7 +12165,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L146",
+      "source_location": "L147",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_getimagefallbackmessage",
@@ -12261,7 +12177,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L150",
+      "source_location": "L151",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_exampleimagefallback",
@@ -12273,7 +12189,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L185",
+      "source_location": "L186",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_getcategoryframeclass",
@@ -12285,7 +12201,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L206",
+      "source_location": "L207",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_getcategoryimageclass",
@@ -12297,7 +12213,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L237",
+      "source_location": "L238",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_getimageframestyle",
@@ -12309,7 +12225,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L291",
+      "source_location": "L292",
       "weight": 1.0,
       "_src": "src_components_examples_example_gallery_tsx",
       "_tgt": "example_gallery_getcompactimageframestyle",
@@ -12321,7 +12237,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L111",
+      "source_location": "L112",
       "weight": 1.0,
       "_src": "example_gallery_fetchexampleimageblob",
       "_tgt": "example_gallery_inferimagemimetype",
@@ -12333,7 +12249,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L133",
+      "source_location": "L134",
       "weight": 1.0,
       "_src": "example_gallery_toattachedpromptfile",
       "_tgt": "example_gallery_inferimagemimetype",
@@ -12345,7 +12261,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L109",
+      "source_location": "L110",
       "weight": 1.0,
       "_src": "example_gallery_fetchexampleimageblob",
       "_tgt": "example_gallery_shoulduseelectronimagefetch",
@@ -12357,7 +12273,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L132",
+      "source_location": "L133",
       "weight": 1.0,
       "_src": "example_gallery_toattachedpromptfile",
       "_tgt": "example_gallery_fetchexampleimageblob",
@@ -12369,7 +12285,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\components\\examples\\example-gallery.tsx",
-      "source_location": "L292",
+      "source_location": "L293",
       "weight": 1.0,
       "_src": "example_gallery_getcompactimageframestyle",
       "_tgt": "example_gallery_getimageframestyle",
@@ -13137,7 +13053,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L77",
+      "source_location": "L153",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_hasany",
@@ -13149,7 +13065,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L81",
+      "source_location": "L157",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_classifyyoumindcategory",
@@ -13161,7 +13077,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L110",
+      "source_location": "L186",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_normalizeauthorname",
@@ -13173,7 +13089,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L119",
+      "source_location": "L195",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_buildyoumindprompturl",
@@ -13185,7 +13101,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L123",
+      "source_location": "L199",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_getbestimageurl",
@@ -13197,7 +13113,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L127",
+      "source_location": "L203",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_getbestreferenceimageurl",
@@ -13209,7 +13125,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L131",
+      "source_location": "L207",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_getimagepathfromurl",
@@ -13221,7 +13137,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L141",
+      "source_location": "L217",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_getdimensionsfromimageurl",
@@ -13233,7 +13149,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L163",
+      "source_location": "L237",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_truncate",
@@ -13245,7 +13161,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L168",
+      "source_location": "L242",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_buildsummary",
@@ -13257,7 +13173,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L173",
+      "source_location": "L247",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_buildtags",
@@ -13269,7 +13185,127 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L192",
+      "source_location": "L266",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_extractmarkdownfield",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_extractmarkdownfield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L271",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_parsemarkdownlink",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_parsemarkdownlink",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L291",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_parsechinesedate",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_parsechinesedate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L316",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_slugifyprompttitle",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_slugifyprompttitle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L335",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_infersourceplatform",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_infersourceplatform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L361",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_dedupestrings",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_dedupestrings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L365",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_extractreadmepromptsections",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_extractreadmepromptsections",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L381",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_parsereadmepromptsection",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_parsereadmepromptsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L423",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_getyoumindpromptreadmeurl",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_getyoumindpromptreadmeurl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L461",
+      "weight": 1.0,
+      "_src": "src_data_youmind_prompts_ts",
+      "_tgt": "youmind_prompts_parseyoumindpromptreadme",
+      "source": "src_data_youmind_prompts_ts",
+      "target": "youmind_prompts_parseyoumindpromptreadme",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L477",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
@@ -13281,7 +13317,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L233",
+      "source_location": "L518",
       "weight": 1.0,
       "_src": "src_data_youmind_prompts_ts",
       "_tgt": "youmind_prompts_mapyoumindpromptstoexamplepromptitems",
@@ -13293,7 +13329,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L91",
+      "source_location": "L167",
       "weight": 1.0,
       "_src": "youmind_prompts_classifyyoumindcategory",
       "_tgt": "youmind_prompts_hasany",
@@ -13305,7 +13341,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L193",
+      "source_location": "L478",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_classifyyoumindcategory",
@@ -13317,7 +13353,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L203",
+      "source_location": "L488",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_normalizeauthorname",
@@ -13329,7 +13365,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L197",
+      "source_location": "L482",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_buildyoumindprompturl",
@@ -13341,7 +13377,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L128",
+      "source_location": "L204",
       "weight": 1.0,
       "_src": "youmind_prompts_getbestreferenceimageurl",
       "_tgt": "youmind_prompts_getbestimageurl",
@@ -13353,7 +13389,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L194",
+      "source_location": "L479",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_getbestimageurl",
@@ -13365,7 +13401,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L195",
+      "source_location": "L480",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_getbestreferenceimageurl",
@@ -13377,7 +13413,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L216",
+      "source_location": "L501",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_getimagepathfromurl",
@@ -13389,7 +13425,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L196",
+      "source_location": "L481",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_getdimensionsfromimageurl",
@@ -13401,7 +13437,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L170",
+      "source_location": "L244",
       "weight": 1.0,
       "_src": "youmind_prompts_buildsummary",
       "_tgt": "youmind_prompts_truncate",
@@ -13413,7 +13449,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L212",
+      "source_location": "L497",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_buildsummary",
@@ -13425,12 +13461,96 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\data\\youmind-prompts.ts",
-      "source_location": "L213",
+      "source_location": "L498",
       "weight": 1.0,
       "_src": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
       "_tgt": "youmind_prompts_buildtags",
       "source": "youmind_prompts_buildtags",
       "target": "youmind_prompts_mapyoumindprompttoexamplepromptitem",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L388",
+      "weight": 1.0,
+      "_src": "youmind_prompts_parsereadmepromptsection",
+      "_tgt": "youmind_prompts_extractmarkdownfield",
+      "source": "youmind_prompts_extractmarkdownfield",
+      "target": "youmind_prompts_parsereadmepromptsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L392",
+      "weight": 1.0,
+      "_src": "youmind_prompts_parsereadmepromptsection",
+      "_tgt": "youmind_prompts_parsemarkdownlink",
+      "source": "youmind_prompts_parsemarkdownlink",
+      "target": "youmind_prompts_parsereadmepromptsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L391",
+      "weight": 1.0,
+      "_src": "youmind_prompts_parsereadmepromptsection",
+      "_tgt": "youmind_prompts_parsechinesedate",
+      "source": "youmind_prompts_parsechinesedate",
+      "target": "youmind_prompts_parsereadmepromptsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L403",
+      "weight": 1.0,
+      "_src": "youmind_prompts_parsereadmepromptsection",
+      "_tgt": "youmind_prompts_slugifyprompttitle",
+      "source": "youmind_prompts_slugifyprompttitle",
+      "target": "youmind_prompts_parsereadmepromptsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L417",
+      "weight": 1.0,
+      "_src": "youmind_prompts_parsereadmepromptsection",
+      "_tgt": "youmind_prompts_infersourceplatform",
+      "source": "youmind_prompts_infersourceplatform",
+      "target": "youmind_prompts_parsereadmepromptsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L387",
+      "weight": 1.0,
+      "_src": "youmind_prompts_parsereadmepromptsection",
+      "_tgt": "youmind_prompts_dedupestrings",
+      "source": "youmind_prompts_dedupestrings",
+      "target": "youmind_prompts_parsereadmepromptsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data\\youmind-prompts.ts",
+      "source_location": "L462",
+      "weight": 1.0,
+      "_src": "youmind_prompts_parseyoumindpromptreadme",
+      "_tgt": "youmind_prompts_extractreadmepromptsections",
+      "source": "youmind_prompts_extractreadmepromptsections",
+      "target": "youmind_prompts_parseyoumindpromptreadme",
       "confidence_score": 1.0
     },
     {
@@ -14061,7 +14181,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L42",
+      "source_location": "L44",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_getpromptcachestore",
@@ -14073,7 +14193,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L52",
+      "source_location": "L54",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_normalizepagelimit",
@@ -14085,31 +14205,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L60",
+      "source_location": "L62",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
-      "_tgt": "youmind_prompt_sync_getelectronyoumindprompttransport",
+      "_tgt": "youmind_prompt_sync_createreadmeprompttransport",
       "source": "src_services_youmind_prompt_sync_ts",
-      "target": "youmind_prompt_sync_getelectronyoumindprompttransport",
+      "target": "youmind_prompt_sync_createreadmeprompttransport",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L68",
-      "weight": 1.0,
-      "_src": "src_services_youmind_prompt_sync_ts",
-      "_tgt": "youmind_prompt_sync_getbrowseryoumindprompttransport",
-      "source": "src_services_youmind_prompt_sync_ts",
-      "target": "youmind_prompt_sync_getbrowseryoumindprompttransport",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L90",
+      "source_location": "L116",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_getyoumindprompttransport",
@@ -14121,7 +14229,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L94",
+      "source_location": "L124",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_fetchyoumindpromptlibrarysnapshot",
@@ -14133,7 +14241,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L143",
+      "source_location": "L173",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_loadyoumindpromptcache",
@@ -14145,7 +14253,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L156",
+      "source_location": "L186",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_saveyoumindpromptcache",
@@ -14157,7 +14265,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L165",
+      "source_location": "L195",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_isyoumindpromptcachefresh",
@@ -14169,7 +14277,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L178",
+      "source_location": "L208",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_hasdisplayableitems",
@@ -14181,7 +14289,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L182",
+      "source_location": "L212",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_mergeincrementalsnapshotwithcache",
@@ -14193,7 +14301,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L214",
+      "source_location": "L244",
       "weight": 1.0,
       "_src": "src_services_youmind_prompt_sync_ts",
       "_tgt": "youmind_prompt_sync_refreshyoumindpromptcache",
@@ -14205,7 +14313,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L145",
+      "source_location": "L175",
       "weight": 1.0,
       "_src": "youmind_prompt_sync_loadyoumindpromptcache",
       "_tgt": "youmind_prompt_sync_getpromptcachestore",
@@ -14217,7 +14325,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L158",
+      "source_location": "L188",
       "weight": 1.0,
       "_src": "youmind_prompt_sync_saveyoumindpromptcache",
       "_tgt": "youmind_prompt_sync_getpromptcachestore",
@@ -14229,7 +14337,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L98",
+      "source_location": "L128",
       "weight": 1.0,
       "_src": "youmind_prompt_sync_fetchyoumindpromptlibrarysnapshot",
       "_tgt": "youmind_prompt_sync_normalizepagelimit",
@@ -14241,11 +14349,11 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L91",
+      "source_location": "L121",
       "weight": 1.0,
       "_src": "youmind_prompt_sync_getyoumindprompttransport",
-      "_tgt": "youmind_prompt_sync_getelectronyoumindprompttransport",
-      "source": "youmind_prompt_sync_getelectronyoumindprompttransport",
+      "_tgt": "youmind_prompt_sync_createreadmeprompttransport",
+      "source": "youmind_prompt_sync_createreadmeprompttransport",
       "target": "youmind_prompt_sync_getyoumindprompttransport",
       "confidence_score": 1.0
     },
@@ -14253,19 +14361,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L91",
-      "weight": 1.0,
-      "_src": "youmind_prompt_sync_getyoumindprompttransport",
-      "_tgt": "youmind_prompt_sync_getbrowseryoumindprompttransport",
-      "source": "youmind_prompt_sync_getbrowseryoumindprompttransport",
-      "target": "youmind_prompt_sync_getyoumindprompttransport",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "src\\services\\youmind-prompt-sync.ts",
-      "source_location": "L186",
+      "source_location": "L216",
       "weight": 1.0,
       "_src": "youmind_prompt_sync_mergeincrementalsnapshotwithcache",
       "_tgt": "youmind_prompt_sync_hasdisplayableitems",
@@ -14673,7 +14769,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\__tests__\\youmind-hook.test.tsx",
-      "source_location": "L27",
+      "source_location": "L25",
       "weight": 1.0,
       "_src": "src_tests_youmind_hook_test_tsx",
       "_tgt": "youmind_hook_test_makesnapshot",
@@ -14685,7 +14781,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\__tests__\\youmind-prompts.test.ts",
-      "source_location": "L6",
+      "source_location": "L10",
       "weight": 1.0,
       "_src": "src_tests_youmind_prompts_test_ts",
       "_tgt": "youmind_prompts_test_makelocalexample",
@@ -14697,7 +14793,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\__tests__\\youmind-prompts.test.ts",
-      "source_location": "L31",
+      "source_location": "L35",
       "weight": 1.0,
       "_src": "src_tests_youmind_prompts_test_ts",
       "_tgt": "youmind_prompts_test_makeyoumindprompt",
@@ -14709,7 +14805,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\__tests__\\youmind-sync.test.ts",
-      "source_location": "L30",
+      "source_location": "L64",
       "weight": 1.0,
       "_src": "src_tests_youmind_sync_test_ts",
       "_tgt": "youmind_sync_test_makeresponse",
@@ -14721,7 +14817,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\__tests__\\youmind-sync.test.ts",
-      "source_location": "L57",
+      "source_location": "L91",
       "weight": 1.0,
       "_src": "src_tests_youmind_sync_test_ts",
       "_tgt": "youmind_sync_test_makecachedsnapshot",

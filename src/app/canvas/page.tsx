@@ -15,6 +15,8 @@ import { fileFromImage, ImageCard } from "./image-card";
 import { PromptBar, type AttachedPromptFile, type PromptOptions } from "./prompt-bar";
 import type { ModelCapabilities } from "@/types/image-workflow";
 
+const logoSrc = `${import.meta.env.BASE_URL}logo.png`;
+
 function imageDataFromApi(data: { url?: string; b64_json?: string; revised_prompt?: string; file_id?: string; gen_id?: string; source_account_id?: string; provider?: string; source?: string; width?: number; height?: number }): StoreImageData {
   const b64_json = data.b64_json;
   return {
@@ -515,7 +517,7 @@ export function CanvasPage() {
             <div className="canvas-empty-state flex h-full min-h-[360px] flex-col items-center justify-center px-5 py-10">
               <div className="canvas-empty-card flex flex-col items-center justify-center text-center">
                 <div className="canvas-empty-icon flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <img src="/logo.png" alt="" draggable={false} />
+                  <img src={logoSrc} alt="" draggable={false} />
                 </div>
                 <p className="canvas-empty-kicker">GIMG Studio</p>
                 <h2 className="mt-3 text-base font-semibold text-foreground">开始创作</h2>

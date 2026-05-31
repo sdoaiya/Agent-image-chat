@@ -51,6 +51,7 @@ interface ExampleGalleryProps {
   sortOrder?: ExampleSortOrder;
   onSortOrderChange?: (order: ExampleSortOrder) => void;
   hideToolbar?: boolean;
+  youMindSyncState?: YouMindPromptSyncState;
   onUseExample?: (example: ExamplePromptItem) => void;
   onUsePromptOnly?: (example: ExamplePromptItem) => void;
   onUseImageOnly?: (example: ExamplePromptItem) => void;
@@ -85,8 +86,6 @@ const EXAMPLE_IMAGE_MIN_HEIGHT = 220;
 const GALLERY_COLUMN_COUNT = 4;
 const TOPIC_WATERFALL_COLUMN_COUNT = GALLERY_COLUMN_COUNT;
 const DESKTOP_GALLERY_MIN_WIDTH = 960;
-const YOUMIND_SYNC_SOURCE_LABEL = "YouMind README";
-
 type GalleryImageState = "idle" | "loading" | "loaded" | "failed";
 
 const EXAMPLE_IMAGE_MIME_BY_EXT: Record<string, string> = {
@@ -147,64 +146,6 @@ async function toAttachedPromptFile(item: ExamplePromptItem): Promise<AttachedPr
 
 function getImageFallbackMessage(item: Pick<ExamplePromptItem, "title" | "caseNumber">) {
   return `案例 #${item.caseNumber} 图片加载失败，可继续仅引用提示词。`;
-}
-
-function formatSyncCount(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) {
-    return "--";
-  }
-
-  return new Intl.NumberFormat("en-US").format(value);
-}
-
-function formatSyncTimestamp(value: string | null): string {
-  if (!value) {
-    return "未同步";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "未同步";
-  }
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-}
-
-function getSyncStatusLabel(status: YouMindPromptSyncState["status"]): string {
-  switch (status) {
-    case "cached":
-      return "缓存可用";
-    case "syncing":
-      return "同步中";
-    case "synced":
-      return "已同步";
-    case "error":
-      return "同步失败";
-    case "unavailable":
-      return "不可用";
-    default:
-      return "待同步";
-  }
-}
-
-function getSyncStatusTone(status: YouMindPromptSyncState["status"]): string {
-  switch (status) {
-    case "synced":
-      return "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300";
-    case "cached":
-      return "bg-sky-500/12 text-sky-700 dark:text-sky-300";
-    case "syncing":
-      return "bg-amber-500/12 text-amber-700 dark:text-amber-300";
-    case "error":
-      return "bg-rose-500/12 text-rose-700 dark:text-rose-300";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
 }
 
 function ExampleImageFallback({ item, isLoading, title }: { item: ExamplePromptItem; isLoading: boolean; title?: string }) {
@@ -678,6 +619,7 @@ export function ExampleGallery({
   sortOrder: controlledSortOrder,
   onSortOrderChange,
   hideToolbar = false,
+  youMindSyncState,
   onUseExample,
   onUsePromptOnly,
   onUseImageOnly,
@@ -705,7 +647,8 @@ export function ExampleGallery({
   const searchQuery = controlledSearchQuery ?? localSearchQuery;
   const sortField = controlledSortField ?? localSortField;
   const sortOrder = controlledSortOrder ?? localSortOrder;
-  const youMindSync = useYouMindPromptSync({ enabled: isGallery });
+  const internalYouMindSync = useYouMindPromptSync({ enabled: isGallery && !youMindSyncState });
+  const youMindSync = youMindSyncState ?? internalYouMindSync;
 
   const setCategory = useCallback((next: ExampleCategoryFilter) => {
     if (controlledCategory === undefined) {
@@ -980,8 +923,6 @@ export function ExampleGallery({
   const showingTopicList = isGallery && galleryView === "topics" && !activeTopic;
   const showingTopicDetail = isGallery && galleryView === "topics" && !!activeTopic;
   const showingExampleDetail = isGallery && !!selectedExample;
-  const syncStatusLabel = getSyncStatusLabel(youMindSync.status);
-  const syncStatusTone = getSyncStatusTone(youMindSync.status);
 
   useEffect(() => {
     const root = resultsRef.current;
@@ -1079,6 +1020,19 @@ export function ExampleGallery({
               <span className="example-view-pill-label">{sortOrder === "desc" ? "降序" : "升序"}</span>
             </button>
             {isGallery ? (
+              <button
+                type="button"
+                className="example-view-pill"
+                onClick={youMindSync.refreshNow}
+                disabled={!youMindSync.canSync || youMindSync.status === "syncing"}
+                aria-label="立即刷新"
+                title="立即刷新"
+              >
+                <RefreshCw className={cn("h-3.5 w-3.5", youMindSync.status === "syncing" && "animate-spin")} aria-hidden="true" />
+                <span className="example-view-pill-label">{youMindSync.status === "syncing" ? "同步中" : "刷新"}</span>
+              </button>
+            ) : null}
+            {isGallery ? (
               <>
                 <button
                   type="button"
@@ -1110,65 +1064,6 @@ export function ExampleGallery({
             )}
           </div>
         </div>
-      ) : null}
-
-      {isGallery ? (
-        <section
-          className="rounded-[24px] border border-border/60 bg-background/88 px-4 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur"
-          aria-label="YouMind 同步状态"
-        >
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-1">
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">YouMind Sync</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-semibold text-foreground">公开示例同步</p>
-                <span className={cn("rounded-full px-2.5 py-1 text-[11px] font-medium", syncStatusTone)}>
-                  {syncStatusLabel}
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-border/70 bg-background px-3 text-xs font-medium text-foreground transition hover:border-primary/30 hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={youMindSync.refreshNow}
-              disabled={!youMindSync.canSync || youMindSync.status === "syncing"}
-              aria-label="立即刷新"
-            >
-              <RefreshCw className={cn("h-3.5 w-3.5", youMindSync.status === "syncing" && "animate-spin")} aria-hidden="true" />
-              <span>{youMindSync.status === "syncing" ? "同步中" : "立即刷新"}</span>
-            </button>
-          </div>
-
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-            <div className="rounded-2xl border border-border/50 bg-muted/20 px-3 py-3">
-              <p className="text-[11px] text-muted-foreground">来源</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">{YOUMIND_SYNC_SOURCE_LABEL}</p>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-muted/20 px-3 py-3">
-              <p className="text-[11px] text-muted-foreground">上游总数</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">{formatSyncCount(youMindSync.total)}</p>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-muted/20 px-3 py-3">
-              <p className="text-[11px] text-muted-foreground">本地缓存</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">{formatSyncCount(youMindSync.items.length)}</p>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-muted/20 px-3 py-3">
-              <p className="text-[11px] text-muted-foreground">回退状态</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">否，README 已为主路径</p>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-muted/20 px-3 py-3">
-              <p className="text-[11px] text-muted-foreground">最近同步</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">{formatSyncTimestamp(youMindSync.syncedAt)}</p>
-            </div>
-          </div>
-
-          <p className="mt-3 text-xs leading-5 text-muted-foreground">
-            当前主路径已切到公开 README 数据源，不再依赖旧的私有接口。最近一次同步抓取 {formatSyncCount(youMindSync.pagesFetched)} 页。
-          </p>
-          {youMindSync.error ? (
-            <p className="mt-2 text-xs leading-5 text-rose-600 dark:text-rose-300">{youMindSync.error}</p>
-          ) : null}
-        </section>
       ) : null}
 
       {!isGallery ? (

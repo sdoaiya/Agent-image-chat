@@ -99,6 +99,11 @@ body {
   box-shadow: 0 8px 18px rgb(15 23 42 / 0.05);
 }
 
+.examples-page-status-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .examples-page-titlebar-main {
   display: flex;
   min-width: 0;
