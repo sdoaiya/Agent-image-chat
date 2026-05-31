@@ -4,7 +4,6 @@ import { useYouMindPromptSync } from "@/hooks/use-youmind-prompt-sync";
 import type { YouMindPromptCacheSnapshot, YouMindPromptTransport } from "@/services/youmind-prompt-sync";
 
 const syncService = vi.hoisted(() => ({
-  getElectronYouMindPromptTransport: vi.fn<() => YouMindPromptTransport | null>(),
   getYouMindPromptTransport: vi.fn<() => YouMindPromptTransport | null>(),
   isYouMindPromptCacheFresh: vi.fn(),
   loadYouMindPromptCache: vi.fn(),
@@ -15,7 +14,6 @@ vi.mock("@/services/youmind-prompt-sync", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/services/youmind-prompt-sync")>();
   return {
     ...actual,
-    getElectronYouMindPromptTransport: syncService.getElectronYouMindPromptTransport,
     getYouMindPromptTransport: syncService.getYouMindPromptTransport,
     isYouMindPromptCacheFresh: syncService.isYouMindPromptCacheFresh,
     loadYouMindPromptCache: syncService.loadYouMindPromptCache,
@@ -63,14 +61,12 @@ function makeSnapshot(overrides: Partial<YouMindPromptCacheSnapshot> = {}): YouM
 describe("useYouMindPromptSync", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    syncService.getElectronYouMindPromptTransport.mockReturnValue(vi.fn());
     syncService.getYouMindPromptTransport.mockReturnValue(vi.fn());
     syncService.loadYouMindPromptCache.mockResolvedValue(null);
     syncService.isYouMindPromptCacheFresh.mockReturnValue(false);
   });
 
-  it("starts syncing in a browser when only the fetch transport is available", async () => {
-    syncService.getElectronYouMindPromptTransport.mockReturnValue(null);
+  it("starts syncing when the public README transport is available", async () => {
     const browserTransport = vi.fn();
     syncService.getYouMindPromptTransport.mockReturnValue(browserTransport);
     syncService.refreshYouMindPromptCache.mockResolvedValue(makeSnapshot());
@@ -106,5 +102,14 @@ describe("useYouMindPromptSync", () => {
 
     expect(result.current.error).toBe("HTTP 429");
     expect(result.current.items[0]?.id).toBe("youmind-1");
+  });
+
+  it("reports unavailable when no public transport can be created", async () => {
+    syncService.getYouMindPromptTransport.mockReturnValue(null);
+
+    const { result } = renderHook(() => useYouMindPromptSync());
+
+    await waitFor(() => expect(result.current.status).toBe("unavailable"));
+    expect(result.current.canSync).toBe(false);
   });
 });

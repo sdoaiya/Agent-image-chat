@@ -22,10 +22,44 @@ import {
   fetchYouMindPromptLibrarySnapshot,
   loadYouMindPromptCache,
   refreshYouMindPromptCache,
+  YOUMIND_PROMPT_SOURCE_URL,
   type YouMindPromptTransport,
   type YouMindPromptCacheSnapshot,
 } from "@/services/youmind-prompt-sync";
 import type { YouMindPromptsRequest, YouMindPromptsResponse } from "@/data/youmind-prompts";
+
+const readmeFallbackFixture = `
+| \u6307\u6807 | \u6570\u91cf |
+|--------|-------|
+| \ud83d\udcdd \u63d0\u793a\u8bcd\u603b\u6570 | **8273** |
+
+### No. 1: README Fallback Prompt
+
+#### \ud83d\udcd6 \u63cf\u8ff0
+
+Fallback prompt description.
+
+#### \ud83d\udcdd \u63d0\u793a\u8bcd
+
+\`\`\`
+Create a README fallback prompt.
+\`\`\`
+
+#### \ud83d\uddbc\ufe0f \u751f\u6210\u56fe\u7247
+
+<div align="center">
+<img src="https://cms-assets.youmind.com/media/fallback-300x450.jpg" width="700" alt="Fallback image">
+</div>
+
+#### \ud83d\udccc \u8be6\u60c5
+
+- **\u4f5c\u8005:** [Fallback Author](https://x.com/fallback_author)
+- **\u6765\u6e90:** [Twitter Post](https://x.com/fallback_author/status/2050000000000000000)
+- **\u53d1\u5e03\u65f6\u95f4:** 2026\u5e745\u670830\u65e5
+- **\u591a\u8bed\u8a00:** en
+
+**[\ud83d\udc49 \u7acb\u5373\u5c1d\u8bd5 \u2192](https://youmind.com/zh-CN/gpt-image-2-prompts?id=23001)**
+`;
 
 function makeResponse(page: number, hasMore: boolean): YouMindPromptsResponse {
   return {
@@ -101,9 +135,8 @@ describe("YouMind prompt sync", () => {
     promptCacheStoreMock.store.getItem.mockResolvedValue(null);
   });
 
-  it("uses a browser fetch transport when the Electron bridge is unavailable", async () => {
-    window.electronAPI = undefined;
-    globalThis.fetch = vi.fn(async () => new Response(JSON.stringify(makeResponse(1, false)), { status: 200 }));
+  it("uses the public README feed as the primary transport", async () => {
+    globalThis.fetch = vi.fn(async () => new Response(readmeFallbackFixture, { status: 200 }));
 
     const transport = getYouMindPromptTransport();
     const response = await transport?.({
@@ -115,21 +148,44 @@ describe("YouMind prompt sync", () => {
       sortOrder: "desc",
     });
 
-    expect(response?.prompts[0]?.id).toBe(18001);
-    expect(globalThis.fetch).toHaveBeenCalledWith("/youhome-api/prompts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-image-2",
-        page: 1,
-        limit: 50,
-        locale: "zh-CN",
-        sortBy: "time",
-        sortOrder: "desc",
-      }),
+    expect(response).toMatchObject({
+      total: 8273,
+      page: 1,
+      limit: 50,
+      totalPages: 1,
+      hasMore: false,
     });
+    expect(response?.prompts[0]?.id).toBe(23001);
+    expect(globalThis.fetch).toHaveBeenCalledWith(YOUMIND_PROMPT_SOURCE_URL, {
+      headers: {
+        Accept: "text/plain",
+      },
+    });
+  });
+
+  it("reuses the README dataset across paginated requests", async () => {
+    globalThis.fetch = vi.fn(async () => new Response(readmeFallbackFixture, { status: 200 }));
+
+    const transport = getYouMindPromptTransport();
+    await transport?.({
+      model: "gpt-image-2",
+      page: 1,
+      limit: 50,
+      locale: "zh-CN",
+      sortBy: "time",
+      sortOrder: "desc",
+    });
+
+    await transport?.({
+      model: "gpt-image-2",
+      page: 2,
+      limit: 50,
+      locale: "zh-CN",
+      sortBy: "time",
+      sortOrder: "desc",
+    });
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
   it("fetches all pages through the provided background transport and returns a cache snapshot", async () => {

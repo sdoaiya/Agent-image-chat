@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, AlertCircle, Sparkles, Trash2, RefreshCw, Copy, TextQuote } from "lucide-react";
+import { Loader2, AlertCircle, Trash2, RefreshCw, Copy, TextQuote } from "lucide-react";
 import { toast } from "sonner";
 import { useConversations, type ImageData as StoreImageData } from "@/store/conversations";
 import { useTasks } from "@/store/tasks";
@@ -512,19 +512,25 @@ export function CanvasPage() {
       <div className="canvas-workspace">
         <div className="canvas-stage">
           {!activeConv || activeConv.turns.length === 0 ? (
-            <div className="flex h-full min-h-[360px] flex-col items-center justify-center px-5 py-10">
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Sparkles className="h-6 w-6" />
+            <div className="canvas-empty-state flex h-full min-h-[360px] flex-col items-center justify-center px-5 py-10">
+              <div className="canvas-empty-card flex flex-col items-center justify-center text-center">
+                <div className="canvas-empty-icon flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <img src="/logo.png" alt="" draggable={false} />
                 </div>
+                <p className="canvas-empty-kicker">GIMG Studio</p>
                 <h2 className="mt-3 text-base font-semibold text-foreground">开始创作</h2>
                 <p className="mt-1 text-sm text-muted-foreground">输入提示词，或添加附件图开始创作</p>
+                <div className="canvas-empty-hints" aria-hidden="true">
+                  <span>Prompt</span>
+                  <span>Reference</span>
+                  <span>Render</span>
+                </div>
               </div>
             </div>
           ) : (
             <div className="canvas-stage-content space-y-4">
               {orderedTurns.map((turn) => (
-                <div key={turn.id} className="space-y-1.5">
+                <div key={turn.id} className="canvas-turn-card space-y-1.5">
                   <div className="canvas-turn-head">
                     <Badge variant="default">生成</Badge>
                     <button
@@ -552,7 +558,7 @@ export function CanvasPage() {
                     {turn.status === "done" && turn.error && <span className="text-xs text-muted-foreground">{turn.error}</span>}
                   </div>
                   {turn.status === "generating" && (
-                    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-1.5 text-xs text-muted-foreground">
+                    <div className="canvas-generation-status flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-3 py-1.5 text-xs text-muted-foreground">
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                       <span>处理中 · 已完成 {turn.images.length}/{turn.n ?? defaultN ?? 1} · 已用时 {elapsedSeconds[turn.id] ?? 0}s</span>
                     </div>
@@ -583,7 +589,7 @@ export function CanvasPage() {
                     </div>
                   )}
                   {turn.status === "error" && turn.error && (
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
+                    <div className="canvas-error-row flex items-center justify-between gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
                       <p className="text-sm text-destructive">{turn.error}</p>
                       <div className="flex items-center gap-1">
                         <Button variant="ghost" size="sm" onClick={() => void copyError(turn.error || "")} className="text-foreground">

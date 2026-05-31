@@ -174,9 +174,9 @@ export function ImageCard({
 
   return (
     <>
-      <div className="group flex h-full min-w-0 max-w-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-lg">
-        <div className="relative flex items-center justify-center bg-muted/10">
-          {!loaded && <div className="h-64 w-full min-w-[16rem] animate-pulse rounded-t-2xl bg-muted" />}
+      <div className="canvas-result-card group flex h-full min-w-0 max-w-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-lg">
+        <div className="canvas-result-media relative flex items-center justify-center bg-muted/10">
+          {!loaded && <div className="canvas-result-skeleton h-64 w-full min-w-[16rem] animate-pulse rounded-t-2xl bg-muted" />}
           <button
             type="button"
             className="block w-full cursor-zoom-in text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -190,7 +190,7 @@ export function ImageCard({
               onLoad={() => setLoaded(true)}
             />
           </button>
-          <div className="pointer-events-none absolute inset-0 flex flex-wrap items-start justify-end gap-1.5 p-3 rounded-2xl bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100">
+          <div className="canvas-result-overlay pointer-events-none absolute inset-0 flex flex-wrap items-start justify-end gap-1.5 p-3 rounded-2xl bg-black/40 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100">
             <button onClick={stopAction(() => setPreviewOpen(true))} className="pointer-events-auto rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30" title="打开图片详情" aria-label="打开图片详情">
               <Maximize2 className="h-4 w-4" />
             </button>
@@ -229,7 +229,7 @@ export function ImageCard({
             )}
           </div>
         </div>
-        <div className="space-y-1 border-t border-border bg-card/95 px-3 py-2 text-[11px] text-muted-foreground">
+        <div className="canvas-result-meta space-y-1 border-t border-border bg-card/95 px-3 py-2 text-[11px] text-muted-foreground">
           <div className="flex items-center justify-between gap-3">
             <span>{formatDate(meta?.created_at)}</span>
             <span>{modeLabel}</span>

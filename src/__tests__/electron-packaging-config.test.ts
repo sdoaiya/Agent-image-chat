@@ -20,6 +20,7 @@ const electronMainSource = fs.readFileSync(path.resolve(process.cwd(), "electron
 const electronPreloadSource = fs.readFileSync(path.resolve(process.cwd(), "electron", "preload.cjs"), "utf8");
 const packagedConfigSource = fs.readFileSync(path.resolve(process.cwd(), "resources", "data", "config.toml"), "utf8");
 const electronBuilderSource = fs.readFileSync(path.resolve(process.cwd(), "electron-builder.yml"), "utf8");
+const viteConfigSource = fs.readFileSync(path.resolve(process.cwd(), "vite.config.ts"), "utf8");
 
 describe("electron packaged resources", () => {
   it("declares gallery images as packaged extra resources", () => {
@@ -61,11 +62,11 @@ describe("electron packaged resources", () => {
     expect(electronMainSource).toContain("corsEnabled: true");
   });
 
-  it("exposes a background YouMind prompt fetch bridge for silent upstream sync", () => {
-    expect(electronMainSource).toContain('ipcMain.handle("fetch-youmind-prompts"');
-    expect(electronMainSource).toContain("https://youmind.com/youhome-api/prompts");
-    expect(electronPreloadSource).toContain("fetchYouMindPrompts");
-    expect(electronPreloadSource).toContain('ipcRenderer.invoke("fetch-youmind-prompts"');
+  it("removes the legacy YouMind prompt bridge and Vite proxy from the main path", () => {
+    expect(electronMainSource).not.toContain('ipcMain.handle("fetch-youmind-prompts"');
+    expect(electronMainSource).not.toContain("https://youmind.com/youhome-api/prompts");
+    expect(electronPreloadSource).not.toContain("fetchYouMindPrompts");
+    expect(viteConfigSource).not.toContain("/youhome-api/prompts");
   });
 
   it("exposes a runtime backend auth token without storing it in packaged resources", () => {
@@ -83,25 +84,6 @@ describe("electron packaged resources", () => {
     expect(electronMainSource).toContain("cms-assets.youmind.com");
     expect(electronPreloadSource).toContain("fetchImageBytes");
     expect(electronPreloadSource).toContain('ipcRenderer.invoke("fetch-image-bytes"');
-  });
-
-  it("normalizes YouMind sync payloads to the documented upstream request fields", () => {
-    const payloadTypeMatch = electronMainSource.match(/interface YouMindPromptsRequestPayload \{(?<body>[\s\S]*?)\n\}/);
-    expect(payloadTypeMatch?.groups?.body).toBeDefined();
-    const payloadTypeBody = payloadTypeMatch?.groups?.body ?? "";
-
-    expect(payloadTypeBody).toContain("model?: string");
-    expect(payloadTypeBody).toContain("page?: number");
-    expect(payloadTypeBody).toContain("limit?: number");
-    expect(payloadTypeBody).toContain("locale?: string");
-    expect(payloadTypeBody).toContain("q?: string");
-    expect(payloadTypeBody).toContain("categories?: string");
-    expect(payloadTypeBody).toContain("campaign?: string");
-    expect(payloadTypeBody).toContain("filterMode?: string");
-    expect(payloadTypeBody).toContain("searchMode?: string");
-    expect(payloadTypeBody).toContain("sortBy?: string");
-    expect(payloadTypeBody).toContain("sortOrder?: string");
-    expect(electronMainSource).toContain("typeof value === \"string\"");
   });
 
   it("keeps packaged defaults limited to image-capable models", () => {

@@ -9,9 +9,9 @@ export function WorkbenchLayout() {
 
   return (
     <>
-      <div className="flex h-screen bg-background text-foreground">
+      <div className="workbench-root flex h-screen bg-background text-foreground">
         <MainNavigation onOpenSettings={() => setSettingsOpen(true)} activePath={location.pathname} />
-        <main className="min-w-0 flex-1 overflow-hidden">
+        <main className="workbench-main min-w-0 flex-1 overflow-hidden">
           <Outlet />
         </main>
       </div>

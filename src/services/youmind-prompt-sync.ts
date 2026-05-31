@@ -1,6 +1,8 @@
 import type { ExamplePromptItem } from "@/data/example-prompts";
 import {
+  getYouMindPromptReadmeUrl,
   mapYouMindPromptsToExamplePromptItems,
+  parseYouMindPromptReadme,
   YOUMIND_PROMPT_LOCALE,
   YOUMIND_PROMPT_MODEL,
   YOUMIND_PROMPT_PAGE_LIMIT,
@@ -11,7 +13,7 @@ import {
 export const YOUMIND_PROMPT_CACHE_VERSION = 1;
 export const YOUMIND_PROMPT_SYNC_INTERVAL_MS = 60 * 60 * 1000;
 export const YOUMIND_PROMPT_INCREMENTAL_MAX_PAGES = 3;
-export const YOUMIND_PROMPT_BROWSER_ENDPOINT = "/youhome-api/prompts";
+export const YOUMIND_PROMPT_SOURCE_URL = getYouMindPromptReadmeUrl(YOUMIND_PROMPT_LOCALE);
 const YOUMIND_PROMPT_CACHE_KEY = "youmind-gpt-image-2-prompts-v1";
 
 export type YouMindPromptTransport = (request: YouMindPromptsRequest) => Promise<YouMindPromptsResponse>;
@@ -57,38 +59,66 @@ function normalizePageLimit(pageLimit: number): number {
   return Math.min(Math.floor(pageLimit), YOUMIND_PROMPT_PAGE_LIMIT);
 }
 
-export function getElectronYouMindPromptTransport(): YouMindPromptTransport | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
+function createReadmePromptTransport(): YouMindPromptTransport {
+  const datasetPromiseByUrl = new Map<string, Promise<ReturnType<typeof parseYouMindPromptReadme>>>();
 
-  return window.electronAPI?.fetchYouMindPrompts ?? null;
-}
+  async function loadDataset(locale: string): Promise<ReturnType<typeof parseYouMindPromptReadme>> {
+    const readmeUrl = getYouMindPromptReadmeUrl(locale);
+    let datasetPromise = datasetPromiseByUrl.get(readmeUrl);
+    if (!datasetPromise) {
+      datasetPromise = fetch(readmeUrl, {
+        headers: {
+          Accept: "text/plain",
+        },
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`YouMind README fallback failed: HTTP ${response.status}`);
+          }
 
-export function getBrowserYouMindPromptTransport(): YouMindPromptTransport | null {
-  if (typeof fetch !== "function") {
-    return null;
+          const markdown = await response.text();
+          const dataset = parseYouMindPromptReadme(markdown);
+          if (!dataset.prompts.length) {
+            throw new Error("YouMind README fallback returned no prompts");
+          }
+
+          return dataset;
+        })
+        .catch((error) => {
+          datasetPromiseByUrl.delete(readmeUrl);
+          throw error;
+        });
+      datasetPromiseByUrl.set(readmeUrl, datasetPromise);
+    }
+
+    return datasetPromise;
   }
 
   return async (request) => {
-    const response = await fetch(YOUMIND_PROMPT_BROWSER_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    });
+    const page = Number.isFinite(request.page) && request.page > 0 ? Math.floor(request.page) : 1;
+    const limit = normalizePageLimit(request.limit ?? YOUMIND_PROMPT_PAGE_LIMIT);
+    const dataset = await loadDataset(request.locale ?? YOUMIND_PROMPT_LOCALE);
+    const totalPages = Math.max(1, Math.ceil(dataset.prompts.length / limit));
+    const startIndex = (page - 1) * limit;
+    const prompts = dataset.prompts.slice(startIndex, startIndex + limit);
 
-    if (!response.ok) {
-      throw new Error(`YouMind prompt sync failed: HTTP ${response.status}`);
-    }
-
-    return response.json() as Promise<YouMindPromptsResponse>;
+    return {
+      prompts,
+      total: dataset.total,
+      page,
+      limit,
+      totalPages,
+      hasMore: startIndex + limit < dataset.prompts.length,
+    };
   };
 }
 
 export function getYouMindPromptTransport(): YouMindPromptTransport | null {
-  return getElectronYouMindPromptTransport() ?? getBrowserYouMindPromptTransport();
+  if (typeof fetch !== "function") {
+    return null;
+  }
+
+  return createReadmePromptTransport();
 }
 
 export async function fetchYouMindPromptLibrarySnapshot(

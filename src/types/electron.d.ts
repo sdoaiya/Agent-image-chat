@@ -1,5 +1,3 @@
-import type { YouMindPromptsRequest, YouMindPromptsResponse } from "@/data/youmind-prompts";
-
 export {};
 
 declare global {
@@ -11,7 +9,6 @@ declare global {
       updateTheme: (theme: "light" | "dark") => void;
       saveImage?: (payload: { defaultPath?: string; bytes: number[] }) => Promise<{ saved: boolean; path?: string }>;
       fetchImageBytes?: (url: string) => Promise<{ bytes: number[]; contentType?: string }>;
-      fetchYouMindPrompts?: (payload: YouMindPromptsRequest) => Promise<YouMindPromptsResponse>;
     };
   }
 }

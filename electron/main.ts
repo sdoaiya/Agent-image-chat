@@ -11,9 +11,6 @@ const GALLERY_VENDOR_IMAGES_DIR_CANDIDATES = [
   path.resolve(app.getAppPath(), "vendor", "awesome-gpt-image-2-main", "data", "images"),
   path.resolve(process.resourcesPath, "vendor", "awesome-gpt-image-2-main", "data", "images"),
 ];
-const YOUMIND_PROMPTS_ENDPOINT = "https://youmind.com/youhome-api/prompts";
-const YOUMIND_PROMPTS_REFERER = "https://youmind.com/zh-CN/gpt-image-2-prompts";
-const YOUMIND_PROMPTS_MAX_LIMIT = 100;
 const REMOTE_IMAGE_MAX_BYTES = 12 * 1024 * 1024;
 const REMOTE_IMAGE_FETCH_TIMEOUT_MS = 15000;
 const REMOTE_IMAGE_ALLOWED_HOSTS = new Set(["cms-assets.youmind.com"]);
@@ -23,20 +20,6 @@ const backendAuthToken = randomBytes(32).toString("hex");
 
 const darkOverlay = { color: "#1a1816", symbolColor: "#a8a29e" };
 const lightOverlay = { color: "#fcfaf9", symbolColor: "#57534e" };
-
-interface YouMindPromptsRequestPayload {
-  model?: string;
-  page?: number;
-  limit?: number;
-  locale?: string;
-  q?: string;
-  categories?: string;
-  campaign?: string;
-  filterMode?: string;
-  searchMode?: string;
-  sortBy?: string;
-  sortOrder?: string;
-}
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -114,39 +97,6 @@ function registerGalleryImageProtocol(): void {
       return new Response("Internal Server Error", { status: 500 });
     }
   });
-}
-
-function readStringField(source: Record<string, unknown>, key: keyof YouMindPromptsRequestPayload): string | undefined {
-  const value = source[key];
-  return typeof value === "string" && value.trim() ? value : undefined;
-}
-
-function readPositiveIntegerField(source: Record<string, unknown>, key: keyof YouMindPromptsRequestPayload): number | undefined {
-  const value = source[key];
-  return typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.floor(value) : undefined;
-}
-
-function normalizeYouMindPromptsPayload(payload: unknown): YouMindPromptsRequestPayload {
-  const source = typeof payload === "object" && payload !== null ? payload as Record<string, unknown> : {};
-  const page = readPositiveIntegerField(source, "page") ?? 1;
-  const rawLimit = readPositiveIntegerField(source, "limit");
-  const limit = rawLimit
-    ? Math.min(rawLimit, YOUMIND_PROMPTS_MAX_LIMIT)
-    : YOUMIND_PROMPTS_MAX_LIMIT;
-
-  return {
-    model: readStringField(source, "model") ?? "gpt-image-2",
-    page,
-    limit,
-    locale: readStringField(source, "locale") ?? "zh-CN",
-    q: readStringField(source, "q"),
-    categories: readStringField(source, "categories"),
-    campaign: readStringField(source, "campaign"),
-    filterMode: readStringField(source, "filterMode"),
-    searchMode: readStringField(source, "searchMode"),
-    sortBy: readStringField(source, "sortBy"),
-    sortOrder: readStringField(source, "sortOrder"),
-  };
 }
 
 function assertFetchableImageUrl(value: unknown): string {
@@ -250,25 +200,6 @@ ipcMain.handle("save-image", async (_event, payload: { defaultPath?: string; byt
   }
   await fs.promises.writeFile(filePath, Buffer.from(payload.bytes));
   return { saved: true, path: filePath };
-});
-
-ipcMain.handle("fetch-youmind-prompts", async (_event, payload: unknown) => {
-  const body = normalizeYouMindPromptsPayload(payload);
-  const response = await fetch(YOUMIND_PROMPTS_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": "GIMG/0.1 YouMind prompt sync",
-      Referer: YOUMIND_PROMPTS_REFERER,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    throw new Error(`YouMind prompt sync failed: HTTP ${response.status}`);
-  }
-
-  return response.json();
 });
 
 ipcMain.handle("fetch-image-bytes", async (_event, rawUrl: unknown) => {

@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { ExamplePromptItem } from "@/data/example-prompts";
 import { filterAndSortExamplePrompts, mergeExamplePromptLibraries } from "@/data/example-library";
-import { mapYouMindPromptToExamplePromptItem, type YouMindPromptApiItem } from "@/data/youmind-prompts";
+import {
+  mapYouMindPromptToExamplePromptItem,
+  parseYouMindPromptReadme,
+  type YouMindPromptApiItem,
+} from "@/data/youmind-prompts";
 
 function makeLocalExample(overrides: Partial<ExamplePromptItem> = {}): ExamplePromptItem {
   return {
@@ -55,6 +59,63 @@ function makeYouMindPrompt(overrides: Partial<YouMindPromptApiItem> = {}): YouMi
 }
 
 describe("YouMind prompt mapping and example merging", () => {
+  it("parses the public README fallback into upstream prompt records", () => {
+    const markdown = `
+| \u6307\u6807 | \u6570\u91cf |
+|--------|-------|
+| \ud83d\udcdd \u63d0\u793a\u8bcd\u603b\u6570 | **8273** |
+
+### No. 1: VR \u5934\u663e\u7206\u70b8\u89c6\u56fe\u6d77\u62a5
+
+![Language-EN](https://img.shields.io/badge/Language-EN-blue)
+![Featured](https://img.shields.io/badge/%E2%AD%90-Featured-gold)
+
+#### \ud83d\udcd6 \u63cf\u8ff0
+
+\u751f\u6210\u4e00\u5f20\u9ad8\u79d1\u6280 VR \u5934\u663e\u7206\u70b8\u89c6\u56fe\u3002
+
+#### \ud83d\udcdd \u63d0\u793a\u8bcd
+
+\`\`\`
+Create a high-tech exploded-view poster for a VR headset.
+\`\`\`
+
+#### \ud83d\uddbc\ufe0f \u751f\u6210\u56fe\u7247
+
+<div align="center">
+<img src="https://cms-assets.youmind.com/media/vr-headset-300x450.jpg" width="700" alt="VR poster">
+</div>
+
+#### \ud83d\udccc \u8be6\u60c5
+
+- **\u4f5c\u8005:** [wory](https://x.com/wory37303852)
+- **\u6765\u6e90:** [Twitter Post](https://x.com/wory37303852/status/2045925660401795478)
+- **\u53d1\u5e03\u65f6\u95f4:** 2026\u5e744\u670819\u65e5
+- **\u591a\u8bed\u8a00:** en
+
+**[\ud83d\udc49 \u7acb\u5373\u5c1d\u8bd5 \u2192](https://youmind.com/zh-CN/gpt-image-2-prompts?id=13460)**
+
+<sub>\ud83e\udd16 \u6b64 README \u81ea\u52a8\u751f\u6210\u3002\u6700\u540e\u66f4\u65b0\uff1a 2026-05-30T13:00:52.579Z</sub>
+`;
+
+    const dataset = parseYouMindPromptReadme(markdown);
+
+    expect(dataset.total).toBe(8273);
+    expect(dataset.updatedAt).toBe("2026-05-30T13:00:52.579Z");
+    expect(dataset.prompts).toHaveLength(1);
+    expect(dataset.prompts[0]).toMatchObject({
+      id: 13460,
+      title: "VR \u5934\u663e\u7206\u70b8\u89c6\u56fe\u6d77\u62a5",
+      slug: "prompt-13460",
+      sourceLink: "https://x.com/wory37303852/status/2045925660401795478",
+      sourcePublishedAt: "2026-04-19T00:00:00.000Z",
+      language: "en",
+      sourcePlatform: "twitter",
+      mediaThumbnails: ["https://cms-assets.youmind.com/media/vr-headset-300x450.jpg"],
+    });
+    expect(dataset.prompts[0]?.content).toContain("VR headset");
+  });
+
   it("maps an upstream prompt into the local example item shape", () => {
     const item = mapYouMindPromptToExamplePromptItem(makeYouMindPrompt());
 
